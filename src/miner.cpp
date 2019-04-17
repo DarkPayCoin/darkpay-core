@@ -23,7 +23,6 @@
 #include <timedata.h>
 #include <util/moneystr.h>
 #include <util/system.h>
-#include <util/validation.h>
 #include <validationinterface.h>
 
 #include <algorithm>
@@ -153,7 +152,7 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     // Create coinbase transaction.
     CMutableTransaction coinbaseTx;
     if (!fTestBlockValidity) {
-        pblock->nVersion = PARTICL_BLOCK_VERSION;
+        pblock->nVersion = DARKPAY_BLOCK_VERSION;
         pblock->vtx[0] = MakeTransactionRef(std::move(coinbaseTx));
     } else {
         coinbaseTx.vin.resize(1);

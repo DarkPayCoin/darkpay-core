@@ -66,11 +66,11 @@
         <translation>收款地址</translation>
     </message>
     <message>
-        <source>These are your Particl addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
+        <source>These are your Darkpay addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
         <translation>您可以给这些比特币地址付款。在付款之前，务必要检查金额和收款地址是否正确。</translation>
     </message>
     <message>
-        <source>These are your Particl addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
+        <source>These are your Darkpay addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
         <translation>您可以用这些比特币地址收款。建议在每次交易时，都使用一个新的收款地址。</translation>
     </message>
     <message>
@@ -176,7 +176,7 @@
         <translation>确认钱包加密</translation>
     </message>
     <message>
-        <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR PARTICL&lt;/b&gt;!</source>
+        <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR DARKPAY&lt;/b&gt;!</source>
         <translation>警告: 如果把钱包加密后又忘记密码，你就会从此&lt;b&gt;失去其中所有的比特币了&lt;/b&gt;！</translation>
     </message>
     <message>
@@ -188,12 +188,12 @@
         <translation>钱包已加密</translation>
     </message>
     <message>
-        <source>%1 will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your particl from being stolen by malware infecting your computer.</source>
-        <translation>%1 现在要关闭，以完成加密过程。请注意，加密钱包不能完全防止入侵您电脑的恶意程序偷取您的比特币。</translation>
+        <source>Your wallet is now encrypted. Remember that encrypting your wallet cannot fully protect your darkpay from being stolen by malware infecting your computer.</source>
+        <translation>你的钱包现在已被加密。请记住，对钱包进行加密仍然不能完全防止感染电脑的恶意软件偷取你的比特币。</translation>
     </message>
     <message>
         <source>IMPORTANT: Any previous backups you have made of your wallet file should be replaced with the newly generated, encrypted wallet file. For security reasons, previous backups of the unencrypted wallet file will become useless as soon as you start using the new, encrypted wallet.</source>
-        <translation>重要: 请改用新产生的有加密的钱包文件，来取代旧钱包文件的备份。为了安全性，当你开始使用新的有加密的钱包后，旧钱包文件的备份就不能再使用了。</translation>
+        <translation>重要: 请用新生成的、已加密的钱包备份文件取代你之前留的钱包文件备份。出于安全方面的原因，一旦你开始使用新的已加密钱包，旧钱包文件的备份就失效了。</translation>
     </message>
     <message>
         <source>Wallet encryption failed</source>
@@ -254,10 +254,6 @@
         <translation>概况(&amp;O)</translation>
     </message>
     <message>
-        <source>Node</source>
-        <translation>节点</translation>
-    </message>
-    <message>
         <source>Show general overview of wallet</source>
         <translation>显示钱包概况</translation>
     </message>
@@ -314,24 +310,12 @@
         <translation>更改密码(&amp;C)...</translation>
     </message>
     <message>
-        <source>&amp;Sending addresses...</source>
-        <translation>付款地址(&amp;S)...</translation>
-    </message>
-    <message>
-        <source>&amp;Receiving addresses...</source>
-        <translation>收款地址(&amp;R)...</translation>
-    </message>
-    <message>
         <source>Open &amp;URI...</source>
         <translation>打开 &amp;URI...</translation>
     </message>
     <message>
         <source>Wallet:</source>
         <translation>钱包：</translation>
-    </message>
-    <message>
-        <source>default wallet</source>
-        <translation>默认钱包</translation>
     </message>
     <message>
         <source>Click to disable network activity.</source>
@@ -358,7 +342,7 @@
         <translation>代理已被&lt;b&gt;启用&lt;/b&gt;：%1</translation>
     </message>
     <message>
-        <source>Send coins to a Particl address</source>
+        <source>Send coins to a Darkpay address</source>
         <translation>向一个比特币地址发送比特币</translation>
     </message>
     <message>
@@ -382,12 +366,8 @@
         <translation>验证消息(&amp;V)...</translation>
     </message>
     <message>
-        <source>Particl.</source>
+        <source>Darkpay</source>
         <translation>比特币</translation>
-    </message>
-    <message>
-        <source>Wallet</source>
-        <translation>钱包</translation>
     </message>
     <message>
         <source>&amp;Send</source>
@@ -410,11 +390,11 @@
         <translation>对钱包中的私钥加密</translation>
     </message>
     <message>
-        <source>Sign messages with your Particl addresses to prove you own them</source>
+        <source>Sign messages with your Darkpay addresses to prove you own them</source>
         <translation>用比特币地址关联的私钥为消息签名，以证明您拥有这个比特币地址</translation>
     </message>
     <message>
-        <source>Verify messages to ensure they were signed with specified Particl addresses</source>
+        <source>Verify messages to ensure they were signed with specified Darkpay addresses</source>
         <translation>校验消息，确保该消息是由指定的比特币地址所有者签名的</translation>
     </message>
     <message>
@@ -434,8 +414,8 @@
         <translation>分页工具栏</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and particl: URIs)</source>
-        <translation>请求支付 (生成二维码和 particl: URI)</translation>
+        <source>Request payments (generates QR codes and darkpay: URIs)</source>
+        <translation>请求支付 (生成二维码和 darkpay: URI)</translation>
     </message>
     <message>
         <source>Show the list of used sending addresses and labels</source>
@@ -446,16 +426,16 @@
         <translation>显示用过的接收地址和标签的列表</translation>
     </message>
     <message>
-        <source>Open a particl: URI or payment request</source>
-        <translation>打开一个 particl: URI 或支付请求</translation>
+        <source>Open a darkpay: URI or payment request</source>
+        <translation>打开一个 darkpay: URI 或支付请求</translation>
     </message>
     <message>
         <source>&amp;Command-line options</source>
         <translation>命令行选项(&amp;C)</translation>
     </message>
     <message numerus="yes">
-        <source>%n active connection(s) to Particl network</source>
-        <translation><numerusform>%n 个有效连接至比特币网络</numerusform></translation>
+        <source>%n active connection(s) to Darkpay network</source>
+        <translation><numerusform>%n 条到比特币网络的活动连接</numerusform></translation>
     </message>
     <message>
         <source>Indexing blocks on disk...</source>
@@ -498,12 +478,68 @@
         <translation>已是最新</translation>
     </message>
     <message>
-        <source>Show the %1 help message to get a list with possible Particl command-line options</source>
+        <source>&amp;Sending addresses</source>
+        <translation>付款地址(&amp;S)</translation>
+    </message>
+    <message>
+        <source>&amp;Receiving addresses</source>
+        <translation>收款地址(&amp;R)</translation>
+    </message>
+    <message>
+        <source>Open Wallet</source>
+        <translation>打开钱包</translation>
+    </message>
+    <message>
+        <source>Open a wallet</source>
+        <translation>打开一个钱包</translation>
+    </message>
+    <message>
+        <source>Close Wallet...</source>
+        <translation>关闭钱包...</translation>
+    </message>
+    <message>
+        <source>Close wallet</source>
+        <translation>关闭钱包</translation>
+    </message>
+    <message>
+        <source>Show the %1 help message to get a list with possible Darkpay command-line options</source>
         <translation>显示 %1 帮助信息，获取可用命令行选项列表</translation>
     </message>
     <message>
+        <source>default wallet</source>
+        <translation>默认钱包</translation>
+    </message>
+    <message>
+        <source>Opening Wallet &lt;b&gt;%1&lt;/b&gt;...</source>
+        <translation>正在打开钱包&lt;b&gt;%1&lt;/b&gt;...</translation>
+    </message>
+    <message>
+        <source>Open Wallet Failed</source>
+        <translation>打开钱包失败</translation>
+    </message>
+    <message>
+        <source>&amp;Window</source>
+        <translation>窗口(&amp;W)</translation>
+    </message>
+    <message>
+        <source>Minimize</source>
+        <translation>最小化</translation>
+    </message>
+    <message>
+        <source>Zoom</source>
+        <translation>缩放</translation>
+    </message>
+    <message>
+        <source>Restore</source>
+        <translation>还原</translation>
+    </message>
+    <message>
+        <source>Main Window</source>
+        <translation>主窗口</translation>
+    </message>
+    <message>
         <source>%1 client</source>
-        <translation>%1 客戶</translation>
+        <translation>%1 客户端</translation>
     </message>
     <message>
         <source>Connecting to peers...</source>
@@ -565,6 +601,10 @@
         <translation>HD密钥生成&lt;b&gt;禁用&lt;/b&gt;</translation>
     </message>
     <message>
+        <source>Private key &lt;b&gt;disabled&lt;/b&gt;</source>
+        <translation>私钥&lt;b&gt;禁用&lt;/b&gt;</translation>
+    </message>
+    <message>
         <source>Wallet is &lt;b&gt;encrypted&lt;/b&gt; and currently &lt;b&gt;unlocked&lt;/b&gt;</source>
         <translation>钱包已被&lt;b&gt;加密&lt;/b&gt;，当前为&lt;b&gt;解锁&lt;/b&gt;状态</translation>
     </message>
@@ -573,7 +613,7 @@
         <translation>钱包已被&lt;b&gt;加密&lt;/b&gt;，当前为&lt;b&gt;锁定&lt;/b&gt;状态</translation>
     </message>
     <message>
-        <source>A fatal error occurred. Particl can no longer continue safely and will quit.</source>
+        <source>A fatal error occurred. Darkpay can no longer continue safely and will quit.</source>
         <translation>发生严重错误。客户端无法安全地继续运行，即将退出。</translation>
     </message>
 </context>
@@ -661,7 +701,7 @@
     </message>
     <message>
         <source>Copy transaction ID</source>
-        <translation>复制交易识别码</translation>
+        <translation>复制交易ID</translation>
     </message>
     <message>
         <source>Lock unspent</source>
@@ -763,7 +803,7 @@
         <translation>编辑付款地址</translation>
     </message>
     <message>
-        <source>The entered address "%1" is not a valid Particl address.</source>
+        <source>The entered address "%1" is not a valid Darkpay address.</source>
         <translation>输入的地址 %1 并不是有效的比特币地址。</translation>
     </message>
     <message>
@@ -856,7 +896,7 @@
         <translation>使用自定义的数据目录：</translation>
     </message>
     <message>
-        <source>Particl.</source>
+        <source>Darkpay</source>
         <translation>比特币</translation>
     </message>
     <message>
@@ -868,7 +908,7 @@
         <translation>会在此目录中存储约 %1 GB 的数据。</translation>
     </message>
     <message>
-        <source>%1 will download and store a copy of the Particl block chain.</source>
+        <source>%1 will download and store a copy of the Darkpay block chain.</source>
         <translation>%1 将会下载并存储比特币区块链。</translation>
     </message>
     <message>
@@ -885,11 +925,11 @@
     </message>
     <message numerus="yes">
         <source>%n GB of free space available</source>
-        <translation><numerusform>%n GB 可用空闲空间</numerusform></translation>
+        <translation><numerusform>有 %n GB 空闲空间可用</numerusform></translation>
     </message>
     <message numerus="yes">
         <source>(of %n GB needed)</source>
-        <translation><numerusform>（%n GB 需要）</numerusform></translation>
+        <translation><numerusform>(需要 %n GB的空间)</numerusform></translation>
     </message>
 </context>
 <context>
@@ -899,11 +939,11 @@
         <translation>表单</translation>
     </message>
     <message>
-        <source>Recent transactions may not yet be visible, and therefore your wallet's balance might be incorrect. This information will be correct once your wallet has finished synchronizing with the particl network, as detailed below.</source>
+        <source>Recent transactions may not yet be visible, and therefore your wallet's balance might be incorrect. This information will be correct once your wallet has finished synchronizing with the darkpay network, as detailed below.</source>
         <translation>近期交易可能尚未显示，因此当前余额可能不准确。以上信息将在与比特币网络完全同步后更正。详情如下</translation>
     </message>
     <message>
-        <source>Attempting to spend particl that are affected by not-yet-displayed transactions will not be accepted by the network.</source>
+        <source>Attempting to spend darkpay that are affected by not-yet-displayed transactions will not be accepted by the network.</source>
         <translation>尝试使用受未可见交易影响的余额将不被网络接受。</translation>
     </message>
     <message>
@@ -939,8 +979,8 @@
         <translation>隐藏</translation>
     </message>
     <message>
-        <source>Unknown. Syncing Headers (%1)...</source>
-        <translation>未知状态。同步区块头(%1)...</translation>
+        <source>Unknown. Syncing Headers (%1, %2%)...</source>
+        <translation>未知。正在同步区块头 (%1, %2%)...</translation>
     </message>
 </context>
 <context>
@@ -989,10 +1029,6 @@
         <translation>数据库缓存大小(&amp;D)</translation>
     </message>
     <message>
-        <source>MB</source>
-        <translation>MB</translation>
-    </message>
-    <message>
         <source>Number of script &amp;verification threads</source>
         <translation>脚本验证线程数(&amp;V)</translation>
     </message>
@@ -1018,15 +1054,11 @@
     </message>
     <message>
         <source>Minimize instead of exit the application when the window is closed. When this option is enabled, the application will be closed only after selecting Exit in the menu.</source>
-        <translation>窗口被关闭时最小化而不是退出应用程序。当此选项启用时，应用程序只会在菜单中选择“退出”时退出。</translation>
+        <translation>窗口被关闭时最小化程序而不是退出。当此选项启用时，只有在菜单中选择“退出”时才会让程序退出。</translation>
     </message>
     <message>
         <source>Third party URLs (e.g. a block explorer) that appear in the transactions tab as context menu items. %s in the URL is replaced by transaction hash. Multiple URLs are separated by vertical bar |.</source>
-        <translation>出现在交易的选项卡的上下文菜单项的第三方网址 (例如：区块浏览器) 。 %s的URL被替换为交易哈希。多个的URL需要竖线 | 分隔。</translation>
-    </message>
-    <message>
-        <source>Active command-line options that override above options:</source>
-        <translation>有效的命令行参数覆盖上述选项:</translation>
+        <translation>这个第三方网址（比如区块浏览器）会出现在交易选项卡的右键菜单中。 网址中的%s代表交易哈希。多个网址需要用竖线 | 相互分隔。</translation>
     </message>
     <message>
         <source>Open the %1 configuration file from the working directory.</source>
@@ -1065,6 +1097,10 @@
         <translation>警告：还原此设置需要重新下载整个区块链。</translation>
     </message>
     <message>
+        <source>MiB</source>
+        <translation>MiB</translation>
+    </message>
+    <message>
         <source>(0 = auto, &lt;0 = leave that many cores free)</source>
         <translation>(0 = 自动, &lt;0 = 保持指定数量的CPU核心空闲)</translation>
     </message>
@@ -1089,7 +1125,7 @@
         <translation>动用尚未确认的找零资金(&amp;S)</translation>
     </message>
     <message>
-        <source>Automatically open the Particl client port on the router. This only works when your router supports UPnP and it is enabled.</source>
+        <source>Automatically open the Darkpay client port on the router. This only works when your router supports UPnP and it is enabled.</source>
         <translation>自动在路由器中打开比特币端口。只有当您的路由器开启了 UPnP 选项时此功能才有效。</translation>
     </message>
     <message>
@@ -1105,7 +1141,7 @@
         <translation>允许流入连接(&amp;G)</translation>
     </message>
     <message>
-        <source>Connect to the Particl network through a SOCKS5 proxy.</source>
+        <source>Connect to the Darkpay network through a SOCKS5 proxy.</source>
         <translation>通过 SOCKS5 代理连接比特币网络。</translation>
     </message>
     <message>
@@ -1141,7 +1177,7 @@
         <translation>Tor</translation>
     </message>
     <message>
-        <source>Connect to the Particl network through a separate SOCKS5 proxy for Tor hidden services.</source>
+        <source>Connect to the Darkpay network through a separate SOCKS5 proxy for Tor hidden services.</source>
         <translation>在 Tor 匿名网络下通过不同的 SOCKS5 代理连接比特币网络</translation>
     </message>
     <message>
@@ -1187,6 +1223,10 @@
     <message>
         <source>&amp;Third party transaction URLs</source>
         <translation>第三方交易网址(&amp;T)</translation>
+    </message>
+    <message>
+        <source>Options set in this dialog are overridden by the command line or in the configuration file:</source>
+        <translation>这个对话框中的设置已被如下命令行选项或配置文件项覆盖：</translation>
     </message>
     <message>
         <source>&amp;OK</source>
@@ -1248,7 +1288,7 @@
         <translation>表单</translation>
     </message>
     <message>
-        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Particl network after a connection is established, but this process has not completed yet.</source>
+        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Darkpay network after a connection is established, but this process has not completed yet.</source>
         <translation>现在显示的消息可能是过期的。在连接上比特币网络节点后，您的钱包将自动与网络同步，但是这个过程还没有完成。</translation>
     </message>
     <message>
@@ -1323,8 +1363,8 @@
         <translation>要求付款时发生错误</translation>
     </message>
     <message>
-        <source>Cannot start particl: click-to-pay handler</source>
-        <translation>无法启动 particl 协议的“
+        <source>Cannot start darkpay: click-to-pay handler</source>
+        <translation>无法启动 darkpay 协议的“
 一键支付”处理器</translation>
     </message>
     <message>
@@ -1332,19 +1372,27 @@
         <translation>URI 处理</translation>
     </message>
     <message>
-        <source>'particl://' is not a valid URI. Use 'particl:' instead.</source>
-        <translation>‘particl://’不是合法的URI。请使用'particl:'作为替代。</translation>
+        <source>'darkpay://' is not a valid URI. Use 'darkpay:' instead.</source>
+        <translation>‘darkpay://’不是合法的URI。请使用'darkpay:'作为替代。</translation>
+    </message>
+    <message>
+        <source>You are using a BIP70 URL which will be unsupported in the future.</source>
+        <translation>你正在使用BIP70 URL，它在未来会被终止支持。</translation>
     </message>
     <message>
         <source>Payment request fetch URL is invalid: %1</source>
         <translation>取得付款请求的 URL 无效: %1</translation>
     </message>
     <message>
+        <source>Cannot process payment request because BIP70 support was not compiled in.</source>
+        <translation>无法处理支付请求，因为编译时没有启用BIP70支持。</translation>
+    </message>
+    <message>
         <source>Invalid payment address %1</source>
         <translation>无效的付款地址 %1</translation>
     </message>
     <message>
-        <source>URI cannot be parsed! This can be caused by an invalid Particl address or malformed URI parameters.</source>
+        <source>URI cannot be parsed! This can be caused by an invalid Darkpay address or malformed URI parameters.</source>
         <translation>无法解析 URI 地址！可能是因为比特币地址无效，或是 URI 参数格式错误。</translation>
     </message>
     <message>
@@ -1442,7 +1490,7 @@
         <translation>金额</translation>
     </message>
     <message>
-        <source>Enter a Particl address (e.g. %1)</source>
+        <source>Enter a Darkpay address (e.g. %1)</source>
         <translation>请输入一个比特币地址 (例如 %1)</translation>
     </message>
     <message>
@@ -1479,11 +1527,11 @@
     </message>
     <message numerus="yes">
         <source>%n minute(s)</source>
-        <translation><numerusform>%n 分</numerusform></translation>
+        <translation><numerusform>%n 分钟</numerusform></translation>
     </message>
     <message numerus="yes">
         <source>%n hour(s)</source>
-        <translation><numerusform>%n 时</numerusform></translation>
+        <translation><numerusform>%n 小时</numerusform></translation>
     </message>
     <message numerus="yes">
         <source>%n day(s)</source>
@@ -1595,6 +1643,18 @@
         <translation>数据目录</translation>
     </message>
     <message>
+        <source>To specify a non-default location of the data directory use the '%1' option.</source>
+        <translation>如果不想用默认的数据目录位置，请用 '%1' 这个选项来指定新的位置。</translation>
+    </message>
+    <message>
+        <source>Blocksdir</source>
+        <translation>区块存储目录</translation>
+    </message>
+    <message>
+        <source>To specify a non-default location of the blocks directory use the '%1' option.</source>
+        <translation>如果要自定义区块存储目录的位置，请用 '%1' 这个选项来指定新的位置。</translation>
+    </message>
+    <message>
         <source>Startup time</source>
         <translation>启动时间</translation>
     </message>
@@ -1680,7 +1740,7 @@
     </message>
     <message>
         <source>Synced Headers</source>
-        <translation>同步区块头</translation>
+        <translation>已同步区块头</translation>
     </message>
     <message>
         <source>Synced Blocks</source>
@@ -1704,7 +1764,7 @@
     </message>
     <message>
         <source>Ban Score</source>
-        <translation>禁止得分</translation>
+        <translation>封禁记分</translation>
     </message>
     <message>
         <source>Connection Time</source>
@@ -1796,15 +1856,11 @@
     </message>
     <message>
         <source>Ban for</source>
-        <translation>禁止</translation>
+        <translation>封禁时长</translation>
     </message>
     <message>
         <source>&amp;Unban</source>
         <translation>重新允许</translation>
-    </message>
-    <message>
-        <source>default wallet</source>
-        <translation>默认钱包</translation>
     </message>
     <message>
         <source>Welcome to the %1 RPC console.</source>
@@ -1886,7 +1942,7 @@
         <translation>消息(&amp;M)：</translation>
     </message>
     <message>
-        <source>An optional message to attach to the payment request, which will be displayed when the request is opened. Note: The message will not be sent with the payment over the Particl network.</source>
+        <source>An optional message to attach to the payment request, which will be displayed when the request is opened. Note: The message will not be sent with the payment over the Darkpay network.</source>
         <translation>可在付款请求上备注一条信息，在打开付款请求时可以看到。注意：该消息不是通过比特币网络传送。</translation>
     </message>
     <message>
@@ -2139,14 +2195,6 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of "100 satoshis p
         <translation>隐藏</translation>
     </message>
     <message>
-        <source>Paying only the minimum fee is just fine as long as there is less transaction volume than space in the blocks. But be aware that this can end up in a never confirming transaction once there is more demand for particl transactions than the network can process.</source>
-        <translation>交易量小时允许只支付最小交易费。但是请注意，当交易量大到超出网络可处理时您的交易可能永远无法确认。</translation>
-    </message>
-    <message>
-        <source>(read the tooltip)</source>
-        <translation>(请注意提示信息)</translation>
-    </message>
-    <message>
         <source>Recommended:</source>
         <translation>推荐：</translation>
     </message>
@@ -2172,7 +2220,15 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of "100 satoshis p
     </message>
     <message>
         <source>Dust:</source>
-        <translation>小额：</translation>
+        <translation>粉尘：</translation>
+    </message>
+    <message>
+        <source>When there is less transaction volume than space in the blocks, miners as well as relaying nodes may enforce a minimum fee. Paying only this minimum fee is just fine, but be aware that this can result in a never confirming transaction once there is more demand for darkpay transactions than the network can process.</source>
+        <translation>当交易量小于可用区块空间时，矿工和中继节点可能会执行最低手续费率限制。按照这个最低费率来支付手续费也是可以的，但请注意，一旦交易需求超出比特币网络能处理的限度，你的交易可能永远也无法确认。</translation>
+    </message>
+    <message>
+        <source>A too low fee might result in a never confirming transaction (read the tooltip)</source>
+        <translation>过低的手续费率可能导致交易永远无法确认（请阅读工具提示）</translation>
     </message>
     <message>
         <source>Confirmation time target:</source>
@@ -2224,7 +2280,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of "100 satoshis p
     </message>
     <message>
         <source>Copy dust</source>
-        <translation>复制零散金额</translation>
+        <translation>复制粉尘金额</translation>
     </message>
     <message>
         <source>Copy change</source>
@@ -2310,16 +2366,12 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of "100 satoshis p
         <source>Payment request expired.</source>
         <translation>付款请求已过期。</translation>
     </message>
-    <message>
-        <source>Pay only the required fee of %1</source>
-        <translation>只支付必要费用 %1</translation>
-    </message>
     <message numerus="yes">
         <source>Estimated to begin confirmation within %n block(s).</source>
-        <translation><numerusform>预计 %n 个区块后开始被确认。</numerusform></translation>
+        <translation><numerusform>预计在等待 %n 个区块后会有第一个确认。</numerusform></translation>
     </message>
     <message>
-        <source>Warning: Invalid Particl address</source>
+        <source>Warning: Invalid Darkpay address</source>
         <translation>警告: 比特币地址无效</translation>
     </message>
     <message>
@@ -2362,7 +2414,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of "100 satoshis p
         <translation>这是笔正常的支付。</translation>
     </message>
     <message>
-        <source>The Particl address to send the payment to</source>
+        <source>The Darkpay address to send the payment to</source>
         <translation>付款目的地址</translation>
     </message>
     <message>
@@ -2382,7 +2434,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of "100 satoshis p
         <translation>移除此项</translation>
     </message>
     <message>
-        <source>The fee will be deducted from the amount being sent. The recipient will receive less particl than you enter in the amount field. If multiple recipients are selected, the fee is split equally.</source>
+        <source>The fee will be deducted from the amount being sent. The recipient will receive less darkpay than you enter in the amount field. If multiple recipients are selected, the fee is split equally.</source>
         <translation>交易费将从发送总额中扣除。接收人将收到比您在金额框中输入的更少的比特币。如果选中了多个收件人，交易费平分。</translation>
     </message>
     <message>
@@ -2410,8 +2462,8 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of "100 satoshis p
         <translation>请为此地址输入一个标签以将它加入用过的地址列表</translation>
     </message>
     <message>
-        <source>A message that was attached to the particl: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the Particl network.</source>
-        <translation>particl:URI 附带的备注信息，将会和交易一起存储，备查。 注意：该消息不会通过比特币网络传输。</translation>
+        <source>A message that was attached to the darkpay: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the Darkpay network.</source>
+        <translation>darkpay:URI 附带的备注信息，将会和交易一起存储，备查。 注意：该消息不会通过比特币网络传输。</translation>
     </message>
     <message>
         <source>Pay To:</source>
@@ -2455,11 +2507,11 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of "100 satoshis p
         <translation>签名消息(&amp;S)</translation>
     </message>
     <message>
-        <source>You can sign messages/agreements with your addresses to prove you can receive particl sent to them. Be careful not to sign anything vague or random, as phishing attacks may try to trick you into signing your identity over to them. Only sign fully-detailed statements you agree to.</source>
+        <source>You can sign messages/agreements with your addresses to prove you can receive darkpay sent to them. Be careful not to sign anything vague or random, as phishing attacks may try to trick you into signing your identity over to them. Only sign fully-detailed statements you agree to.</source>
         <translation>您可以用你的地址对消息/协议进行签名，以证明您可以接收发送到该地址的比特币。注意不要对任何模棱两可或者随机的消息进行签名，以免遭受钓鱼式攻击。请确保消息内容准确的表达了您的真实意愿。</translation>
     </message>
     <message>
-        <source>The Particl address to sign the message with</source>
+        <source>The Darkpay address to sign the message with</source>
         <translation>用来对消息签名的地址 </translation>
     </message>
     <message>
@@ -2491,7 +2543,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of "100 satoshis p
         <translation>复制当前签名至剪切板</translation>
     </message>
     <message>
-        <source>Sign the message to prove you own this Particl address</source>
+        <source>Sign the message to prove you own this Darkpay address</source>
         <translation>签名消息，证明这个地址属于您。</translation>
     </message>
     <message>
@@ -2515,11 +2567,11 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of "100 satoshis p
         <translation>请在下面输入接收者地址、消息（确保换行符、空格符、制表符等完全相同）和签名以验证消息。请仔细核对签名信息，以提防中间人攻击。请注意，这只是证明接收方签名的地址，它不能证明任何交易！</translation>
     </message>
     <message>
-        <source>The Particl address the message was signed with</source>
+        <source>The Darkpay address the message was signed with</source>
         <translation>消息使用的签名地址</translation>
     </message>
     <message>
-        <source>Verify the message to ensure it was signed with the specified Particl address</source>
+        <source>Verify the message to ensure it was signed with the specified Darkpay address</source>
         <translation>验证消息，确保消息是由指定的比特币地址签名过的。</translation>
     </message>
     <message>
@@ -2934,7 +2986,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of "100 satoshis p
     </message>
     <message>
         <source>Enter address, transaction id, or label to search</source>
-        <translation>输入地址、交易识别码或标签进行搜索</translation>
+        <translation>输入地址、交易ID或标签进行搜索</translation>
     </message>
     <message>
         <source>Min amount</source>
@@ -2962,7 +3014,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of "100 satoshis p
     </message>
     <message>
         <source>Copy transaction ID</source>
-        <translation>复制交易识别码</translation>
+        <translation>复制交易ID</translation>
     </message>
     <message>
         <source>Copy raw transaction</source>
@@ -3049,6 +3101,21 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of "100 satoshis p
     </message>
 </context>
 <context>
+    <name>WalletController</name>
+    <message>
+        <source>Close wallet</source>
+        <translation>关闭钱包</translation>
+    </message>
+    <message>
+        <source>Are you sure you wish to close wallet &lt;i&gt;%1&lt;/i&gt;?</source>
+        <translation>你确定要关闭钱包&lt;i&gt;%1&lt;/i&gt;吗？</translation>
+    </message>
+    <message>
+        <source>Closing the wallet for too long can result in having to resync the entire chain if pruning is enabled.</source>
+        <translation>如果启用了修剪，关闭钱包太久后可能就必须再次同步整条区块链。</translation>
+    </message>
+</context>
+<context>
     <name>WalletFrame</name>
     <message>
         <source>No wallet has been loaded.</source>
@@ -3096,6 +3163,10 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of "100 satoshis p
     <message>
         <source>Could not commit transaction</source>
         <translation>无法提交交易</translation>
+    </message>
+    <message>
+        <source>default wallet</source>
+        <translation>默认钱包</translation>
     </message>
 </context>
 <context>
@@ -3168,12 +3239,16 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of "100 satoshis p
         <translation>无法启动HTTP服务，查看日志获取更多信息</translation>
     </message>
     <message>
-        <source>Particl Core</source>
-        <translation>Particl Core</translation>
+        <source>Darkpay Core</source>
+        <translation>Darkpay Core</translation>
     </message>
     <message>
         <source>The %s developers</source>
         <translation>%s 开发人员</translation>
+    </message>
+    <message>
+        <source>Can't generate a change-address key. No keys in the internal keypool and can't generate any keys.</source>
+        <translation>无法生成找零地址密钥。 内部密钥池中没有密钥，也无法生成任何密钥。</translation>
     </message>
     <message>
         <source>Cannot obtain a lock on data directory %s. %s is probably already running.</source>
@@ -3205,7 +3280,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of "100 satoshis p
     </message>
     <message>
         <source>This is the transaction fee you may discard if change is smaller than dust at this level</source>
-        <translation>如果找零金额低于粉尘水平，你或许可以忽略这笔手续费。</translation>
+        <translation>如果找零金额低于粉尘水平，你或许可以把它作为手续费忽略掉。</translation>
     </message>
     <message>
         <source>Unable to replay blocks. You will need to rebuild the database using -reindex-chainstate.</source>
@@ -3244,6 +3319,10 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of "100 satoshis p
         <translation>找零超过索引范围</translation>
     </message>
     <message>
+        <source>Config setting for %s only applied on %s network when in [%s] section.</source>
+        <translation>对 %s 的配置设置只对 %s 网络生效，如果它位于配置的 [%s] 章节的话</translation>
+    </message>
+    <message>
         <source>Copyright (C) %i-%i</source>
         <translation>版权所有 (C) %i-%i</translation>
     </message>
@@ -3256,10 +3335,6 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of "100 satoshis p
         <translation>你想现在就重建区块数据库吗？</translation>
     </message>
     <message>
-        <source>Error creating %s: You can't create non-HD wallets with this version.</source>
-        <translation>生成%s发生错误：这个版本不能用来产生非HD钱包。</translation>
-    </message>
-    <message>
         <source>Error initializing block database</source>
         <translation>初始化区块数据库出错</translation>
     </message>
@@ -3270,6 +3345,10 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of "100 satoshis p
     <message>
         <source>Error loading %s</source>
         <translation>载入 %s 时发生错误</translation>
+    </message>
+    <message>
+        <source>Error loading %s: Private keys can only be disabled during creation</source>
+        <translation>加载 %s 时出错：只能在创建钱包时禁用私钥。</translation>
     </message>
     <message>
         <source>Error loading %s: Wallet corrupted</source>
@@ -3324,6 +3403,10 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of "100 satoshis p
         <translation>指定的区块目录"%s"不存在。</translation>
     </message>
     <message>
+        <source>Unable to create the PID file '%s': %s</source>
+        <translation>无法创建PID文件'%s': %s</translation>
+    </message>
+    <message>
         <source>Upgrading txindex database</source>
         <translation>正在升级交易索引数据库</translation>
     </message>
@@ -3372,18 +3455,6 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of "100 satoshis p
         <translation>无法生成密钥</translation>
     </message>
     <message>
-        <source>Unsupported argument -benchmark ignored, use -debug=bench.</source>
-        <translation>忽略不支持的选项 -benchmark，使用 -debug=bench</translation>
-    </message>
-    <message>
-        <source>Unsupported argument -debugnet ignored, use -debug=net.</source>
-        <translation>忽略不支持的选项 -debugnet，使用 -debug=net。</translation>
-    </message>
-    <message>
-        <source>Unsupported argument -tor found, use -onion.</source>
-        <translation>忽略不支持的选项 -tor，使用 -oinon</translation>
-    </message>
-    <message>
         <source>Unsupported logging category %s=%s.</source>
         <translation>不支持的日志分类 %s=%s.</translation>
     </message>
@@ -3420,16 +3491,16 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of "100 satoshis p
         <translation>您需要使用 -reindex 重新构建数据库以返回未修剪的模式。这将重新下载整个区块链</translation>
     </message>
     <message>
-        <source>Error loading %s: You can't disable HD on an already existing HD wallet</source>
-        <translation>加载%s发生错误：不能对已存在的HD钱包停用HD功能。</translation>
-    </message>
-    <message>
         <source>Error reading from database, shutting down.</source>
         <translation>读取数据库出错，关闭中。</translation>
     </message>
     <message>
         <source>Error upgrading chainstate database</source>
         <translation>升级链状态数据库出错</translation>
+    </message>
+    <message>
+        <source>Error: Disk space is low for %s</source>
+        <translation>错误： %s 所在的磁盘空间低。</translation>
     </message>
     <message>
         <source>Information</source>
@@ -3460,6 +3531,10 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of "100 satoshis p
         <translation>因为系统的限制，将 -maxconnections 参数从 %d 降到了 %d</translation>
     </message>
     <message>
+        <source>Section [%s] is not recognized.</source>
+        <translation>无法识别配置章节 [%s]。</translation>
+    </message>
+    <message>
         <source>Signing transaction failed</source>
         <translation>签署交易失败</translation>
     </message>
@@ -3474,6 +3549,12 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of "100 satoshis p
     <message>
         <source>Specified -walletdir "%s" is not a directory</source>
         <translation>以-walletdir指定的路径“%s”不是个目录</translation>
+    </message>
+    <message>
+        <source>The specified config file %s does not exist
+</source>
+        <translation>指定的配置文件 %s 不存在
+</translation>
     </message>
     <message>
         <source>The transaction amount is too small to pay the fee</source>
@@ -3528,10 +3609,6 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of "100 satoshis p
         <translation>参数 -maxtxfee 设定了很高的金额！这是你一次交易就有可能付出的最高手续费。</translation>
     </message>
     <message>
-        <source>Error loading %s: You can't enable HD on an already existing non-HD wallet</source>
-        <translation>加载%s发生错误：不能对已存在的非HD钱包启用HD功能</translation>
-    </message>
-    <message>
         <source>This is the transaction fee you may pay when fee estimates are not available.</source>
         <translation>这是在费用估计不可用时你可能会支付的交易费。</translation>
     </message>
@@ -3542,18 +3619,6 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of "100 satoshis p
     <message>
         <source>Total length of network version string (%i) exceeds maximum length (%i). Reduce the number or size of uacomments.</source>
         <translation>网络版本字符串的总长度 (%i) 超过最大长度 (%i) 了。请减少 uacomment 参数的数目或长度。</translation>
-    </message>
-    <message>
-        <source>Unsupported argument -socks found. Setting SOCKS version isn't possible anymore, only SOCKS5 proxies are supported.</source>
-        <translation>找到不再支持的 -socks 参数。现在只支持 SOCKS5 协议的代理服务器，因此不可以指定 SOCKS 协议版本。</translation>
-    </message>
-    <message>
-        <source>Unsupported argument -whitelistalwaysrelay ignored, use -whitelistrelay and/or -whitelistforcerelay.</source>
-        <translation>一个不被支持的参数 -whitelistalwaysrelay 被忽略了。请使用 -whitelistrelay 或者 -whitelistforcerelay.</translation>
-    </message>
-    <message>
-        <source>Warning: Unknown block versions being mined! It's possible unknown rules are in effect</source>
-        <translation>警告: 未知的区块版本被挖掘！未知规则可能已生效</translation>
     </message>
     <message>
         <source>Warning: Wallet file corrupt, data salvaged! Original %s saved as %s in %s; if your balance or transactions are incorrect you should restore from a backup.</source>
@@ -3593,7 +3658,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of "100 satoshis p
     </message>
     <message>
         <source>Transaction has too long of a mempool chain</source>
-        <translation>此交易在内存池中的交易链太长</translation>
+        <translation>此交易在内存池中串接了太多其他交易</translation>
     </message>
     <message>
         <source>Transaction must have at least one recipient</source>
@@ -3608,8 +3673,16 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of "100 satoshis p
         <translation>金额不足</translation>
     </message>
     <message>
-        <source>Can't generate a change-address key. Private keys are disabled for this wallet.</source>
-        <translation>无法生成一个找零地址密钥。对于此钱包，私钥已被禁用。</translation>
+        <source>Cannot upgrade a non HD split wallet without upgrading to support pre split keypool. Please use -upgradewallet=169900 or -upgradewallet with no version specified.</source>
+        <translation>如果要对“未进行分割的HD钱包”（non HD split wallet）进行升级，就必须先把它升级到支持“未进行分割的密钥池（pre split keypool）”的版本，否则无法进行升级。请使用指定了具体版本号的 -upgradewallet=169900 参数，或者直接使用不指定具体版本号的 -upgradewallet 参数重启钱包。</translation>
+    </message>
+    <message>
+        <source>Fee estimation failed. Fallbackfee is disabled. Wait a few blocks or enable -fallbackfee.</source>
+        <translation>手续费估计失败。而且备用手续费估计（fallbackfee）已被禁用。请再等一些区块，或者通过-fallbackfee参数启用备用手续费估计。</translation>
+    </message>
+    <message>
+        <source>Warning: Private keys detected in wallet {%s} with disabled private keys</source>
+        <translation>警告：在已经禁用私钥的钱包 {%s} 中仍然检测到私钥</translation>
     </message>
     <message>
         <source>Cannot write to data directory '%s'; check permissions.</source>

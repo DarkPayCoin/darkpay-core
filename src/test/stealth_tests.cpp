@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018 The Particl Core developers
+// Copyright (c) 2017-2018 The Particl Core developers – modded for DarkPay
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -8,16 +8,18 @@
 #include <pubkey.h>
 #include <key_io.h>
 #include <keystore.h>
-#include <test/setup_common.h>
-#include <util/strencodings.h>
 
+#include <util/strencodings.h>
 #include <serialize.h>
 #include <streams.h>
+
+#include <test/test_bitcoin.h>
+
 #include <string>
 
 #include <boost/test/unit_test.hpp>
 
-BOOST_FIXTURE_TEST_SUITE(stealth_tests, ParticlBasicTestingSetup)
+BOOST_FIXTURE_TEST_SUITE(stealth_tests, DarkpayBasicTestingSetup)
 
 static const std::string strSecret1C("GzFRfngjf5aHMuAzWDZWzJ8eYqMzp29MmkCp6NgzkXFibrh45tTc");
 static const std::string strSecret2C("H5hDgLvFjLcZG9jyxkUTJ28P6N5T7iMBQ79boMuaPafxXuy8hb9n");

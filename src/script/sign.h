@@ -77,7 +77,7 @@ struct FlatSigningProvider final : public SigningProvider
 {
     std::map<CScriptID, CScript> scripts;
     std::map<CKeyID, CPubKey> pubkeys;
-    std::map<CKeyID, std::pair<CPubKey, KeyOriginInfo>> origins;
+    std::map<CKeyID, KeyOriginInfo> origins;
     std::map<CKeyID, CKey> keys;
 
     bool GetCScript(const CScriptID& scriptid, CScript& script) const override;
@@ -94,7 +94,7 @@ public:
     virtual ~BaseSignatureCreator() {}
     virtual const BaseSignatureChecker& Checker() const =0;
 
-    virtual bool IsParticlVersion() const { return false; }
+    virtual bool IsDarkpayVersion() const { return false; }
     virtual bool IsCoinStake() const { return false; }
 
     /** Create a singular (non-script) signature. */
@@ -114,7 +114,7 @@ public:
     const BaseSignatureChecker& Checker() const override { return checker; }
     bool CreateSig(const SigningProvider& provider, std::vector<unsigned char>& vchSig, const CKeyID& keyid, const CScript& scriptCode, SigVersion sigversion) const override;
 
-    bool IsParticlVersion() const override { return txTo && txTo->IsParticlVersion(); }
+    bool IsDarkpayVersion() const override { return txTo && txTo->IsDarkpayVersion(); }
     bool IsCoinStake() const override { return txTo && txTo->IsCoinStake(); }
 };
 
@@ -122,7 +122,7 @@ public:
 extern const BaseSignatureCreator& DUMMY_SIGNATURE_CREATOR;
 /** A signature creator that just produces 72-byte empty signatures. */
 extern const BaseSignatureCreator& DUMMY_MAXIMUM_SIGNATURE_CREATOR;
-extern const BaseSignatureCreator& DUMMY_SIGNATURE_CREATOR_PARTICL;
+extern const BaseSignatureCreator& DUMMY_SIGNATURE_CREATOR_DARKPAY;
 
 typedef std::pair<CPubKey, std::vector<unsigned char>> SigPair;
 

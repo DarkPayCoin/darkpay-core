@@ -1,4 +1,4 @@
-// Copyright (c) 2018 The Particl Core developers
+// Copyright (c) 2018 The Particl Core developers – modded for DarkPay
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -6,7 +6,6 @@
 #include <usbdevice/debugdevice.h>
 #include <rpc/server.h>
 #include <rpc/util.h>
-#include <rpc/rawtransaction_util.h>
 #include <util/strencodings.h>
 #include <key_io.h>
 #include <key/extkey.h>
@@ -394,7 +393,7 @@ static UniValue getdevicexpub(const JSONRPCRequest &request)
                     {"accountpath", RPCArg::Type::STR, /* default */ GetDefaultAccountPath(), "Account path, set to empty string to ignore."},
                 },
                 RPCResult{
-            "\"address\"              (string) The particl extended public key\n"
+            "\"address\"              (string) The darkpay extended public key\n"
                 },
                 RPCExamples{
             HelpExampleCli("getdevicexpub", "\"0\"") +
@@ -465,7 +464,7 @@ static UniValue devicesignrawtransaction(const JSONRPCRequest &request)
 {
     #ifdef ENABLE_WALLET
     std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
-    CHDWallet *const pwallet = GetParticlWallet(wallet.get());
+    CHDWallet *const pwallet = GetDarkpayWallet(wallet.get());
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
         return NullUniValue;
     }
@@ -771,7 +770,7 @@ static UniValue devicesignrawtransaction(const JSONRPCRequest &request)
 static UniValue initaccountfromdevice(const JSONRPCRequest &request)
 {
     std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
-    CHDWallet *const pwallet = GetParticlWallet(wallet.get());
+    CHDWallet *const pwallet = GetDarkpayWallet(wallet.get());
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp))
         return NullUniValue;
 
@@ -995,7 +994,7 @@ static UniValue initaccountfromdevice(const JSONRPCRequest &request)
             pwallet->ExtKeyRemoveAccountFromMapsAndFree(sea);
             throw JSONRPCError(RPC_INTERNAL_ERROR, "TxnCommit failed.");
         }
-    }
+    } // pwallet->cs_wallet
 
     if (nScanFrom >= 0) {
         pwallet->RescanFromTime(nScanFrom, reserver, true /* update */);
@@ -1022,7 +1021,7 @@ static UniValue initaccountfromdevice(const JSONRPCRequest &request)
 static UniValue devicegetnewstealthaddress(const JSONRPCRequest &request)
 {
     std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
-    CHDWallet *const pwallet = GetParticlWallet(wallet.get());
+    CHDWallet *const pwallet = GetDarkpayWallet(wallet.get());
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
         return NullUniValue;
     }
@@ -1030,7 +1029,7 @@ static UniValue devicegetnewstealthaddress(const JSONRPCRequest &request)
     if (request.fHelp || request.params.size() > 4)
         throw std::runtime_error(
             RPCHelpMan{"devicegetnewstealthaddress",
-                "\nReturns a new Particl stealth address for receiving payments." +
+                "\nReturns a new Darkpay stealth address for receiving payments." +
                     HelpRequiringPassphrase(pwallet) + "\n",
                 {
                     {"label", RPCArg::Type::STR, /* default */ "", "If \"label\" is specified the new address will be added to the address book."},
@@ -1043,7 +1042,7 @@ static UniValue devicegetnewstealthaddress(const JSONRPCRequest &request)
                     {"bech32", RPCArg::Type::BOOL, /* default */ "true", "Use Bech32 encoding."},
                 },
                 RPCResult{
-            "\"address\"              (string) The new particl stealth address\n"
+            "\"address\"              (string) The new darkpay stealth address\n"
                 },
                 RPCExamples{
              HelpExampleCli("devicegetnewstealthaddress", "\"lblTestSxAddrPrefix\" 3 \"0b101\"") +

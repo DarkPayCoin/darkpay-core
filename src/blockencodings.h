@@ -161,7 +161,7 @@ public:
     inline void SerializationOp(Stream& s, Operation ser_action) {
         READWRITE(header);
 
-        if (header.IsParticlVersion())
+        if (header.IsDarkpayVersion())
             READWRITE(vchBlockSig);
         READWRITE(nonce);
 

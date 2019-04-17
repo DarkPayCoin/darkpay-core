@@ -1,9 +1,9 @@
-// Copyright (c) 2017 The Particl Core developers
+// Copyright (c) 2017 The Particl Core developers – modded for DarkPay
 // Distributed under the MIT/X11 software license, see the accompanying
 // file license.txt or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PARTICL_KEY_KEYUTIL_H
-#define PARTICL_KEY_KEYUTIL_H
+#ifndef DARKPAY_KEY_KEYUTIL_H
+#define DARKPAY_KEY_KEYUTIL_H
 
 #include <vector>
 #include <inttypes.h>
@@ -13,4 +13,4 @@ void AppendChecksum(std::vector<uint8_t> &data);
 bool VerifyChecksum(const std::vector<uint8_t> &data);
 
 
-#endif  // PARTICL_KEY_KEYUTIL_H
+#endif  // DARKPAY_KEY_KEYUTIL_H

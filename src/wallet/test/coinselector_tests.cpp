@@ -8,7 +8,7 @@
 #include <amount.h>
 #include <primitives/transaction.h>
 #include <random.h>
-#include <test/setup_common.h>
+#include <test/test_bitcoin.h>
 #include <wallet/test/wallet_test_fixture.h>
 
 #include <boost/test/unit_test.hpp>
@@ -29,7 +29,7 @@ typedef std::set<CInputCoin> CoinSet;
 
 static std::vector<COutput> vCoins;
 static auto testChain = interfaces::MakeChain();
-static CWallet testWallet(testChain.get(), WalletLocation(), WalletDatabase::CreateDummy());
+static CWallet testWallet(*testChain, WalletLocation(), WalletDatabase::CreateDummy());
 static CAmount balance = 0;
 
 CoinEligibilityFilter filter_standard(1, 6, 0);

@@ -9,11 +9,11 @@
 
 import time
 
-from test_framework.test_particl import ParticlTestFramework
+from test_framework.test_darkpay import DarkpayTestFramework
 from test_framework.util import connect_nodes, assert_equal
 
 
-class AddressIndexTest(ParticlTestFramework):
+class AddressIndexTest(DarkpayTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = 4
@@ -151,7 +151,7 @@ class AddressIndexTest(ParticlTestFramework):
         #print(json.dumps(ro, indent=4, default=self.jsonDecimal))
 
         txsigned = self.nodes[0].signrawtransactionwithwallet(txfunded['hex'])
-        sent_txid = self.nodes[0].sendrawtransaction(txsigned['hex'], 0)
+        sent_txid = self.nodes[0].sendrawtransaction(txsigned['hex'], True)
 
         self.stakeBlocks(1)
 
@@ -179,7 +179,7 @@ class AddressIndexTest(ParticlTestFramework):
         txfunded = self.nodes[2].fundrawtransaction(tx)
 
         txsigned = self.nodes[2].signrawtransactionwithwallet(txfunded['hex'])
-        sent_txid = self.nodes[2].sendrawtransaction(txsigned['hex'], 0)
+        sent_txid = self.nodes[2].sendrawtransaction(txsigned['hex'], True)
         print("sent_txid", sent_txid)
         ro = self.nodes[0].decoderawtransaction(txsigned['hex'])
 
@@ -334,7 +334,7 @@ class AddressIndexTest(ParticlTestFramework):
         tx.vout = [CTxOut(amount, scriptPubKey3)]
         tx.rehash()
         signed_tx = self.nodes[2].signrawtransaction(binascii.hexlify(tx.serialize()).decode("utf-8"))
-        memtxid1 = self.nodes[2].sendrawtransaction(signed_tx["hex"], 0)
+        memtxid1 = self.nodes[2].sendrawtransaction(signed_tx["hex"], True)
         time.sleep(2)
 
         tx2 = CTransaction()
@@ -348,7 +348,7 @@ class AddressIndexTest(ParticlTestFramework):
         ]
         tx2.rehash()
         signed_tx2 = self.nodes[2].signrawtransaction(binascii.hexlify(tx2.serialize()).decode("utf-8"))
-        memtxid2 = self.nodes[2].sendrawtransaction(signed_tx2["hex"], 0)
+        memtxid2 = self.nodes[2].sendrawtransaction(signed_tx2["hex"], True)
         time.sleep(2)
 
         mempool = self.nodes[2].getaddressmempool({"addresses": [address3]})
@@ -375,7 +375,7 @@ class AddressIndexTest(ParticlTestFramework):
         tx.rehash()
         self.nodes[2].importprivkey(privKey3)
         signed_tx3 = self.nodes[2].signrawtransaction(binascii.hexlify(tx.serialize()).decode("utf-8"))
-        memtxid3 = self.nodes[2].sendrawtransaction(signed_tx3["hex"], 0)
+        memtxid3 = self.nodes[2].sendrawtransaction(signed_tx3["hex"], True)
         time.sleep(2)
 
         mempool3 = self.nodes[2].getaddressmempool({"addresses": [address3]})
@@ -408,7 +408,7 @@ class AddressIndexTest(ParticlTestFramework):
         tx.rehash()
         self.nodes[0].importprivkey(privkey1)
         signed_tx = self.nodes[0].signrawtransaction(binascii.hexlify(tx.serialize()).decode("utf-8"))
-        mem_txid = self.nodes[0].sendrawtransaction(signed_tx["hex"], 0)
+        mem_txid = self.nodes[0].sendrawtransaction(signed_tx["hex"], True)
 
         self.sync_all()
         mempool_deltas = self.nodes[2].getaddressmempool({"addresses": [address1]})

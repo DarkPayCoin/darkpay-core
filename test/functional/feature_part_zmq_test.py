@@ -9,11 +9,12 @@ import struct
 import time
 import base64
 
-from test_framework.test_particl import ParticlTestFramework
+from test_framework.test_darkpay import DarkpayTestFramework
 from test_framework.test_framework import SkipTest
+from test_framework.util import bytes_to_hex_str
 
 
-class ZMQTest(ParticlTestFramework):
+class ZMQTest(DarkpayTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = 2
@@ -28,14 +29,14 @@ class ZMQTest(ParticlTestFramework):
         except ImportError:
             raise SkipTest("python3-zmq module not available.")
 
-        # Check that particl has been built with ZMQ enabled
+        # Check that darkpay has been built with ZMQ enabled
         config = configparser.ConfigParser()
         if not self.options.configfile:
             self.options.configfile = os.path.dirname(__file__) + "/../config.ini"
         config.read_file(open(self.options.configfile))
 
         if not config["components"].getboolean("ENABLE_ZMQ"):
-            raise SkipTest("particld has not been built with zmq enabled.")
+            raise SkipTest("darkpayd has not been built with zmq enabled.")
 
         self.zmq = zmq
         self.zmqContext = zmq.Context()
@@ -105,7 +106,7 @@ class ZMQTest(ParticlTestFramework):
             msgSequence = struct.unpack('<I', msg[-1])[-1]
             if topic == 'hashtx' and msgSequence == 1:
                 fFound = True
-                zmqhash = msg[1].hex()
+                zmqhash = bytes_to_hex_str(msg[1])
                 assert(zmqhash == txnHash)
             elif topic == 'rawtx' and msgSequence == 1:
                 fFoundRawTx = True
@@ -115,7 +116,7 @@ class ZMQTest(ParticlTestFramework):
                 #CTransaction.deserialize
             elif topic == 'hashwtx' and msgSequence == 0:
                 fFoundWtx = True
-                zmqhash = msg[1][0:32].hex()
+                zmqhash = bytes_to_hex_str(msg[1][0:32])
                 assert(zmqhash == txnHash)
                 walletName = msg[1][32:].decode('utf-8')
                 assert(walletName == 'wallet_test')
@@ -141,7 +142,7 @@ class ZMQTest(ParticlTestFramework):
             msgSequence = struct.unpack('<I', msg[-1])[-1]
             if topic == 'hashblock' and msgSequence == 0:
                 fFound = True
-                blkhash = msg[1].hex()
+                blkhash = bytes_to_hex_str(msg[1])
                 besthash = nodes[1].getbestblockhash()
                 assert(blkhash == besthash)
                 break
@@ -182,7 +183,7 @@ class ZMQTest(ParticlTestFramework):
             topic = msg[0].decode('utf-8')
             if topic == 'smsg':
                 fFound = True
-                zmqhash = msg[1].hex()
+                zmqhash = bytes_to_hex_str(msg[1])
                 assert(zmqhash[:4] == '0300')  # version 3.0
                 assert(zmqhash[4:] == msgid)
                 break

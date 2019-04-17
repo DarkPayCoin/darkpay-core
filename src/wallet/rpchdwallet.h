@@ -1,15 +1,14 @@
-// Copyright (c) 2017 The Particl Core developers
+// Copyright (c) 2017 The Particl Core developers – modded for DarkPay
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #ifndef BITCOIN_WALLET_RPCHDWALLET_H
 #define BITCOIN_WALLET_RPCHDWALLET_H
 
-namespace interfaces {
-class Chain;
-class Handler;
-}
+class CRPCTable;
+class CHDWallet;
+class JSONRPCRequest;
 
-void RegisterHDWalletRPCCommands(interfaces::Chain& chain, std::vector<std::unique_ptr<interfaces::Handler>>& handlers);
+void RegisterHDWalletRPCCommands(CRPCTable &t);
 
 #endif //BITCOIN_WALLET_RPCHDWALLET_H

@@ -122,12 +122,8 @@
         <translation>&amp;Alilan ing Passphrase...</translation>
     </message>
     <message>
-        <source>&amp;Receiving addresses...</source>
-        <translation>Address king pamag-Tanggap</translation>
-    </message>
-    <message>
-        <source>Send coins to a Particl address</source>
-        <translation>Magpadalang barya king Particl address</translation>
+        <source>Send coins to a Darkpay address</source>
+        <translation>Magpadalang barya king Darkpay address</translation>
     </message>
     <message>
         <source>Backup wallet to another location</source>
@@ -150,12 +146,8 @@
         <translation>&amp;Beripikan ing message...</translation>
     </message>
     <message>
-        <source>Particl.</source>
-        <translation>Particl.</translation>
-    </message>
-    <message>
-        <source>Wallet</source>
-        <translation>Wallet</translation>
+        <source>Darkpay</source>
+        <translation>Darkpay</translation>
     </message>
     <message>
         <source>&amp;Show / Hide</source>
@@ -208,6 +200,10 @@
     <message>
         <source>Up to date</source>
         <translation>Makatuki ya king aldo</translation>
+    </message>
+    <message>
+        <source>&amp;Window</source>
+        <translation>&amp;Awang</translation>
     </message>
     <message>
         <source>Catching up...</source>
@@ -285,8 +281,8 @@
         <translation>Malaus ka</translation>
     </message>
     <message>
-        <source>Particl.</source>
-        <translation>Particl.</translation>
+        <source>Darkpay</source>
+        <translation>Darkpay</translation>
     </message>
     <message>
         <source>Error</source>
@@ -322,8 +318,8 @@
         <translation>&amp;Network</translation>
     </message>
     <message>
-        <source>Automatically open the Particl client port on the router. This only works when your router supports UPnP and it is enabled.</source>
-        <translation>Ibuklat yang antimanu ing Particl client port king router. Gagana yamu ini istung ing router mu susuporta yang UPnP at magsilbi ya.</translation>
+        <source>Automatically open the Darkpay client port on the router. This only works when your router supports UPnP and it is enabled.</source>
+        <translation>Ibuklat yang antimanu ing Darkpay client port king router. Gagana yamu ini istung ing router mu susuporta yang UPnP at magsilbi ya.</translation>
     </message>
     <message>
         <source>Map port using &amp;UPnP</source>
@@ -401,8 +397,8 @@
         <translation>Form</translation>
     </message>
     <message>
-        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Particl network after a connection is established, but this process has not completed yet.</source>
-        <translation>Ing makaltong impormasion mapalyaring luma ne. Ing kekang wallet otomatiku yang mag-synchronize keng Particl network istung mekakonekta ne king network, oneng ing prosesung ini ali ya pa kumpletu.</translation>
+        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Darkpay network after a connection is established, but this process has not completed yet.</source>
+        <translation>Ing makaltong impormasion mapalyaring luma ne. Ing kekang wallet otomatiku yang mag-synchronize keng Darkpay network istung mekakonekta ne king network, oneng ing prosesung ini ali ya pa kumpletu.</translation>
     </message>
     <message>
         <source>Your current spendable balance</source>
@@ -663,8 +659,8 @@
         <translation>Kopyan ing kasalungsungan pirma king system clipboard</translation>
     </message>
     <message>
-        <source>Sign the message to prove you own this Particl address</source>
-        <translation>Pirman ing mensayi ban patune na keka ya ining Particl address</translation>
+        <source>Sign the message to prove you own this Darkpay address</source>
+        <translation>Pirman ing mensayi ban patune na keka ya ining Darkpay address</translation>
     </message>
     <message>
         <source>Sign &amp;Message</source>
@@ -683,8 +679,8 @@
         <translation>&amp;Beripikan ing Mensayi</translation>
     </message>
     <message>
-        <source>Verify the message to ensure it was signed with the specified Particl address</source>
-        <translation>Beripikan ing mensayi ban asiguradu a me pirma ya ini gamit ing mepiling Particl address</translation>
+        <source>Verify the message to ensure it was signed with the specified Darkpay address</source>
+        <translation>Beripikan ing mensayi ban asiguradu a me pirma ya ini gamit ing mepiling Darkpay address</translation>
     </message>
     <message>
         <source>Verify &amp;Message</source>
@@ -725,6 +721,9 @@
     <name>UnitDisplayStatusBarControl</name>
     </context>
 <context>
+    <name>WalletController</name>
+    </context>
+<context>
     <name>WalletFrame</name>
     </context>
 <context>
@@ -736,8 +735,8 @@
 <context>
     <name>bitcoin-core</name>
     <message>
-        <source>Particl Core</source>
-        <translation>Kapilubluban ning Particl.</translation>
+        <source>Darkpay Core</source>
+        <translation>Kapilubluban ning Darkpay</translation>
     </message>
     <message>
         <source>Corrupted block database detected</source>

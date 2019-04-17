@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-# Copyright (c) 2017-2018 The Particl Core developers
+# Copyright (c) 2017-2018 The Particl Core developers – modded for DarkPay
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 import json
 
-from test_framework.test_particl import ParticlTestFramework
+from test_framework.test_darkpay import DarkpayTestFramework
 from test_framework.util import assert_raises_rpc_error, connect_nodes_bi
 
 
-class AnonTest(ParticlTestFramework):
+class AnonTest(DarkpayTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = 3

@@ -5,7 +5,7 @@
 
 #include <wallet/walletdb.h>
 
-#include <consensus/tx_check.h>
+#include <consensus/tx_verify.h>
 #include <consensus/validation.h>
 #include <fs.h>
 #include <key_io.h>
@@ -305,7 +305,7 @@ ReadKeyValue(CWallet* pwallet, CDataStream& ssKey, CDataStream& ssValue,
                 return false;
             }
         }
-        else if (strType == "mkey" && !fParticlMode)
+        else if (strType == "mkey" && !fDarkpayMode)
         {
             unsigned int nID;
             ssKey >> nID;
@@ -429,15 +429,8 @@ ReadKeyValue(CWallet* pwallet, CDataStream& ssKey, CDataStream& ssValue,
                 strType != "minversion" && strType != "acentry") {
             wss.m_unknown_records++;
         }
-    } catch (const std::exception& e) {
-        if (strErr.empty()) {
-            strErr = e.what();
-        }
-        return false;
-    } catch (...) {
-        if (strErr.empty()) {
-            strErr = "Caught unknown exception in ReadKeyValue";
-        }
+    } catch (...)
+    {
         return false;
     }
     return true;
@@ -447,7 +440,7 @@ bool WalletBatch::IsKeyType(const std::string& strType)
 {
     return (strType== "key" || strType == "wkey" ||
             strType == "mkey" || strType == "ckey")
-            || (fParticlMode &&
+            || (fDarkpayMode &&
                 (strType == "eacc" || strType == "ek32"
                 || strType == "eknm" || strType == "sxad" || strType == "espk"));
 }
@@ -687,7 +680,7 @@ void MaybeCompactWalletDB()
     }
 
     // Make this thread recognisable as the wallet flushing thread
-    RenameThread("particl-wallet");
+    RenameThread("darkpay-wallet");
 
     for (const std::shared_ptr<CWallet>& pwallet : GetWallets()) {
         WalletDatabase& dbh = pwallet->GetDBHandle();
@@ -731,7 +724,7 @@ bool WalletBatch::RecoverKeysOnlyFilter(void *callbackData, CDataStream &ssKey, 
     std::string strType, strErr;
 
     bool fReadOK;
-    if (fParticlMode)
+    if (fDarkpayMode)
     {
         try {
             ssKey >> strType;

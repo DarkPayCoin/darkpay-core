@@ -84,14 +84,6 @@ bool IsWalletLoaded(const fs::path& wallet_path)
     return database && database->IsDatabaseLoaded(database_filename);
 }
 
-fs::path WalletDataFilePath(const fs::path& wallet_path)
-{
-    fs::path env_directory;
-    std::string database_filename;
-    SplitWalletPath(wallet_path, env_directory, database_filename);
-    return env_directory / database_filename;
-}
-
 /**
  * @param[in] wallet_path Path to wallet directory. Or (for backwards compatibility only) a path to a berkeley btree data file inside a wallet directory.
  * @param[out] database_filename Filename of berkeley btree data file inside the wallet directory.
@@ -177,7 +169,7 @@ bool BerkeleyEnvironment::Open(bool retry)
     fs::path pathIn = strPath;
     TryCreateDirectories(pathIn);
     if (!LockDirectory(pathIn, ".walletlock")) {
-        LogPrintf("Cannot obtain a lock on wallet directory %s. Another instance of particl may be using it.\n", strPath);
+        LogPrintf("Cannot obtain a lock on wallet directory %s. Another instance of darkpay may be using it.\n", strPath);
         return false;
     }
 
@@ -393,7 +385,7 @@ bool BerkeleyBatch::Recover(const fs::path& file_path, void *callbackDataIn, boo
             if (!(*recoverKVcallback)(callbackDataIn, ssKey, ssValue))
                 continue;
 
-            if (fParticlMode)
+            if (fDarkpayMode)
             {
                 Dbt datKey(&row.first[0], row.first.size());
                 Dbt datValue(ssValue.data(), ssValue.size());

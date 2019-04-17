@@ -1,8 +1,7 @@
 ---
-name: "particl-linux-0.18.99.0"
+name: "darkpay-linux-0.18.0.6"
 enable_cache: true
 sudo: true
-distro: "ubuntu"
 suites:
 - "bionic"
 architectures:
@@ -32,20 +31,20 @@ packages:
 - "faketime"
 - "bsdmainutils"
 - "ca-certificates"
-- "python3"
+- "python"
 - "libudev-dev"
 remotes:
-- "url": "https://github.com/particl/particl-core.git"
-  "dir": "particl-core"
+- "url": "https://github.com/DarkPayCoin/darkpay-core.git"
+  "dir": "darkpay-core"
 files: []
 script: |
+  set -e -o pipefail
   # prepare
   sudo dpkg --add-architecture i386
   sudo apt-get update -y
   #sudo apt-get install -y --force-yes libudev1:i386
   sudo ln -sf /usr/include/asm-generic /usr/include/asm
   sudo ln -sf /usr/include/x86_64-linux-gnu/asm/byteorder.h /usr/include/asm/byteorder.h
-  set -e -o pipefail
 
   WRAP_DIR=$HOME/wrapped
   HOSTS="i686-pc-linux-gnu x86_64-linux-gnu arm-linux-gnueabihf aarch64-linux-gnu riscv64-linux-gnu"
@@ -134,7 +133,7 @@ script: |
   chmod +x ${WRAP_DIR}/${prog}
   done
 
-  cd particl-core
+  cd darkpay-core
   BASEPREFIX=`pwd`/depends
   # Build dependencies for each host
   for i in $HOSTS; do
@@ -170,13 +169,13 @@ script: |
   ./autogen.sh
   CONFIG_SITE=${BASEPREFIX}/`echo "${HOSTS}" | awk '{print $1;}'`/share/config.site ./configure --prefix=/
   make dist
-  SOURCEDIST=`echo particl-*.tar.gz`
+  SOURCEDIST=`echo darkpay-*.tar.gz`
   DISTNAME=`echo ${SOURCEDIST} | sed 's/.tar.*//'`
   # Correct tar file order
   mkdir -p temp
   pushd temp
   tar xf ../$SOURCEDIST
-  find particl-* | sort | tar --no-recursion --mode='u+rw,go+r-w,a+X' --owner=0 --group=0 -c -T - | gzip -9n > ../$SOURCEDIST
+  find darkpay-* | sort | tar --no-recursion --mode='u+rw,go+r-w,a+X' --owner=0 --group=0 -c -T - | gzip -9n > ../$SOURCEDIST
   popd
 
   # Workaround for tarball not building with the bare tag version (prep)

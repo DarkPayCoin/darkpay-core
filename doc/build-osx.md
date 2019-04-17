@@ -82,8 +82,6 @@ Bitcoin Core is now available at `./src/bitcoind`
 
 Before running, you may create an empty configuration file:
 
-    mkdir -p "/Users/${USER}/Library/Application Support/Bitcoin"
-
     touch "/Users/${USER}/Library/Application Support/Bitcoin/bitcoin.conf"
 
     chmod 600 "/Users/${USER}/Library/Application Support/Bitcoin/bitcoin.conf"

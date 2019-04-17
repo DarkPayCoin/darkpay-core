@@ -1,12 +1,12 @@
-// Copyright (c) 2018 The Particl Core developers
+// Copyright (c) 2018 The Particl Core developers – modded for DarkPay
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PARTICL_INSIGHT_RPC_H
-#define PARTICL_INSIGHT_RPC_H
+#ifndef DARKPAY_INSIGHT_RPC_H
+#define DARKPAY_INSIGHT_RPC_H
 
 class CRPCTable;
 
 void RegisterInsightRPCCommands(CRPCTable &t);
 
-#endif // PARTICL_INSIGHT_RPC_H
+#endif // DARKPAY_INSIGHT_RPC_H

@@ -1,11 +1,11 @@
-// Copyright (c) 2017-2019 The Particl Core developers
+// Copyright (c) 2017-2018 The Particl Core developers – modded for DarkPay
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PARTICL_WALLET_TEST_HDWALLET_TEST_FIXTURE_H
-#define PARTICL_WALLET_TEST_HDWALLET_TEST_FIXTURE_H
+#ifndef DARKPAY_WALLET_TEST_HDWALLET_TEST_FIXTURE_H
+#define DARKPAY_WALLET_TEST_HDWALLET_TEST_FIXTURE_H
 
-#include <test/setup_common.h>
+#include <test/test_bitcoin.h>
 #include <interfaces/chain.h>
 
 class CHDWallet;
@@ -17,11 +17,11 @@ struct HDWalletTestingSetup: public TestingSetup {
     ~HDWalletTestingSetup();
 
     std::unique_ptr<interfaces::Chain> m_chain = interfaces::MakeChain();
-    std::unique_ptr<interfaces::ChainClient> m_chain_client = interfaces::MakeWalletClient(*m_chain, {});
+    std::unique_ptr<interfaces::Chain::Lock> m_locked_chain = m_chain->assumeLocked();  // Temporary. Removed in upcoming lock cleanup
     std::shared_ptr<CHDWallet> pwalletMain;
 };
 
 std::string StripQuotes(std::string s);
 
-#endif // PARTICL_WALLET_TEST_HDWALLET_TEST_FIXTURE_H
+#endif // DARKPAY_WALLET_TEST_HDWALLET_TEST_FIXTURE_H
 

@@ -1,5 +1,5 @@
 // Copyright (c) 2014-2016 The ShadowCoin developers
-// Copyright (c) 2017-2019 The Particl Core developers
+// Copyright (c) 2017-2019 The Particl Core developers – modded for DarkPay
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -1729,7 +1729,7 @@ static bool ScanBlock(CSMSG &smsg, const CBlock &block, SecMsgDB &addrpkdb,
     for (const auto &tx : block.vtx) {
         // Harvest public keys from coinstake txns
 
-        if (!tx->IsParticlVersion()) // skip legacy txns
+        if (!tx->IsDarkpayVersion()) // skip legacy txns
             continue;
 
         for (const auto &txin : tx->vin) {
@@ -3284,6 +3284,7 @@ int CSMSG::Validate(const uint8_t *pHeader, const uint8_t *pPayload, uint32_t nP
     LOCK(cs_main);
     target.SetCompact(GetSmsgDifficulty(psmsg->timestamp, true));
     }
+    //LogPrintf("[rm] target_compact %x\n", target_compact);
 
     if (UintToArith256(msg_hash) <= target) {
         rv = SMSG_NO_ERROR; // smsg is valid
@@ -3846,7 +3847,7 @@ int CSMSG::FundMsg(SecureMessage &smsg, std::string &sError, bool fTestFee, CAmo
         return errorN(SMSG_GENERAL_ERROR, sError, __func__, "Message hash failed.");
     }
 
-    txFund.nVersion = PARTICL_TXN_VERSION;
+    txFund.nVersion = DARKPAY_TXN_VERSION;
 
     size_t nMsgBytes = SMSG_HDR_LEN + smsg.nPayload;
 
@@ -3902,12 +3903,12 @@ int CSMSG::FundMsg(SecureMessage &smsg, std::string &sError, bool fTestFee, CAmo
         CWalletTx wtx(pwallet.get(), MakeTransactionRef(txFund));
 
         CValidationState state;
-        if (!wtx.AcceptToMemoryPool(*locked_chain, state, m_absurd_smsg_fee)) {
+        if (!wtx.AcceptToMemoryPool(*locked_chain, m_absurd_smsg_fee, state)) {
             return errorN(SMSG_GENERAL_ERROR, sError, __func__, "Transaction cannot be broadcast immediately: %s.", state.GetRejectReason());
         }
 
         pwallet->AddToWallet(wtx);
-        wtx.RelayWalletTransaction(*locked_chain);
+        wtx.RelayWalletTransaction(*locked_chain, g_connman.get());
     }
     memcpy(smsg.pPayload+(smsg.nPayload-32), txfundId.begin(), 32);
 #else

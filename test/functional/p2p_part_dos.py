@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-# Copyright (c) 2017-2018 The Particl Core developers
+# Copyright (c) 2017-2018 The Particl Core developers – modded for DarkPay
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 import time
 
-from test_framework.test_particl import ParticlTestFramework
+from test_framework.test_darkpay import DarkpayTestFramework
 from test_framework.messages import CBlockHeader, msg_headers
 from test_framework.util import connect_nodes
 
@@ -13,7 +13,7 @@ _compactblocks = __import__('p2p_compactblocks')
 TestP2PConn = _compactblocks.TestP2PConn
 
 
-class DoSTest(ParticlTestFramework):
+class DoSTest(DarkpayTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = 2
@@ -68,7 +68,7 @@ class DoSTest(ParticlTestFramework):
 
         p2p_conns = []
         for i in range(dos_nodes):
-            p2p_conns.append(self.nodes[i].add_p2p_connection(TestP2PConn(2)))
+            p2p_conns.append(self.nodes[i].add_p2p_connection(TestP2PConn()))
 
         nodes[0].extkeyimportmaster('pact mammal barrel matrix local final lecture chunk wasp survey bid various book strong spread fall ozone daring like topple door fatigue limb olympic', '', 'true')
         nodes[0].getnewextaddress('lblExtTest')

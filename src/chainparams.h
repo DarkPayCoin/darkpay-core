@@ -170,7 +170,7 @@ protected:
     uint32_t nTargetTimespan;
 
     uint32_t nStakeTimestampMask = (1 << 4) -1; // 4 bits, every kernel stake hash will change every 16 seconds
-    int64_t nCoinYearReward = 2 * CENT; // 2% per year
+    int64_t nCoinYearReward = 20 * CENT; // 2% per year
 
     std::vector<CImportedCoinbaseTxn> vImportedCoinbaseTxns;
     uint32_t nLastImportHeight;       // set from vImportedCoinbaseTxns
@@ -220,7 +220,7 @@ void SelectParams(const std::string& chain);
  * Toggle old parameters for unit tests
  */
 void SetOldParams(std::unique_ptr<CChainParams> &params);
-void ResetParams(std::string sNetworkId, bool fParticlModeIn);
+void ResetParams(std::string sNetworkId, bool fDarkpayModeIn);
 
 /**
  * mutable handle to regtest params

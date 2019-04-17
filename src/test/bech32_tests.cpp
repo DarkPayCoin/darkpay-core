@@ -4,11 +4,11 @@
 
 #include <key_io.h>
 #include <bech32.h>
-#include <test/setup_common.h>
+#include <test/test_bitcoin.h>
 
 #include <boost/test/unit_test.hpp>
 
-BOOST_FIXTURE_TEST_SUITE(bech32_tests, ParticlBasicTestingSetup)
+BOOST_FIXTURE_TEST_SUITE(bech32_tests, DarkpayBasicTestingSetup)
 
 std::vector<std::pair<std::string, std::string> > testsPass = {
     std::make_pair("PZdYWHgyhuG7NHVCzEkkx3dcLKurTpvmo6", "ph1z2kuclaye2ktkndy7mdpw3zk0nck78a7u6h8hm"),

@@ -6,7 +6,7 @@
 
 export LC_ALL=C.UTF-8
 
-cd "build/particl-$HOST" || (echo "could not enter distdir build/particl-$HOST"; exit 1)
+cd "build/darkpay-$HOST" || (echo "could not enter distdir build/darkpay-$HOST"; exit 1)
 
 if [ "$RUN_UNIT_TESTS" = "true" ]; then
   BEGIN_FOLD unit-tests
@@ -24,7 +24,7 @@ echo "$RUN_FUNCTIONAL_TESTS"
 
 if [ "$RUN_FUNCTIONAL_TESTS" = "true" ]; then
   BEGIN_FOLD functional-tests
-  DOCKER_EXEC test/functional/test_runner.py --ci --combinedlogslen=4000 --coverage --quiet --failfast --particl --insight --bitcoin
+  DOCKER_EXEC test/functional/test_runner.py --ci --combinedlogslen=4000 --coverage --quiet --failfast --darkpay --insight --bitcoin
   END_FOLD
 fi
 

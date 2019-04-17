@@ -25,7 +25,6 @@
 #include <ui_interface.h>
 #include <txmempool.h>
 #include <policy/fees.h>
-#include <util/fees.h>
 #include <wallet/fees.h>
 #include <wallet/wallet.h>
 #include <wallet/hdwallet.h>
@@ -1018,7 +1017,7 @@ void SendCoinsDialog::coinControlChangeEdited(const QString& text)
         }
         else if (!IsValidDestination(dest)) // Invalid address
         {
-            ui->labelCoinControlChangeLabel->setText(tr("Warning: Invalid Particl address"));
+            ui->labelCoinControlChangeLabel->setText(tr("Warning: Invalid Darkpay address"));
         }
         else // Valid address
         {

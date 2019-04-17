@@ -1,7 +1,7 @@
-Contributing to Particl Core
+Contributing to Darkpay Core
 ============================
 
-The Particl project operates an open contributor model where anyone is
+The Darkpay project operates an open contributor model where anyone is
 welcome to contribute towards development in the form of peer review, testing
 and patches. This document explains the practical process and guidelines for
 contributing.
@@ -17,7 +17,7 @@ release cycle, overall merging, moderation and appointment of maintainers.
 Communication Channels
 ----------------------
 
-Most communication about Particl development happens on [#particl-dev:matrix.org](https://riot.im/app/#/room/#particl-dev:matrix.org), in the Particl Open Development channel on Riot. The easiest way to participate on Riot is
+Most communication about Darkpay development happens on [#darkpay-dev:matrix.org](https://riot.im/app/#/room/#darkpay-dev:matrix.org), in the Darkpay Open Development channel on Riot. The easiest way to participate on Riot is
 with the web client, [riot.im](https://riot.im/app/). Desktop downloads also available.
 
 Discussion about code base improvements happens in GitHub issues and on pull
@@ -49,7 +49,7 @@ Commit messages should be verbose by default consisting of a short subject line
 paragraph(s), unless the title alone is self-explanatory (like "Corrected typo
 in init.cpp") in which case a single title line is sufficient. Commit messages should be
 helpful to people reading your code in the future, so explain the reasoning for
-your decisions. Further explanation [here](https://chris.beams.io/posts/git-commit/).
+your decisions. Further explanation [here](http://chris.beams.io/posts/git-commit/).
 
 If a particular commit references another issue, please add the reference. For
 example: `refs #1234` or `fixes #4321`. Using the `fixes` or `closes` keywords
@@ -186,9 +186,9 @@ workload on reviewing.
 "Decision Making" Process
 -------------------------
 
-The following applies to code changes to the Particl project..
+The following applies to code changes to the Darkpay project..
 
-Whether a pull request is merged into Particl Core rests with the project merge
+Whether a pull request is merged into Darkpay Core rests with the project merge
 maintainers and ultimately the project lead.
 
 Maintainers will take into consideration if a patch is in line with the general
@@ -206,7 +206,7 @@ In general, all pull requests must:
   - Where bugs are fixed, where possible, there should be unit tests
     demonstrating the bug and also proving the fix. This helps prevent regression.
 
-Patches that change Particl consensus rules are considerably more involved than
+Patches that change Darkpay consensus rules are considerably more involved than
 normal because they affect the entire ecosystem and so must be preceded by
 extensive mailing list discussions and have a numbered PIP. While each case will
 be different, one should be prepared to expend more time and effort than for
@@ -224,10 +224,7 @@ consensus to merge a pull request (remember that discussions may have been
 spread out over GitHub, mailing list and IRC discussions). The following
 language is used within pull-request comments:
 
-  - (t)ACK means "I have tested the code and I agree it should be merged", involving
-    change-specific manual testing in addition to running the unit and functional
-    tests, and in case it is not obvious how the manual testing was done, it should
-    be described;
+  - ACK means "I have tested the code and I agree it should be merged";
   - NACK means "I disagree this should be merged", and must be accompanied by
     sound technical justification (or in certain cases of copyright/patent/licensing
     issues, legal justification). NACKs without accompanying reasoning may be
@@ -250,7 +247,7 @@ higher in terms of discussion and peer review requirements, keeping in mind that
 mistakes could be very costly to the wider community. This includes refactoring
 of consensus critical code.
 
-[//]: # (Where a patch set proposes to change the Particl consensus, it must have been
+[//]: # (Where a patch set proposes to change the Darkpay consensus, it must have been
 discussed extensively on the mailing list and IRC, be accompanied by a widely
 discussed BIP and have a generally widely perceived technical consensus of being
 a worthwhile change based on the judgement of the maintainers.)
@@ -290,7 +287,7 @@ about:
 Release Policy
 --------------
 
-The project leader is the release manager for each Particl Core release.
+The project leader is the release manager for each Darkpay Core release.
 
 Acknowledgement
 ---------------

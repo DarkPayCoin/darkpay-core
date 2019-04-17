@@ -3,9 +3,7 @@
 #ifndef WIN32
 #include <fcntl.h>
 #else
-#ifndef NOMINMAX
 #define NOMINMAX
-#endif
 #include <codecvt>
 #include <windows.h>
 #endif

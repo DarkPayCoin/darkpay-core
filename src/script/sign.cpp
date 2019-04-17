@@ -177,13 +177,13 @@ static bool SignStep(const SigningProvider& provider, const BaseSignatureCreator
         return ok;
     }
     case TX_WITNESS_V0_KEYHASH:
-        if (creator.IsParticlVersion())
+        if (creator.IsDarkpayVersion())
             return false;
         ret.push_back(vSolutions[0]);
         return true;
 
     case TX_WITNESS_V0_SCRIPTHASH:
-        if (creator.IsParticlVersion())
+        if (creator.IsDarkpayVersion())
             return false;
         CRIPEMD160().Write(&vSolutions[0][0], vSolutions[0].size()).Finalize(h160.begin());
         if (GetCScript(provider, sigdata, h160, scriptRet)) {
@@ -225,7 +225,7 @@ bool ProduceSignature(const SigningProvider& provider, const BaseSignatureCreato
     CScript subscript;
     sigdata.scriptWitness.stack.clear();
 
-    bool fIsP2SH = creator.IsParticlVersion()
+    bool fIsP2SH = creator.IsDarkpayVersion()
         ? (whichType == TX_SCRIPTHASH || whichType == TX_SCRIPTHASH256 || whichType == TX_TIMELOCKED_SCRIPTHASH)
         : whichType == TX_SCRIPTHASH;
     if (solved && fIsP2SH)
@@ -242,7 +242,7 @@ bool ProduceSignature(const SigningProvider& provider, const BaseSignatureCreato
 
     if (solved && whichType == TX_WITNESS_V0_KEYHASH)
     {
-        if (creator.IsParticlVersion())
+        if (creator.IsDarkpayVersion())
             return false;
         CScript witnessscript;
         witnessscript << OP_DUP << OP_HASH160 << ToByteVector(result[0]) << OP_EQUALVERIFY << OP_CHECKSIG;
@@ -254,7 +254,7 @@ bool ProduceSignature(const SigningProvider& provider, const BaseSignatureCreato
     }
     else if (solved && whichType == TX_WITNESS_V0_SCRIPTHASH)
     {
-        if (creator.IsParticlVersion())
+        if (creator.IsDarkpayVersion())
             return false;
         CScript witnessscript(result[0].begin(), result[0].end());
         sigdata.witness_script = witnessscript;
@@ -272,7 +272,7 @@ bool ProduceSignature(const SigningProvider& provider, const BaseSignatureCreato
         result.push_back(std::vector<unsigned char>(subscript.begin(), subscript.end()));
     }
 
-    if (creator.IsParticlVersion()) {
+    if (creator.IsDarkpayVersion()) {
         sigdata.scriptWitness.stack = result;
     } else  {
         sigdata.scriptSig = PushAll(result);
@@ -292,8 +292,8 @@ private:
 public:
     SignatureExtractorChecker(SignatureData& sigdata, BaseSignatureChecker& checker) : sigdata(sigdata), checker(checker) {}
     bool CheckSig(const std::vector<unsigned char>& scriptSig, const std::vector<unsigned char>& vchPubKey, const CScript& scriptCode, SigVersion sigversion) const override;
-    bool is_particl_tx = false;
-    bool IsParticlVersion() const override { return is_particl_tx; }
+    bool is_darkpay_tx = false;
+    bool IsDarkpayVersion() const override { return is_darkpay_tx; }
 };
 
 bool SignatureExtractorChecker::CheckSig(const std::vector<unsigned char>& scriptSig, const std::vector<unsigned char>& vchPubKey, const CScript& scriptCode, SigVersion sigversion) const
@@ -339,7 +339,7 @@ SignatureData DataFromTransaction(const CMutableTransaction& tx, unsigned int nI
     // Get signatures
     MutableTransactionSignatureChecker tx_checker(&tx, nIn, amount);
     SignatureExtractorChecker extractor_checker(data, tx_checker);
-    extractor_checker.is_particl_tx = tx.IsParticlVersion();
+    extractor_checker.is_darkpay_tx = tx.IsDarkpayVersion();
     if (VerifyScript(data.scriptSig, scriptPubKey, &data.scriptWitness, STANDARD_SCRIPT_VERIFY_FLAGS, extractor_checker)) {
         data.complete = true;
         return data;
@@ -357,7 +357,7 @@ SignatureData DataFromTransaction(const CMutableTransaction& tx, unsigned int nI
     SigVersion sigversion = SigVersion::BASE;
     CScript next_script = scriptPubKey;
 
-    if (tx.IsParticlVersion()) {
+    if (tx.IsDarkpayVersion()) {
         if (script_type == TX_PUBKEY || script_type == TX_PUBKEYHASH || script_type == TX_PUBKEYHASH256 || script_type == TX_TIMELOCKED_PUBKEYHASH)
             script_type = TX_WITNESS_V0_KEYHASH;
         else
@@ -454,7 +454,7 @@ bool SignSignature(const SigningProvider &provider, const CTransaction& txFrom, 
     assert(nIn < txTo.vin.size());
     CTxIn& txin = txTo.vin[nIn];
 
-    if (txTo.IsParticlVersion()) {
+    if (txTo.IsDarkpayVersion()) {
         assert(txin.prevout.n < txFrom.vpout.size());
         CScript scriptPubKey;
         std::vector<uint8_t> vamount;
@@ -504,20 +504,20 @@ public:
     }
 };
 
-class DummySignatureCheckerParticl : public DummySignatureChecker
+class DummySignatureCheckerDarkpay : public DummySignatureChecker
 {
-// IsParticlVersion() must return true to skip stack evaluation
+// IsDarkpayVersion() must return true to skip stack evaluation
 public:
-    DummySignatureCheckerParticl() : DummySignatureChecker() {}
-    bool IsParticlVersion() const override { return true; }
+    DummySignatureCheckerDarkpay() : DummySignatureChecker() {}
+    bool IsDarkpayVersion() const override { return true; }
 };
-const DummySignatureCheckerParticl DUMMY_CHECKER_PARTICL;
+const DummySignatureCheckerDarkpay DUMMY_CHECKER_DARKPAY;
 
-class DummySignatureCreatorParticl : public DummySignatureCreator {
+class DummySignatureCreatorDarkpay : public DummySignatureCreator {
 public:
-    DummySignatureCreatorParticl() : DummySignatureCreator(33, 32) {}
-    const BaseSignatureChecker& Checker() const override { return DUMMY_CHECKER_PARTICL; }
-    bool IsParticlVersion() const override { return true; }
+    DummySignatureCreatorDarkpay() : DummySignatureCreator(33, 32) {}
+    const BaseSignatureChecker& Checker() const override { return DUMMY_CHECKER_DARKPAY; }
+    bool IsDarkpayVersion() const override { return true; }
 };
 
 template<typename M, typename K, typename V>
@@ -535,7 +535,7 @@ bool LookupHelper(const M& map, const K& key, V& value)
 
 const BaseSignatureCreator& DUMMY_SIGNATURE_CREATOR = DummySignatureCreator(32, 32);
 const BaseSignatureCreator& DUMMY_MAXIMUM_SIGNATURE_CREATOR = DummySignatureCreator(33, 32);
-const BaseSignatureCreator& DUMMY_SIGNATURE_CREATOR_PARTICL = DummySignatureCreatorParticl();
+const BaseSignatureCreator& DUMMY_SIGNATURE_CREATOR_DARKPAY = DummySignatureCreatorDarkpay();
 const SigningProvider& DUMMY_SIGNING_PROVIDER = SigningProvider();
 
 bool IsSolvable(const SigningProvider& provider, const CScript& script)
@@ -581,13 +581,7 @@ bool HidingSigningProvider::GetKeyOrigin(const CKeyID& keyid, KeyOriginInfo& inf
 
 bool FlatSigningProvider::GetCScript(const CScriptID& scriptid, CScript& script) const { return LookupHelper(scripts, scriptid, script); }
 bool FlatSigningProvider::GetPubKey(const CKeyID& keyid, CPubKey& pubkey) const { return LookupHelper(pubkeys, keyid, pubkey); }
-bool FlatSigningProvider::GetKeyOrigin(const CKeyID& keyid, KeyOriginInfo& info) const
-{
-    std::pair<CPubKey, KeyOriginInfo> out;
-    bool ret = LookupHelper(origins, keyid, out);
-    if (ret) info = std::move(out.second);
-    return ret;
-}
+bool FlatSigningProvider::GetKeyOrigin(const CKeyID& keyid, KeyOriginInfo& info) const { return LookupHelper(origins, keyid, info); }
 bool FlatSigningProvider::GetKey(const CKeyID& keyid, CKey& key) const { return LookupHelper(keys, keyid, key); }
 
 FlatSigningProvider Merge(const FlatSigningProvider& a, const FlatSigningProvider& b)

@@ -39,8 +39,8 @@
 // Application startup time (used for uptime calculation)
 int64_t GetStartupTime();
 
-extern bool fParticlMode;
-extern bool fParticlWallet;
+extern bool fDarkpayMode;
+extern bool fDarkpayWallet;
 
 extern const char * const BITCOIN_CONF_FILENAME;
 
@@ -91,7 +91,6 @@ bool RenameOver(fs::path src, fs::path dest);
 bool LockDirectory(const fs::path& directory, const std::string lockfile_name, bool probe_only=false);
 void UnlockDirectory(const fs::path& directory, const std::string& lockfile_name);
 bool DirIsWritable(const fs::path& directory);
-bool CheckDiskSpace(const fs::path& dir, uint64_t additional_bytes = 0);
 
 /** Release all directory locks. This is used for unit testing only, at runtime
  * the global destructor will take care of the locks.
@@ -167,17 +166,10 @@ enum class OptionsCategory {
     COMMANDS,
     REGISTER_COMMANDS,
     SMSG,
-    PART_WALLET,
-    PART_STAKING,
+    DKPC_WALLET,
+    DKPC_STAKING,
 
     HIDDEN // Always the last option to avoid printing these in the help
-};
-
-struct SectionInfo
-{
-    std::string m_name;
-    std::string m_file;
-    int m_line;
 };
 
 class ArgsManager
@@ -200,9 +192,9 @@ public:
     std::string m_network GUARDED_BY(cs_args);
     std::set<std::string> m_network_only_args GUARDED_BY(cs_args);
     std::map<OptionsCategory, std::map<std::string, Arg>> m_available_args GUARDED_BY(cs_args);
-    std::list<SectionInfo> m_config_sections GUARDED_BY(cs_args);
+    std::set<std::string> m_config_sections GUARDED_BY(cs_args);
 
-    NODISCARD bool ReadConfigStream(std::istream& stream, const std::string& filepath, std::string& error, bool ignore_invalid_keys = false);
+    NODISCARD bool ReadConfigStream(std::istream& stream, std::string& error, bool ignore_invalid_keys = false);
 
 public:
     ArgsManager();
@@ -226,7 +218,7 @@ public:
     /**
      * Log warnings for unrecognized section names in the config file.
      */
-    const std::list<SectionInfo> GetUnrecognizedSections() const;
+    const std::set<std::string> GetUnrecognizedSections() const;
 
     /**
      * Return a vector of strings of the given argument
@@ -378,7 +370,7 @@ void RenameThread(const char* name);
  */
 template <typename Callable> void TraceThread(const char* name,  Callable func)
 {
-    std::string s = strprintf("particl-%s", name);
+    std::string s = strprintf("darkpay-%s", name);
     RenameThread(s.c_str());
     try
     {

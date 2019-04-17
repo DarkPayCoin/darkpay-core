@@ -1,10 +1,10 @@
 // Copyright (c) 2014 The ShadowCoin developers
-// Copyright (c) 2017-2018 The Particl Core developers
+// Copyright (c) 2017-2018 The Particl Core developers – modded for DarkPay
 // Distributed under the MIT/X11 software license, see the accompanying
 // file license.txt or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PARTICL_KEY_STEALTH_H
-#define PARTICL_KEY_STEALTH_H
+#ifndef DARKPAY_KEY_STEALTH_H
+#define DARKPAY_KEY_STEALTH_H
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -153,5 +153,5 @@ void ECC_Start_Stealth();
 void ECC_Stop_Stealth();
 
 
-#endif  // PARTICL_KEY_STEALTH_H
+#endif  // DARKPAY_KEY_STEALTH_H
 

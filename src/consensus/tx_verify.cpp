@@ -124,7 +124,7 @@ bool SequenceLocks(const CTransaction &tx, int flags, std::vector<int>* prevHeig
 unsigned int GetLegacySigOpCount(const CTransaction& tx)
 {
     unsigned int nSigOps = 0;
-    if (!tx.IsParticlVersion())
+    if (!tx.IsDarkpayVersion())
     {
         for (const auto& txin : tx.vin)
         {
@@ -330,7 +330,7 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fChe
     if (::GetSerializeSize(tx, PROTOCOL_VERSION | SERIALIZE_TRANSACTION_NO_WITNESS) * WITNESS_SCALE_FACTOR > MAX_BLOCK_WEIGHT)
         return state.DoS(100, false, REJECT_INVALID, "bad-txns-oversize");
 
-    if (tx.IsParticlVersion()) {
+    if (tx.IsDarkpayVersion()) {
         const Consensus::Params& consensusParams = Params().GetConsensus();
         if (tx.vpout.empty()) {
             return state.DoS(10, false, REJECT_INVALID, "bad-txns-vpout-empty");
@@ -379,7 +379,7 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fChe
             return state.DoS(100, false, REJECT_INVALID, "too-many-data-outputs");
         }
     } else {
-        if (fParticlMode) {
+        if (fDarkpayMode) {
             return state.DoS(100, false, REJECT_INVALID, "bad-txn-version");
         }
 
@@ -427,14 +427,14 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fChe
     return true;
 }
 
-bool Consensus::CheckTxInputs(const CTransaction& tx, CValidationState& state, const CCoinsViewCache& inputs, int nSpendHeight, CAmount& txfee)
+bool Consensus::CheckTxInputs(const CTransaction& tx, CValidationState& state, const CCoinsViewCache& inputs, int nSpendHeight, CAmount& nTxFee)
 {
     // reset per tx
     state.fHasAnonOutput = false;
     state.fHasAnonInput = false;
 
-    // early out for particl txns
-    if (tx.IsParticlVersion() && tx.vin.size() < 1) {
+    // early out for darkpay txns
+    if (tx.IsDarkpayVersion() && tx.vin.size() < 1) {
         return state.DoS(100, false, REJECT_INVALID, "bad-txn-no-inputs", false,
                          strprintf("%s: no inputs", __func__));
     }
@@ -466,7 +466,7 @@ bool Consensus::CheckTxInputs(const CTransaction& tx, CValidationState& state, c
         {
             if (nSpendHeight - coin.nHeight < COINBASE_MATURITY)
             {
-                if (fParticlMode) {
+                if (fDarkpayMode) {
                     // Scale in the depth restriction to start the chain
                     int nRequiredDepth = std::min(COINBASE_MATURITY, (int)(coin.nHeight / 2));
                     if (nSpendHeight - coin.nHeight < nRequiredDepth) {
@@ -482,7 +482,7 @@ bool Consensus::CheckTxInputs(const CTransaction& tx, CValidationState& state, c
         }
 
         // Check for negative or overflow input values
-        if (fParticlMode) {
+        if (fDarkpayMode) {
             if (coin.nType == OUTPUT_STANDARD) {
                 nValueIn += coin.out.nValue;
                 if (!MoneyRange(coin.out.nValue) || !MoneyRange(nValueIn)) {
@@ -513,17 +513,17 @@ bool Consensus::CheckTxInputs(const CTransaction& tx, CValidationState& state, c
     CAmount nPlainValueOut = tx.GetPlainValueOut(nStandard, nCt, nRingCT);
     state.fHasAnonOutput = nRingCT > nRingCTInputs;
 
-    txfee = 0;
-    if (fParticlMode) {
+    nTxFee = 0;
+    if (fDarkpayMode) {
         if (!tx.IsCoinStake()) {
             // Tally transaction fees
             if (nCt > 0 || nRingCT > 0) {
-                if (!tx.GetCTFee(txfee)) {
+                if (!tx.GetCTFee(nTxFee)) {
                     return state.DoS(100, error("%s: bad-fee-output", __func__),
                         REJECT_INVALID, "bad-fee-output");
                 }
             } else {
-                txfee = nValueIn - nPlainValueOut;
+                nTxFee = nValueIn - nPlainValueOut;
 
                 if (nValueIn < nPlainValueOut) {
                     return state.DoS(100, false, REJECT_INVALID, "bad-txns-in-belowout", false,
@@ -531,10 +531,10 @@ bool Consensus::CheckTxInputs(const CTransaction& tx, CValidationState& state, c
                 }
             }
 
-            if (txfee < 0) {
+            if (nTxFee < 0) {
                 return state.DoS(100, false, REJECT_INVALID, "bad-txns-fee-negative");
             }
-            nFees += txfee;
+            nFees += nTxFee;
             if (!MoneyRange(nFees)) {
                 return state.DoS(100, false, REJECT_INVALID, "bad-txns-fee-outofrange");
             }
@@ -562,18 +562,18 @@ bool Consensus::CheckTxInputs(const CTransaction& tx, CValidationState& state, c
                 CFeeRate fundingTxnFeeRate = CFeeRate(consensusParams.smsg_fee_funding_tx_per_k);
                 CAmount nTotalExpectedFees = nTotalMsgFees + fundingTxnFeeRate.GetFee(nTxBytes);
 
-                if (txfee < nTotalExpectedFees) {
+                if (nTxFee < nTotalExpectedFees) {
                     if (state.fEnforceSmsgFees) {
                         return state.DoS(100, false, REJECT_INVALID, "bad-txns-fee-smsg", false,
-                            strprintf("fees (%s) < expected (%s)", FormatMoney(txfee), FormatMoney(nTotalExpectedFees)));
+                            strprintf("fees (%s) < expected (%s)", FormatMoney(nTxFee), FormatMoney(nTotalExpectedFees)));
                     } else {
-                        LogPrintf("%s: bad-txns-fee-smsg, %d expected %d, not enforcing.\n", __func__, txfee, nTotalExpectedFees);
+                        LogPrintf("%s: bad-txns-fee-smsg, %d expected %d, not enforcing.\n", __func__, nTxFee, nTotalExpectedFees);
                     }
                 }
             }
         } else {
-            // Return stake reward in txfee
-            txfee = nPlainValueOut - nValueIn;
+            // Return stake reward in nTxFee
+            nTxFee = nPlainValueOut - nValueIn;
             if (nCt > 0 || nRingCT > 0) { // Counters track both outputs and inputs
                 return state.DoS(100, error("ConnectBlock(): non-standard elements in coinstake"),
                      REJECT_INVALID, "bad-coinstake-outputs");
@@ -586,18 +586,18 @@ bool Consensus::CheckTxInputs(const CTransaction& tx, CValidationState& state, c
         }
 
         // Tally transaction fees
-        txfee = nValueIn - tx.GetValueOut();
-        if (txfee < 0) {
+        nTxFee = nValueIn - tx.GetValueOut();
+        if (nTxFee < 0) {
             return state.DoS(100, false, REJECT_INVALID, "bad-txns-fee-negative");
         }
-        nFees += txfee;
+        nFees += nTxFee;
         if (!MoneyRange(nFees)) {
             return state.DoS(100, false, REJECT_INVALID, "bad-txns-fee-outofrange");
         }
     }
 
     if (nCt > 0 && nRingCT == 0) {
-        nPlainValueOut += txfee;
+        nPlainValueOut += nTxFee;
 
         if (!MoneyRange(nPlainValueOut)) {
             return state.DoS(100, false, REJECT_INVALID, "bad-txns-out-outofrange");

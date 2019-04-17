@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Particl Core developers
+// Copyright (c) 2017-2018 The Particl Core developers – modded for DarkPay
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -33,37 +33,35 @@ extern UniValue CallRPC(std::string args, std::string wallet="");
 
 struct StakeTestingSetup: public TestingSetup {
     StakeTestingSetup(const std::string& chainName = CBaseChainParams::REGTEST):
-        TestingSetup(chainName, /* fParticlMode */ true)
+        TestingSetup(chainName, /* fDarkpayMode */ true)
     {
-        ECC_Start_Stealth();
-        ECC_Start_Blinding();
-
         bool fFirstRun;
-        pwalletMain = std::make_shared<CHDWallet>(m_chain.get(), WalletLocation(), WalletDatabase::CreateMock());
+        pwalletMain = std::make_shared<CHDWallet>(*m_chain, WalletLocation(), WalletDatabase::CreateMock());
         AddWallet(pwalletMain);
         pwalletMain->LoadWallet(fFirstRun);
-        pwalletMain->Initialise();
-        pwalletMain->m_chain_notifications_handler = m_chain->handleNotifications(*pwalletMain);
+        RegisterValidationInterface(pwalletMain.get());
 
-        m_chain_client->registerRpcs();
-
+        RegisterWalletRPCCommands(tableRPC);
+        RegisterHDWalletRPCCommands(tableRPC);
+        ECC_Start_Stealth();
+        ECC_Start_Blinding();
         SetMockTime(0);
     }
 
     ~StakeTestingSetup()
     {
+        UnregisterValidationInterface(pwalletMain.get());
         RemoveWallet(pwalletMain);
         pwalletMain.reset();
 
         mapStakeSeen.clear();
         listStakeSeen.clear();
-
         ECC_Stop_Stealth();
         ECC_Stop_Blinding();
     }
 
     std::unique_ptr<interfaces::Chain> m_chain = interfaces::MakeChain();
-    std::unique_ptr<interfaces::ChainClient> m_chain_client = interfaces::MakeWalletClient(*m_chain, {});
+    std::unique_ptr<interfaces::Chain::Lock> m_locked_chain = m_chain->assumeLocked();  // Temporary. Removed in upcoming lock cleanup
     std::shared_ptr<CHDWallet> pwalletMain;
 };
 
@@ -129,10 +127,10 @@ static void AddAnonTxn(CHDWallet *pwallet, CBitcoinAddress &address, CAmount amo
     CTransactionRecord rtx;
     CAmount nFee;
     CCoinControl coinControl;
-    BOOST_CHECK(0 == pwallet->AddStandardInputs(*locked_chain, wtx, rtx, vecSend, true, nFee, &coinControl, sError));
+    BOOST_CHECK(0 == pwallet->AddStandardInputs(wtx, rtx, vecSend, true, nFee, &coinControl, sError));
 
     wtx.BindWallet(pwallet);
-    BOOST_REQUIRE(wtx.AcceptToMemoryPool(*locked_chain, state));
+    BOOST_REQUIRE(wtx.AcceptToMemoryPool(*locked_chain, maxTxFee, state));
     } // cs_main
     SyncWithValidationInterfaceQueue();
 }
@@ -190,8 +188,7 @@ BOOST_AUTO_TEST_CASE(stake_test)
 
     {
         LOCK2(cs_main, pwallet->cs_wallet);
-        const auto bal = pwallet->GetBalance();
-        BOOST_REQUIRE(bal.m_mine_trusted == 12500000000000);
+        BOOST_REQUIRE(pwallet->GetBalance() == 12500000000000);
     }
     BOOST_REQUIRE(chainActive.Tip()->nMoneySupply == 12500000000000);
 
@@ -264,7 +261,7 @@ BOOST_AUTO_TEST_CASE(stake_test)
         CValidationState state;
         pwallet->SetBroadcastTransactions(true);
         mapValue_t mapValue;
-        BOOST_CHECK(pwallet->CommitTransaction(tx_new, std::move(mapValue), {} /* orderForm */, reservekey, state));
+        BOOST_CHECK(pwallet->CommitTransaction(tx_new, std::move(mapValue), {} /* orderForm */, reservekey, g_connman.get(), state));
     }
 
     StakeNBlocks(pwallet, 1);
@@ -331,7 +328,7 @@ BOOST_AUTO_TEST_CASE(stake_test)
     BOOST_CHECK_NO_THROW(rv = CallRPC("getnewextaddress lblTestKey"));
     std::string extaddr = StripQuotes(rv.write());
 
-    BOOST_CHECK(pwallet->GetBalance().m_mine_trusted + pwallet->GetStaked() == 12500000108911);
+    BOOST_CHECK(pwallet->GetBalance() + pwallet->GetStaked() == 12500000108911);
 
     {
         BOOST_CHECK_NO_THROW(rv = CallRPC("getnewstealthaddress"));

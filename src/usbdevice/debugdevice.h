@@ -1,9 +1,9 @@
-// Copyright (c) 2018 The Particl Core developers
+// Copyright (c) 2018 The Particl Core developers – modded for DarkPay
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PARTICL_USBDEVICE_DEBUGDEVICE_H
-#define PARTICL_USBDEVICE_DEBUGDEVICE_H
+#ifndef DARKPAY_USBDEVICE_DEBUGDEVICE_H
+#define DARKPAY_USBDEVICE_DEBUGDEVICE_H
 
 #include <usbdevice/usbdevice.h>
 #include <key/extkey.h>
@@ -34,4 +34,4 @@ public:
 
 } // usb_device
 
-#endif // PARTICL_USBDEVICE_DEBUGDEVICE_H
+#endif // DARKPAY_USBDEVICE_DEBUGDEVICE_H

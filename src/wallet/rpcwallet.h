@@ -5,9 +5,7 @@
 #ifndef BITCOIN_WALLET_RPCWALLET_H
 #define BITCOIN_WALLET_RPCWALLET_H
 
-#include <memory>
 #include <string>
-#include <vector>
 
 class CRPCTable;
 class UniValue;
@@ -18,12 +16,7 @@ class UniValue;
 struct PartiallySignedTransaction;
 class CTransaction;
 
-namespace interfaces {
-class Chain;
-class Handler;
-}
-
-void RegisterWalletRPCCommands(interfaces::Chain& chain, std::vector<std::unique_ptr<interfaces::Handler>>& handlers);
+void RegisterWalletRPCCommands(CRPCTable &t);
 
 /**
  * Figures out what wallet, if any, to use for a JSONRPCRequest.

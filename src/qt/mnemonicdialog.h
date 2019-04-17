@@ -1,9 +1,9 @@
-// Copyright (c) 2017-2018 The Particl Core developers
+// Copyright (c) 2017-2018 The Particl Core developers – modded for DarkPay
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PARTICL_QT_MNEMONICDIALOG_H
-#define PARTICL_QT_MNEMONICDIALOG_H
+#ifndef DARKPAY_QT_MNEMONICDIALOG_H
+#define DARKPAY_QT_MNEMONICDIALOG_H
 
 #include <QDialog>
 #include <QThread>
@@ -59,4 +59,4 @@ private:
     Ui::MnemonicDialog *ui;
 };
 
-#endif // PARTICL_QT_MNEMONICDIALOG_H
+#endif // DARKPAY_QT_MNEMONICDIALOG_H

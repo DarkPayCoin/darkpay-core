@@ -1,6 +1,5 @@
 ---
-name: "particl-dmg-signer"
-distro: "ubuntu"
+name: "darkpay-dmg-signer"
 suites:
 - "bionic"
 architectures:
@@ -8,10 +7,10 @@ architectures:
 packages:
 - "faketime"
 remotes:
-- "url": "https://github.com/particl/particl-detached-sigs.git"
+- "url": "https://github.com/DarkPayCoin/darkpay-detached-sigs.git"
   "dir": "signature"
 files:
-- "particl-osx-unsigned.tar.gz"
+- "darkpay-osx-unsigned.tar.gz"
 script: |
   set -e -o pipefail
 
@@ -30,8 +29,8 @@ script: |
     chmod +x ${WRAP_DIR}/${prog}
   done
 
-  UNSIGNED=particl-osx-unsigned.tar.gz
-  SIGNED=particl-osx-signed.dmg
+  UNSIGNED=darkpay-osx-unsigned.tar.gz
+  SIGNED=darkpay-osx-signed.dmg
 
   tar -xf ${UNSIGNED}
   OSX_VOLNAME="$(cat osx_volname)"

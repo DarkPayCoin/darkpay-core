@@ -29,7 +29,6 @@
 #include <wallet/feebumper.h>
 #include <wallet/fees.h>
 #include <wallet/rpcwallet.h>
-#include <wallet/load.h>
 #include <wallet/wallet.h>
 #include <wallet/hdwallet.h>
 #include <wallet/walletutil.h>
@@ -56,6 +55,8 @@ public:
 
     const CTransaction& get() override { return *m_tx; }
 
+    int64_t getVirtualSize() override { return GetVirtualTransactionSize(*m_tx); }
+
     bool commit(WalletValueMap value_map,
         WalletOrderForm order_form,
         std::string& reject_reason) override
@@ -63,7 +64,7 @@ public:
         auto locked_chain = m_wallet.chain().lock();
         LOCK(m_wallet.cs_wallet);
         CValidationState state;
-        if (!m_wallet.CommitTransaction(m_tx, std::move(value_map), std::move(order_form), m_key, state)) {
+        if (!m_wallet.CommitTransaction(m_tx, std::move(value_map), std::move(order_form), m_key, g_connman.get(), state)) {
             reject_reason = state.GetRejectReason();
             return false;
         }
@@ -84,7 +85,7 @@ WalletTx MakeWalletTx(interfaces::Chain::Lock& locked_chain, CWallet& wallet, co
     for (const auto& txin : wtx.tx->vin) {
         result.txin_is_mine.emplace_back(wallet.IsMine(txin));
     }
-    if (wtx.tx->IsParticlVersion()) {
+    if (wtx.tx->IsDarkpayVersion()) {
         size_t nv = wtx.tx->GetNumVOuts();
         result.txout_is_mine.reserve(nv);
         result.txout_address.reserve(nv);
@@ -145,13 +146,17 @@ WalletTx MakeWalletTx(CHDWallet& wallet, MapRecords_t::const_iterator irtx)
 //! Construct wallet tx status struct.
 WalletTxStatus MakeWalletTxStatus(interfaces::Chain::Lock& locked_chain, const CWalletTx& wtx)
 {
+    LockAnnotation lock(::cs_main); // Temporary, for CheckFinalTx below. Removed in upcoming commit.
+
     WalletTxStatus result;
-    result.block_height = locked_chain.getBlockHeight(wtx.hashBlock).get_value_or(std::numeric_limits<int>::max());
+    auto mi = ::mapBlockIndex.find(wtx.hashBlock);
+    CBlockIndex* block = mi != ::mapBlockIndex.end() ? mi->second : nullptr;
+    result.block_height = (block ? block->nHeight : std::numeric_limits<int>::max());
     result.blocks_to_maturity = wtx.GetBlocksToMaturity(locked_chain);
     result.depth_in_main_chain = wtx.GetDepthInMainChain(locked_chain);
     result.time_received = wtx.nTimeReceived;
     result.lock_time = wtx.tx->nLockTime;
-    result.is_final = locked_chain.checkFinalTx(*wtx.tx);
+    result.is_final = CheckFinalTx(*wtx.tx);
     result.is_trusted = wtx.IsTrusted(locked_chain);
     result.is_abandoned = wtx.isAbandoned();
     result.is_coinbase = wtx.IsCoinBase();
@@ -218,8 +223,8 @@ class WalletImpl : public Wallet
 public:
     explicit WalletImpl(const std::shared_ptr<CWallet>& wallet) : m_wallet(wallet)
     {
-        if (::IsParticlWallet(wallet.get())) {
-            m_wallet_part = GetParticlWallet(wallet.get());
+        if (::IsDarkpayWallet(wallet.get())) {
+            m_wallet_part = GetDarkpayWallet(wallet.get());
         }
     }
 
@@ -369,13 +374,8 @@ public:
         CAmount& new_fee,
         CMutableTransaction& mtx) override
     {
-        if (total_fee > 0 || ::IsParticlWallet(m_wallet.get())) {
-            return feebumper::CreateTotalBumpTransaction(m_wallet.get(), txid, coin_control, total_fee, errors, old_fee, new_fee, mtx) ==
-                feebumper::Result::OK;
-        } else {
-            return feebumper::CreateRateBumpTransaction(m_wallet.get(), txid, coin_control, errors, old_fee, new_fee, mtx) ==
-                feebumper::Result::OK;
-        }
+        return feebumper::CreateTransaction(m_wallet.get(), txid, coin_control, total_fee, errors, old_fee, new_fee, mtx) ==
+               feebumper::Result::OK;
     }
     bool signBumpTransaction(CMutableTransaction& mtx) override { return feebumper::SignTransaction(m_wallet.get(), mtx); }
     bool commitBumpTransaction(const uint256& txid,
@@ -498,7 +498,6 @@ public:
     WalletBalances getBalances() override
     {
         WalletBalances result;
-
         if (m_wallet_part) {
             CHDWalletBalances bal;
             if (!m_wallet_part->GetBalances(bal)) {
@@ -522,16 +521,14 @@ public:
             return result;
         }
 
-        const auto bal = m_wallet->GetBalance();
-
-        result.balance = bal.m_mine_trusted;
-        result.unconfirmed_balance = bal.m_mine_untrusted_pending;
-        result.immature_balance = bal.m_mine_immature;
+        result.balance = m_wallet->GetBalance();
+        result.unconfirmed_balance = m_wallet->GetUnconfirmedBalance();
+        result.immature_balance = m_wallet->GetImmatureBalance();
         result.have_watch_only = m_wallet->HaveWatchOnly();
         if (result.have_watch_only) {
-            result.watch_only_balance = bal.m_watchonly_trusted;
-            result.unconfirmed_watch_only_balance = bal.m_watchonly_untrusted_pending;
-            result.immature_watch_only_balance = bal.m_watchonly_immature;
+            result.watch_only_balance = m_wallet->GetBalance(ISMINE_WATCH_ONLY);
+            result.unconfirmed_watch_only_balance = m_wallet->GetUnconfirmedWatchOnlyBalance();
+            result.immature_watch_only_balance = m_wallet->GetImmatureWatchOnlyBalance();
         }
         return result;
     }
@@ -553,7 +550,7 @@ public:
         num_blocks = locked_chain->getHeight().get_value_or(-1);
         return true;
     }
-    CAmount getBalance() override { return m_wallet->GetBalance().m_mine_trusted; }
+    CAmount getBalance() override { return m_wallet->GetBalance(); }
     CAmount getAvailableBalance(const CCoinControl& coin_control) override
     {
         return m_wallet->GetAvailableBalance(&coin_control);
@@ -645,7 +642,7 @@ public:
     {
         FeeCalculation fee_calc;
         CAmount result;
-        result = GetMinimumFee(*m_wallet, tx_bytes, coin_control, &fee_calc);
+        result = GetMinimumFee(*m_wallet, tx_bytes, coin_control, ::mempool, ::feeEstimator, &fee_calc);
         if (returned_target) *returned_target = fee_calc.returnedTarget;
         if (reason) *reason = fee_calc.reason;
         return result;
@@ -699,7 +696,7 @@ public:
         return MakeHandler(m_wallet_part->NotifyReservedBalanceChanged.connect(fn));
     }
 
-    bool IsParticlWallet() override
+    bool IsDarkpayWallet() override
     {
         return m_wallet_part;
     }
@@ -739,7 +736,7 @@ public:
         return m_wallet_part->GetAvailableBlindBalance(&coin_control);
     }
 
-    CHDWallet *getParticlWallet() override
+    CHDWallet *getDarkpayWallet() override
     {
         return m_wallet_part;
     }
@@ -799,9 +796,7 @@ public:
         : m_chain(chain), m_wallet_filenames(std::move(wallet_filenames))
     {
     }
-    void registerRpcs() override {
-        RegisterHDWalletRPCCommands(m_chain, m_rpc_handlers);
-        return RegisterWalletRPCCommands(m_chain, m_rpc_handlers); }
+    void registerRpcs() override { return RegisterWalletRPCCommands(::tableRPC); }
     bool verify() override { return VerifyWallets(m_chain, m_wallet_filenames); }
     bool load() override { return LoadWallets(m_chain, m_wallet_filenames); }
     void start(CScheduler& scheduler) override { return StartWallets(scheduler); }
@@ -811,7 +806,6 @@ public:
 
     Chain& m_chain;
     std::vector<std::string> m_wallet_filenames;
-    std::vector<std::unique_ptr<Handler>> m_rpc_handlers;
 };
 
 } // namespace

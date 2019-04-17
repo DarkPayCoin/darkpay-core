@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (c) 2018-2019 The Bitcoin Core developers
+# Copyright (c) 2018 The Bitcoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Test the Partially Signed Transaction RPCs.
@@ -7,13 +7,7 @@
 
 from decimal import Decimal
 from test_framework.test_framework import BitcoinTestFramework
-from test_framework.util import (
-    assert_equal,
-    assert_raises_rpc_error,
-    connect_nodes_bi,
-    disconnect_nodes,
-    find_output,
-)
+from test_framework.util import assert_equal, assert_raises_rpc_error, connect_nodes_bi, disconnect_nodes, find_output, sync_blocks
 
 import json
 import os
@@ -47,22 +41,22 @@ class PSBTTest(BitcoinTestFramework):
         online_node.importaddress(offline_addr, "", False)
         mining_node.sendtoaddress(address=offline_addr, amount=1.0)
         mining_node.generate(nblocks=1)
-        self.sync_blocks([mining_node, online_node])
+        sync_blocks([mining_node, online_node])
 
         # Construct an unsigned PSBT on the online node (who doesn't know the output is Segwit, so will include a non-witness UTXO)
         utxos = online_node.listunspent(addresses=[offline_addr])
         raw = online_node.createrawtransaction([{"txid":utxos[0]["txid"], "vout":utxos[0]["vout"]}],[{online_addr:0.9999}])
         psbt = online_node.walletprocesspsbt(online_node.converttopsbt(raw))["psbt"]
-        assert "non_witness_utxo" in mining_node.decodepsbt(psbt)["inputs"][0]
+        assert("non_witness_utxo" in mining_node.decodepsbt(psbt)["inputs"][0])
 
         # Have the offline node sign the PSBT (which will update the UTXO to segwit)
         signed_psbt = offline_node.walletprocesspsbt(psbt)["psbt"]
-        assert "witness_utxo" in mining_node.decodepsbt(signed_psbt)["inputs"][0]
+        assert("witness_utxo" in mining_node.decodepsbt(signed_psbt)["inputs"][0])
 
         # Make sure we can mine the resulting transaction
         txid = mining_node.sendrawtransaction(mining_node.finalizepsbt(signed_psbt)["hex"])
         mining_node.generate(1)
-        self.sync_blocks([mining_node, online_node])
+        sync_blocks([mining_node, online_node])
         assert_equal(online_node.gettxout(txid,0)["confirmations"], 1)
 
         # Reconnect
@@ -198,8 +192,8 @@ class PSBTTest(BitcoinTestFramework):
         psbtx_info = self.nodes[0].walletcreatefundedpsbt([{"txid":unspent["txid"], "vout":unspent["vout"]}], [{self.nodes[2].getnewaddress():unspent["amount"]+1}], block_height+2, {"replaceable":True}, False)
         decoded_psbt = self.nodes[0].decodepsbt(psbtx_info["psbt"])
         for tx_in, psbt_in in zip(decoded_psbt["tx"]["vin"], decoded_psbt["inputs"]):
-            assert_equal(tx_in["sequence"], MAX_BIP125_RBF_SEQUENCE)
-            assert "bip32_derivs" not in psbt_in
+           assert_equal(tx_in["sequence"], MAX_BIP125_RBF_SEQUENCE)
+           assert "bip32_derivs" not in psbt_in
         assert_equal(decoded_psbt["tx"]["locktime"], block_height+2)
 
         # Same construction with only locktime set

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-# Copyright (c) 2017-2018 The Particl Core developers
+# Copyright (c) 2017-2018 The Particl Core developers – modded for DarkPay
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 from decimal import Decimal
 
-from test_framework.test_particl import ParticlTestFramework
+from test_framework.test_darkpay import DarkpayTestFramework
 from test_framework.util import connect_nodes_bi
 from test_framework.address import keyhash_to_p2pkh, hex_str_to_bytes
 from test_framework.authproxy import JSONRPCException
@@ -15,7 +15,7 @@ def keyhash_to_p2pkh_part(b):
     return keyhash_to_p2pkh(b, False, False)
 
 
-class ColdStakingTest(ParticlTestFramework):
+class ColdStakingTest(DarkpayTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = 3
@@ -240,8 +240,8 @@ class ColdStakingTest(ParticlTestFramework):
         assert(ro['num_derives'] == '3')
 
         # Test stake to coldstakingchangeaddress
-        nodes[0].walletsettings('stakelimit', {'height':2})
-        nodes[0].reservebalance(False)
+        ro = nodes[0].walletsettings('stakelimit', {'height':2})
+        ro = nodes[0].reservebalance(False)
 
         assert(self.wait_for_height(nodes[0], 2))
         self.sync_all()

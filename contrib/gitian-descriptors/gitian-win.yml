@@ -1,8 +1,7 @@
 ---
-name: "particl-win-0.18.99.0"
+name: "darkpay-win-0.18.0.6"
 enable_cache: true
 sudo: true
-distro: "ubuntu"
 suites:
 - "bionic"
 architectures:
@@ -22,11 +21,11 @@ packages:
 - "nsis"
 - "zip"
 - "ca-certificates"
-- "python3"
+- "python"
 - "rename"
 remotes:
-- "url": "https://github.com/particl/particl-core.git"
-  "dir": "particl-core"
+- "url": "https://github.com/DarkPayCoin/darkpay-core.git"
+  "dir": "darkpay-core"
 files: []
 script: |
   set -e -o pipefail
@@ -110,7 +109,7 @@ script: |
   #create_per-host_linker_wrapper "2000-01-01 12:00:00"
   export PATH=${WRAP_DIR}:${PATH}
 
-  cd particl-core
+  cd darkpay-core
   BASEPREFIX=`pwd`/depends
 
   create_per-host_linker_wrapper "2000-01-01 12:00:00"
@@ -131,14 +130,14 @@ script: |
   ./autogen.sh
   CONFIG_SITE=${BASEPREFIX}/`echo "${HOSTS}" | awk '{print $1;}'`/share/config.site ./configure --prefix=/
   make dist
-  SOURCEDIST=`echo particl-*.tar.gz`
+  SOURCEDIST=`echo darkpay-*.tar.gz`
   DISTNAME=`echo ${SOURCEDIST} | sed 's/.tar.*//'`
 
   # Correct tar file order
   mkdir -p temp
   pushd temp
   tar xf ../$SOURCEDIST
-  find particl-* | sort | tar --no-recursion --mode='u+rw,go+r-w,a+X' --owner=0 --group=0 -c -T - | gzip -9n > ../$SOURCEDIST
+  find darkpay-* | sort | tar --no-recursion --mode='u+rw,go+r-w,a+X' --owner=0 --group=0 -c -T - | gzip -9n > ../$SOURCEDIST
   mkdir -p $OUTDIR/src
   cp ../$SOURCEDIST $OUTDIR/src
   popd
@@ -168,7 +167,7 @@ script: |
     make install DESTDIR=${INSTALLPATH}
 
     rename 's/-setup\.exe$/-setup-unsigned.exe/' *-setup.exe
-    cp -f particl-*setup*.exe $OUTDIR/
+    cp -f darkpay-*setup*.exe $OUTDIR/
 
     cd installed
     mv ${DISTNAME}/bin/*.dll ${DISTNAME}/lib/
@@ -185,7 +184,7 @@ script: |
   cp -rf contrib/windeploy $BUILD_DIR
   cd $BUILD_DIR/windeploy
   mkdir unsigned
-  cp $OUTDIR/particl-*setup-unsigned.exe unsigned/
+  cp $OUTDIR/darkpay-*setup-unsigned.exe unsigned/
   find . | sort | tar --no-recursion --mode='u+rw,go+r-w,a+X' --owner=0 --group=0 -c -T - | gzip -9n > ${OUTDIR}/${DISTNAME}-win-unsigned.tar.gz
   mv ${OUTDIR}/${DISTNAME}-x86_64-*-debug.zip ${OUTDIR}/${DISTNAME}-win64-debug.zip
   mv ${OUTDIR}/${DISTNAME}-i686-*-debug.zip ${OUTDIR}/${DISTNAME}-win32-debug.zip

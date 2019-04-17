@@ -66,11 +66,11 @@
         <translation>받을 주소</translation>
     </message>
     <message>
-        <source>These are your Particl addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
+        <source>These are your Darkpay addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
         <translation>이것은 비트코인 전송을 위한 주소입니다. 코인을 보내기 전에 항상 받는 주소와 수량을 확인하세요</translation>
     </message>
     <message>
-        <source>These are your Particl addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
+        <source>These are your Darkpay addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
         <translation>이것은 비트코인 수신을 위한 주소입니다. 코인을 받을 때 마다 항상 다른 주소를 사용 하시는 것을 권장합니다.</translation>
     </message>
     <message>
@@ -156,7 +156,7 @@
         <translation>지갑 암호화 확인</translation>
     </message>
     <message>
-        <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR PARTICL&lt;/b&gt;!</source>
+        <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR DARKPAY&lt;/b&gt;!</source>
         <translation>경고: 지갑이 암호화된 상태로 당신의 암호문을 잃어버리셨다면, 당신은 &lt;b&gt;모든 비트코인을 잃게됩니다&lt;/b&gt;!</translation>
     </message>
     <message>
@@ -166,10 +166,6 @@
     <message>
         <source>Wallet encrypted</source>
         <translation>지갑 암호화</translation>
-    </message>
-    <message>
-        <source>%1 will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your particl from being stolen by malware infecting your computer.</source>
-        <translation>%1 이(가) 암호화 작업을 위해 종료됩니다. 이 암호화 작업이 바이러스로부터 비트코인을 완전히 지키지 못한다는 점을 기억하십시요.</translation>
     </message>
     <message>
         <source>IMPORTANT: Any previous backups you have made of your wallet file should be replaced with the newly generated, encrypted wallet file. For security reasons, previous backups of the unencrypted wallet file will become useless as soon as you start using the new, encrypted wallet.</source>
@@ -234,10 +230,6 @@
         <translation>&amp;개요</translation>
     </message>
     <message>
-        <source>Node</source>
-        <translation>노드</translation>
-    </message>
-    <message>
         <source>Show general overview of wallet</source>
         <translation>지갑의 일반적인 개요 표시</translation>
     </message>
@@ -294,24 +286,12 @@
         <translation>&amp;암호문 변경...</translation>
     </message>
     <message>
-        <source>&amp;Sending addresses...</source>
-        <translation>&amp;보낼 주소...</translation>
-    </message>
-    <message>
-        <source>&amp;Receiving addresses...</source>
-        <translation>&amp;받을 주소...</translation>
-    </message>
-    <message>
         <source>Open &amp;URI...</source>
         <translation>&amp;URL 열기</translation>
     </message>
     <message>
         <source>Wallet:</source>
         <translation>지갑:</translation>
-    </message>
-    <message>
-        <source>default wallet</source>
-        <translation>기본 지갑</translation>
     </message>
     <message>
         <source>Click to disable network activity.</source>
@@ -334,7 +314,7 @@
         <translation>디스크에서 블럭 불러오는 중</translation>
     </message>
     <message>
-        <source>Send coins to a Particl address</source>
+        <source>Send coins to a Darkpay address</source>
         <translation>비트코인 주소로 코인 보내기</translation>
     </message>
     <message>
@@ -344,6 +324,10 @@
     <message>
         <source>Change the passphrase used for wallet encryption</source>
         <translation>지갑 암호화에 사용될 암호문 바꾸기</translation>
+    </message>
+    <message>
+        <source>default wallet</source>
+        <translation>기본 지갑</translation>
     </message>
     </context>
 <context>
@@ -390,10 +374,6 @@
     </context>
 <context>
     <name>RPCConsole</name>
-    <message>
-        <source>default wallet</source>
-        <translation>기본 지갑</translation>
-    </message>
     </context>
 <context>
     <name>ReceiveCoinsDialog</name>
@@ -445,11 +425,18 @@
     <name>UnitDisplayStatusBarControl</name>
     </context>
 <context>
+    <name>WalletController</name>
+    </context>
+<context>
     <name>WalletFrame</name>
     </context>
 <context>
     <name>WalletModel</name>
-    </context>
+    <message>
+        <source>default wallet</source>
+        <translation>기본 지갑</translation>
+    </message>
+</context>
 <context>
     <name>WalletView</name>
     <message>

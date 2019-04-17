@@ -32,7 +32,6 @@
 #include <policy/feerate.h>
 #include <policy/fees.h>
 #include <policy/policy.h>
-#include <policy/settings.h>
 #include <rpc/server.h>
 #include <rpc/register.h>
 #include <rpc/blockchain.h>
@@ -48,7 +47,6 @@
 #include <ui_interface.h>
 #include <util/system.h>
 #include <util/moneystr.h>
-#include <util/validation.h>
 #include <validationinterface.h>
 #include <smsg/smessage.h>
 #include <smsg/rpcsmessage.h>
@@ -132,7 +130,7 @@ LRESULT APIENTRY MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 int CreateMessageWindow()
 {
-    // Create a message-only window to intercept WM_CLOSE events from particld
+    // Create a message-only window to intercept WM_CLOSE events from darkpayd
 
     WNDCLASSEX WindowClassEx;
     ZeroMemory(&WindowClassEx, sizeof(WNDCLASSEX));
@@ -180,7 +178,7 @@ int CloseMessageWindow()
 /**
  * The PID file facilities.
  */
-static const char* BITCOIN_PID_FILENAME = "particl.pid";
+static const char* BITCOIN_PID_FILENAME = "darkpay.pid";
 
 static fs::path GetPidFile()
 {
@@ -231,7 +229,7 @@ NODISCARD static bool CreatePidFile()
 bool ShutdownRequestedMainThread()
 {
 #ifdef WIN32
-    // Only particld will create a hidden window to receive messages
+    // Only darkpayd will create a hidden window to receive messages
     while (winHwnd && PeekMessage(&winMsg, 0, 0, 0, PM_REMOVE)) {
         TranslateMessage(&winMsg);
         DispatchMessage(&winMsg);
@@ -298,7 +296,7 @@ void Shutdown(InitInterfaces& interfaces)
     /// for example if the data directory was found to be locked.
     /// Be sure that anything that writes files or flushes caches only does this if the respective
     /// module was initialized.
-    RenameThread("particl-shutoff");
+    RenameThread("darkpay-shutoff");
     mempool.AddTransactionsUpdated(1);
 
     StopHTTPRPC();
@@ -573,7 +571,7 @@ void SetupServerArgs()
 
     g_wallet_init_interface.AddWalletOptions();
 #ifdef ENABLE_WALLET
-    if (fParticlMode) {
+    if (fDarkpayMode) {
         CHDWallet::AddOptions();
     }
 #endif
@@ -643,7 +641,7 @@ void SetupServerArgs()
     gArgs.AddArg("-mocktime=<n>", "Replace actual time with <n> seconds since epoch (default: 0)", true, OptionsCategory::DEBUG_TEST);
     gArgs.AddArg("-maxsigcachesize=<n>", strprintf("Limit sum of signature cache and script execution cache sizes to <n> MiB (default: %u)", DEFAULT_MAX_SIG_CACHE_SIZE), true, OptionsCategory::DEBUG_TEST);
     gArgs.AddArg("-maxtipage=<n>", strprintf("Maximum tip age in seconds to consider node in initial block download (default: %u)", DEFAULT_MAX_TIP_AGE), true, OptionsCategory::DEBUG_TEST);
-    gArgs.AddArg("-maxtxfee=<amt>", strprintf("Maximum total fees (in %s) to use in a single wallet transaction; setting this too low may abort large transactions (default: %s)", // TODO move setting to wallet
+    gArgs.AddArg("-maxtxfee=<amt>", strprintf("Maximum total fees (in %s) to use in a single wallet transaction or raw transaction; setting this too low may abort large transactions (default: %s)",
         CURRENCY_UNIT, FormatMoney(DEFAULT_TRANSACTION_MAXFEE)), false, OptionsCategory::DEBUG_TEST);
     gArgs.AddArg("-printpriority", strprintf("Log transaction fee per kB when mining blocks (default: %u)", DEFAULT_PRINTPRIORITY), true, OptionsCategory::DEBUG_TEST);
     gArgs.AddArg("-printtoconsole", "Send trace/debug info to console (default: 1 when no -daemon. To disable logging to file, set -nodebuglogfile)", false, OptionsCategory::DEBUG_TEST);
@@ -682,7 +680,7 @@ void SetupServerArgs()
     gArgs.AddArg("-rpcuser=<user>", "Username for JSON-RPC connections", false, OptionsCategory::RPC);
     gArgs.AddArg("-rpcworkqueue=<n>", strprintf("Set the depth of the work queue to service RPC calls (default: %d)", DEFAULT_HTTP_WORKQUEUE), true, OptionsCategory::RPC);
     gArgs.AddArg("-server", "Accept command line and JSON-RPC commands", false, OptionsCategory::RPC);
-    gArgs.AddArg("-rpccorsdomain=<domain>", "Allow JSON-RPC connections from specified domain (e.g. http://localhost:4200 or \"*\"). This needs to be set if you are using the Particl GUI in a browser.", false, OptionsCategory::RPC);
+    gArgs.AddArg("-rpccorsdomain=<domain>", "Allow JSON-RPC connections from specified domain (e.g. http://localhost:4200 or \"*\"). This needs to be set if you are using the Darkpay GUI in a browser.", false, OptionsCategory::RPC);
 
     gArgs.AddArg("-displaylocaltime", "Display human readable time strings in local timezone (default: false)", false, OptionsCategory::RPC);
     gArgs.AddArg("-displayutctime", "Display human readable time strings in UTC (default: false)", false, OptionsCategory::RPC);
@@ -701,8 +699,8 @@ void SetupServerArgs()
 
 std::string LicenseInfo()
 {
-    const std::string URL_SOURCE_CODE = "<https://github.com/particl/particl-core>";
-    const std::string URL_WEBSITE = "<https://particl.io/>";
+    const std::string URL_SOURCE_CODE = "<https://github.com/DarkPayCoin/darkpay-core>";
+    const std::string URL_WEBSITE = "<https://darkpay.io/>";
 
     return CopyrightHolders(_("Copyright (C)")) + "\n" +
            "\n" +
@@ -807,7 +805,7 @@ static void CleanupBlockRevFiles()
 static void ThreadImport(std::vector<fs::path> vImportFiles)
 {
     const CChainParams& chainparams = Params();
-    RenameThread("particl-loadblk");
+    RenameThread("darkpay-loadblk");
     ScheduleBatchPriority();
 
     fBusyImporting = true;
@@ -818,8 +816,8 @@ static void ThreadImport(std::vector<fs::path> vImportFiles)
     if (fReindex) {
         int nFile = 0;
         while (true) {
-            FlatFilePos pos(nFile, 0);
-            if (!fs::exists(GetBlockPosFilename(pos)))
+            CDiskBlockPos pos(nFile, 0);
+            if (!fs::exists(GetBlockPosFilename(pos, "blk")))
                 break; // No block files left to reindex
             FILE *file = OpenBlockFile(pos, true);
             if (!file)
@@ -984,6 +982,19 @@ void InitParameterInteraction()
         if (gArgs.SoftSetBoolArg("-whitelistrelay", true))
             LogPrintf("%s: parameter interaction: -whitelistforcerelay=1 -> setting -whitelistrelay=1\n", __func__);
     }
+
+    // Warn if network-specific options (-addnode, -connect, etc) are
+    // specified in default section of config file, but not overridden
+    // on the command line or in this network's section of the config file.
+    std::string network = gArgs.GetChainName();
+    for (const auto& arg : gArgs.GetUnsuitableSectionOnlyArgs()) {
+        InitWarning(strprintf(_("Config setting for %s only applied on %s network when in [%s] section."), arg, network, network));
+    }
+
+    // Warn if unrecognized section name are present in the config file.
+    for (const auto& section : gArgs.GetUnrecognizedSections()) {
+        InitWarning(strprintf(_("Section [%s] is not recognized."), section));
+    }
 }
 
 static std::string ResolveErrMsg(const char * const optname, const std::string& strBind)
@@ -1088,11 +1099,11 @@ bool AppInitBasicSetup()
 
 bool AppInitParameterInteraction()
 {
-    fParticlMode = !gArgs.GetBoolArg("-btcmode", false); // qa tests
-    if (!fParticlMode) {
+    fDarkpayMode = !gArgs.GetBoolArg("-btcmode", false); // qa tests
+    if (!fDarkpayMode) {
         WITNESS_SCALE_FACTOR = WITNESS_SCALE_FACTOR_BTC;
         if (gArgs.GetBoolArg("-regtest", false)) {
-            ResetParams(CBaseChainParams::REGTEST, fParticlMode);
+            ResetParams(CBaseChainParams::REGTEST, fDarkpayMode);
         }
     }
 
@@ -1100,19 +1111,6 @@ bool AppInitParameterInteraction()
     // ********************************************************* Step 2: parameter interactions
 
     // also see: InitParameterInteraction()
-
-    // Warn if network-specific options (-addnode, -connect, etc) are
-    // specified in default section of config file, but not overridden
-    // on the command line or in this network's section of the config file.
-    std::string network = gArgs.GetChainName();
-    for (const auto& arg : gArgs.GetUnsuitableSectionOnlyArgs()) {
-        return InitError(strprintf(_("Config setting for %s only applied on %s network when in [%s] section."), arg, network, network));
-    }
-
-    // Warn if unrecognized section name are present in the config file.
-    for (const auto& section : gArgs.GetUnrecognizedSections()) {
-        InitWarning(strprintf("%s:%i " + _("Section [%s] is not recognized."), section.m_file, section.m_line, section.m_name));
-    }
 
     if (!fs::is_directory(GetBlocksDir())) {
         return InitError(strprintf(_("Specified blocks directory \"%s\" does not exist."), gArgs.GetArg("-blocksdir", "").c_str()));
@@ -1245,7 +1243,7 @@ bool AppInitParameterInteraction()
     }
 
     // TODO: Check pruning
-    if (fPruneMode && fParticlMode)
+    if (fPruneMode && fDarkpayMode)
     {
         LogPrintf("Block pruning disabled.  Todo.\n");
         fPruneMode = false;
@@ -1470,6 +1468,9 @@ bool AppInitMain(InitInterfaces& interfaces)
     RegisterAllCoreRPCCommands(tableRPC);
     RegisterSmsgRPCCommands(tableRPC);
     RegisterInsightRPCCommands(tableRPC);
+#ifdef ENABLE_WALLET
+    RegisterHDWalletRPCCommands(tableRPC);
+#endif
 #if ENABLE_USBDEVICE
     RegisterUSBDeviceRPC(tableRPC);
 #endif
@@ -1920,11 +1921,11 @@ bool AppInitMain(InitInterfaces& interfaces)
 
     // ********************************************************* Step 11: import blocks
 
-    if (!CheckDiskSpace(GetDataDir())) {
+    if (!CheckDiskSpace(/* additional_bytes */ 0, /* blocks_dir */ false)) {
         InitError(strprintf(_("Error: Disk space is low for %s"), GetDataDir()));
         return false;
     }
-    if (!CheckDiskSpace(GetBlocksDir())) {
+    if (!CheckDiskSpace(/* additional_bytes */ 0, /* blocks_dir */ true)) {
         InitError(strprintf(_("Error: Disk space is low for %s"), GetBlocksDir()));
         return false;
     }
@@ -1961,7 +1962,7 @@ bool AppInitMain(InitInterfaces& interfaces)
 
     // ********************************************************* Step 10.1: start secure messaging
 
-    if (fParticlMode) { // SMSG breaks functional tests with services flag, see version msg
+    if (fDarkpayMode) { // SMSG breaks functional tests with services flag, see version msg
 #ifdef ENABLE_WALLET
         auto vpwallets = GetWallets();
         smsgModule.Start(vpwallets.size() > 0 ? vpwallets[0] : nullptr, !gArgs.GetBoolArg("-smsg", true), gArgs.GetBoolArg("-smsgscanchain", false));
@@ -2057,7 +2058,7 @@ bool AppInitMain(InitInterfaces& interfaces)
 
     // ********************************************************* Step 12.5: start staking
     #ifdef ENABLE_WALLET
-    if (fParticlWallet) {
+    if (fDarkpayWallet) {
         StartThreadStakeMiner();
     }
     #endif

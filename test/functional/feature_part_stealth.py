@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-# Copyright (c) 2017-2018 The Particl Core developers
+# Copyright (c) 2017-2018 The Particl Core developers – modded for DarkPay
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 import json
 
-from test_framework.test_particl import ParticlTestFramework, isclose
+from test_framework.test_darkpay import DarkpayTestFramework, isclose
 from test_framework.util import connect_nodes_bi, assert_raises_rpc_error
 
 
-class StealthTest(ParticlTestFramework):
+class StealthTest(DarkpayTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = 3
@@ -148,11 +148,12 @@ class StealthTest(ParticlTestFramework):
         assert(isclose(ro[-1]['amount'], 0.6))
         assert('test 6' in str(ro[-1]))
 
-        nodes[2].walletpassphrase('qwerty234', 400)
+        ro = nodes[2].walletpassphrase('qwerty234', 400)
+
 
         # Start staking
-        nodes[0].walletsettings('stakelimit', {'height':1})
-        nodes[0].reservebalance(False)
+        ro = nodes[0].walletsettings('stakelimit', {'height':1})
+        ro = nodes[0].reservebalance(False)
 
         assert(self.wait_for_height(nodes[0], 1))
 

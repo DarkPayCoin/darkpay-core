@@ -4,115 +4,13 @@
 
 #include <key_io.h>
 #include <keystore.h>
+#include <policy/fees.h>
 #include <rpc/util.h>
 #include <tinyformat.h>
 #include <util/strencodings.h>
+#include <validation.h>
 
 InitInterfaces* g_rpc_interfaces = nullptr;
-
-void RPCTypeCheck(const UniValue& params,
-                  const std::list<UniValueType>& typesExpected,
-                  bool fAllowNull)
-{
-    unsigned int i = 0;
-    for (const UniValueType& t : typesExpected) {
-        if (params.size() <= i)
-            break;
-
-        const UniValue& v = params[i];
-        if (!(fAllowNull && v.isNull())) {
-            RPCTypeCheckArgument(v, t);
-        }
-        i++;
-    }
-}
-
-void RPCTypeCheckArgument(const UniValue& value, const UniValueType& typeExpected)
-{
-    if (!typeExpected.typeAny && value.type() != typeExpected.type) {
-        throw JSONRPCError(RPC_TYPE_ERROR, strprintf("Expected type %s, got %s", uvTypeName(typeExpected.type), uvTypeName(value.type())));
-    }
-}
-
-void RPCTypeCheckObj(const UniValue& o,
-    const std::map<std::string, UniValueType>& typesExpected,
-    bool fAllowNull,
-    bool fStrict)
-{
-    for (const auto& t : typesExpected) {
-        const UniValue& v = find_value(o, t.first);
-        if (!fAllowNull && v.isNull())
-            throw JSONRPCError(RPC_TYPE_ERROR, strprintf("Missing %s", t.first));
-
-        if (!(t.second.typeAny || v.type() == t.second.type || (fAllowNull && v.isNull()))) {
-            std::string err = strprintf("Expected type %s for %s, got %s",
-                uvTypeName(t.second.type), t.first, uvTypeName(v.type()));
-            throw JSONRPCError(RPC_TYPE_ERROR, err);
-        }
-    }
-
-    if (fStrict)
-    {
-        for (const std::string& k : o.getKeys())
-        {
-            if (typesExpected.count(k) == 0)
-            {
-                std::string err = strprintf("Unexpected key %s", k);
-                throw JSONRPCError(RPC_TYPE_ERROR, err);
-            }
-        }
-    }
-}
-
-CAmount AmountFromValue(const UniValue& value)
-{
-    if (!value.isNum() && !value.isStr())
-        throw JSONRPCError(RPC_TYPE_ERROR, "Amount is not a number or string");
-    CAmount amount;
-    if (!ParseFixedPoint(value.getValStr(), 8, &amount))
-        throw JSONRPCError(RPC_TYPE_ERROR, "Invalid amount");
-    if (!MoneyRange(amount))
-        throw JSONRPCError(RPC_TYPE_ERROR, "Amount out of range");
-    return amount;
-}
-
-uint256 ParseHashV(const UniValue& v, std::string strName)
-{
-    std::string strHex(v.get_str());
-    if (64 != strHex.length())
-        throw JSONRPCError(RPC_INVALID_PARAMETER, strprintf("%s must be of length %d (not %d, for '%s')", strName, 64, strHex.length(), strHex));
-    if (!IsHex(strHex)) // Note: IsHex("") is false
-        throw JSONRPCError(RPC_INVALID_PARAMETER, strName+" must be hexadecimal string (not '"+strHex+"')");
-    return uint256S(strHex);
-}
-uint256 ParseHashO(const UniValue& o, std::string strKey)
-{
-    return ParseHashV(find_value(o, strKey), strKey);
-}
-std::vector<unsigned char> ParseHexV(const UniValue& v, std::string strName)
-{
-    std::string strHex;
-    if (v.isStr())
-        strHex = v.get_str();
-    if (!IsHex(strHex))
-        throw JSONRPCError(RPC_INVALID_PARAMETER, strName+" must be hexadecimal string (not '"+strHex+"')");
-    return ParseHex(strHex);
-}
-std::vector<unsigned char> ParseHexO(const UniValue& o, std::string strKey)
-{
-    return ParseHexV(find_value(o, strKey), strKey);
-}
-
-std::string HelpExampleCli(const std::string& methodname, const std::string& args)
-{
-    return "> particl-cli " + methodname + " " + args + "\n";
-}
-
-std::string HelpExampleRpc(const std::string& methodname, const std::string& args)
-{
-    return "> curl --user myusername --data-binary '{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", "
-        "\"method\": \"" + methodname + "\", \"params\": [" + args + "] }' -H 'content-type: text/plain;' http://127.0.0.1:8332/\n";
-}
 
 // Converts a hex string to a public key if possible
 CPubKey HexToPubKey(const std::string& hex_in)
@@ -259,9 +157,10 @@ UniValue DescribeAddress(const CTxDestination& dest)
     return boost::apply_visitor(DescribeAddressVisitor(), dest);
 }
 
-unsigned int ParseConfirmTarget(const UniValue& value, unsigned int max_target)
+unsigned int ParseConfirmTarget(const UniValue& value)
 {
     int target = value.get_int();
+    unsigned int max_target = ::feeEstimator.HighestTargetTracked(FeeEstimateHorizon::LONG_HALFLIFE);
     if (target < 1 || (unsigned int)target > max_target) {
         throw JSONRPCError(RPC_INVALID_PARAMETER, strprintf("Invalid conf_target, must be between %u - %u", 1, max_target));
     }
@@ -311,10 +210,6 @@ UniValue JSONRPCTransactionError(TransactionError terr, const std::string& err_s
     }
 }
 
-/**
- * A pair of strings that can be aligned (through padding) with other Sections
- * later on
- */
 struct Section {
     Section(const std::string& left, const std::string& right)
         : m_left{left}, m_right{right} {}
@@ -322,10 +217,6 @@ struct Section {
     const std::string m_right;
 };
 
-/**
- * Keeps track of RPCArgs by transforming them into sections for the purpose
- * of serializing everything to a single string
- */
 struct Sections {
     std::vector<Section> m_sections;
     size_t m_max_pad{0};
@@ -336,26 +227,16 @@ struct Sections {
         m_sections.push_back(s);
     }
 
-    /**
-     * Serializing RPCArgs depends on the outer type. Only arrays and
-     * dictionaries can be nested in json. The top-level outer type is "named
-     * arguments", a mix between a dictionary and arrays.
-     */
     enum class OuterType {
         ARR,
         OBJ,
         NAMED_ARG, // Only set on first recursion
     };
 
-    /**
-     * Recursive helper to translate an RPCArg into sections
-     */
     void Push(const RPCArg& arg, const size_t current_indent = 5, const OuterType outer_type = OuterType::NAMED_ARG)
     {
         const auto indent = std::string(current_indent, ' ');
         const auto indent_next = std::string(current_indent + 2, ' ');
-        const bool push_name{outer_type == OuterType::OBJ}; // Dictionary keys must have a name
-
         switch (arg.m_type) {
         case RPCArg::Type::STR_HEX:
         case RPCArg::Type::STR:
@@ -365,10 +246,10 @@ struct Sections {
         case RPCArg::Type::BOOL: {
             if (outer_type == OuterType::NAMED_ARG) return; // Nothing more to do for non-recursive types on first recursion
             auto left = indent;
-            if (arg.m_type_str.size() != 0 && push_name) {
+            if (arg.m_type_str.size() != 0 && outer_type == OuterType::OBJ) {
                 left += "\"" + arg.m_name + "\": " + arg.m_type_str.at(0);
             } else {
-                left += push_name ? arg.ToStringObj(/* oneline */ false) : arg.ToString(/* oneline */ false);
+                left += outer_type == OuterType::OBJ ? arg.ToStringObj(/* oneline */ false) : arg.ToString(/* oneline */ false);
             }
             left += ",";
             PushSection({left, arg.ToDescriptionString()});
@@ -377,7 +258,7 @@ struct Sections {
         case RPCArg::Type::OBJ:
         case RPCArg::Type::OBJ_USER_KEYS: {
             const auto right = outer_type == OuterType::NAMED_ARG ? "" : arg.ToDescriptionString();
-            PushSection({indent + (push_name ? "\"" + arg.m_name + "\": " : "") + "{", right});
+            PushSection({indent + "{", right});
             for (const auto& arg_inner : arg.m_inner) {
                 Push(arg_inner, current_indent + 2, OuterType::OBJ);
             }
@@ -389,7 +270,7 @@ struct Sections {
         }
         case RPCArg::Type::ARR: {
             auto left = indent;
-            left += push_name ? "\"" + arg.m_name + "\": " : "";
+            left += outer_type == OuterType::OBJ ? "\"" + arg.m_name + "\": " : "";
             left += "[";
             const auto right = outer_type == OuterType::NAMED_ARG ? "" : arg.ToDescriptionString();
             PushSection({left, right});
@@ -405,9 +286,6 @@ struct Sections {
         }
     }
 
-    /**
-     * Concatenate all sections with proper padding
-     */
     std::string ToString() const
     {
         std::string ret;

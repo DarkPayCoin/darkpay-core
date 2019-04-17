@@ -1,9 +1,9 @@
-// Copyright (c) 2017-2018 The Particl Core developers
+// Copyright (c) 2017-2018 The Particl Core developers – modded for DarkPay
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PARTICL_WALLET_HDWALLETDB_H
-#define PARTICL_WALLET_HDWALLETDB_H
+#ifndef DARKPAY_WALLET_HDWALLETDB_H
+#define DARKPAY_WALLET_HDWALLETDB_H
 
 #include <amount.h>
 #include <primitives/transaction.h>
@@ -407,4 +407,4 @@ public:
 
 //void ThreadFlushHDWalletDB();
 
-#endif // PARTICL_WALLET_HDWALLETDB_H
+#endif // DARKPAY_WALLET_HDWALLETDB_H

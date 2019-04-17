@@ -1,10 +1,10 @@
-// Copyright (c) 2017 The Particl Core developers
+// Copyright (c) 2017 The Particl Core developers – modded for DarkPay
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <smsg/smessage.h>
 
-#include <test/setup_common.h>
+#include <test/test_bitcoin.h>
 #include <net.h>
 
 #ifdef ENABLE_WALLET
@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(smsg_test)
     int rv = 0;
     const int nKeys = 12;
     auto chain = interfaces::MakeChain();
-    std::shared_ptr<CWallet> wallet = std::make_shared<CWallet>(chain.get(), WalletLocation(), WalletDatabase::CreateDummy());
+    std::shared_ptr<CWallet> wallet = std::make_shared<CWallet>(*chain, WalletLocation(), WalletDatabase::CreateDummy());
     std::vector<CKey> keyOwn(nKeys);
     for (int i = 0; i < nKeys; i++) {
         InsecureNewKey(keyOwn[i], true);

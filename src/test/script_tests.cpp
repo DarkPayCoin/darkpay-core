@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2019 The Bitcoin Core developers
+// Copyright (c) 2011-2018 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -14,11 +14,11 @@
 #include <script/sign.h>
 #include <util/system.h>
 #include <util/strencodings.h>
-#include <test/setup_common.h>
-#include <rpc/util.h>
+#include <test/test_bitcoin.h>
+#include <rpc/server.h>
 
 #if defined(HAVE_CONSENSUS_LIB)
-#include <script/particlconsensus.h>
+#include <script/darkpayconsensus.h>
 #endif
 
 #include <fstream>

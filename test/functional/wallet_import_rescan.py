@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (c) 2014-2019 The Bitcoin Core developers
+# Copyright (c) 2014-2018 The Bitcoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Test wallet import RPCs.
@@ -20,12 +20,7 @@ happened previously.
 """
 
 from test_framework.test_framework import BitcoinTestFramework
-from test_framework.util import (
-    assert_raises_rpc_error,
-    connect_nodes,
-    assert_equal,
-    set_node_times,
-)
+from test_framework.util import (assert_raises_rpc_error, connect_nodes, sync_blocks, assert_equal, set_node_times)
 
 import collections
 import enum
@@ -166,7 +161,7 @@ class ImportRescanTest(BitcoinTestFramework):
         timestamp = self.nodes[0].getblockheader(self.nodes[0].getbestblockhash())["time"]
         set_node_times(self.nodes, timestamp + TIMESTAMP_WINDOW + 1)
         self.nodes[0].generate(1)
-        self.sync_blocks()
+        sync_blocks(self.nodes)
 
         # For each variation of wallet key import, invoke the import RPC and
         # check the results from getbalance and listtransactions.
@@ -192,7 +187,7 @@ class ImportRescanTest(BitcoinTestFramework):
         # Generate a block containing the new transactions.
         self.nodes[0].generate(1)
         assert_equal(self.nodes[0].getrawmempool(), [])
-        self.sync_blocks()
+        sync_blocks(self.nodes)
 
         # Check the latest results from getbalance and listtransactions.
         for variant in IMPORT_VARIANTS:

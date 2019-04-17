@@ -74,10 +74,10 @@
 // Application startup time (used for uptime calculation)
 const int64_t nStartupTime = GetTime();
 
-const char * const BITCOIN_CONF_FILENAME = "particl.conf";
+const char * const BITCOIN_CONF_FILENAME = "darkpay.conf";
 
-bool fParticlMode = true;
-bool fParticlWallet = false;
+bool fDarkpayMode = true;
+bool fDarkpayWallet = false;
 ArgsManager gArgs;
 
 /** A map that contains all the currently held directory locks. After
@@ -136,14 +136,6 @@ bool DirIsWritable(const fs::path& directory)
     remove(tmpFile);
 
     return true;
-}
-
-bool CheckDiskSpace(const fs::path& dir, uint64_t additional_bytes)
-{
-    constexpr uint64_t min_disk_space = 52428800; // 50 MiB
-
-    uint64_t free_bytes_available = fs::space(dir).available;
-    return free_bytes_available >= min_disk_space + additional_bytes;
 }
 
 /**
@@ -364,7 +356,8 @@ const std::set<std::string> ArgsManager::GetUnsuitableSectionOnlyArgs() const
     return unsuitables;
 }
 
-const std::list<SectionInfo> ArgsManager::GetUnrecognizedSections() const
+
+const std::set<std::string> ArgsManager::GetUnrecognizedSections() const
 {
     // Section names to be recognized in the config file.
     static const std::set<std::string> available_sections{
@@ -372,11 +365,14 @@ const std::list<SectionInfo> ArgsManager::GetUnrecognizedSections() const
         CBaseChainParams::TESTNET,
         CBaseChainParams::MAIN
     };
+    std::set<std::string> diff;
 
     LOCK(cs_args);
-    std::list<SectionInfo> unrecognized = m_config_sections;
-    unrecognized.remove_if([](const SectionInfo& appeared){ return available_sections.find(appeared.m_name) != available_sections.end(); });
-    return unrecognized;
+    std::set_difference(
+        m_config_sections.begin(), m_config_sections.end(),
+        available_sections.begin(), available_sections.end(),
+        std::inserter(diff, diff.end()));
+    return diff;
 }
 
 void ArgsManager::SelectConfigNetwork(const std::string& network)
@@ -824,10 +820,10 @@ std::string ArgsManager::GetHelpMessage() const
             case OptionsCategory::SMSG:
                 usage += HelpMessageGroup("SMSG Commands:");
                 break;
-            case OptionsCategory::PART_WALLET:
-                usage += HelpMessageGroup("Particl wallet Commands:");
+            case OptionsCategory::DKPC_WALLET:
+                usage += HelpMessageGroup("Darkpay wallet Commands:");
                 break;
-            case OptionsCategory::PART_STAKING:
+            case OptionsCategory::DKPC_STAKING:
                 usage += HelpMessageGroup("Staking Commands:");
                 break;
             default:
@@ -884,7 +880,7 @@ static std::string FormatException(const std::exception* pex, const char* pszThr
     char pszModule[MAX_PATH] = "";
     GetModuleFileNameA(nullptr, pszModule, sizeof(pszModule));
 #else
-    const char* pszModule = "particl";
+    const char* pszModule = "darkpay";
 #endif
     if (pex)
         return strprintf(
@@ -903,13 +899,13 @@ void PrintExceptionContinue(const std::exception* pex, const char* pszThread)
 
 fs::path GetDefaultDataDir()
 {
-    // Windows < Vista: C:\Documents and Settings\Username\Application Data\Particl
-    // Windows >= Vista: C:\Users\Username\AppData\Roaming\Particl
-    // Mac: ~/Library/Application Support/Particl
-    // Unix: ~/.particl
+    // Windows < Vista: C:\Documents and Settings\Username\Application Data\Darkpay
+    // Windows >= Vista: C:\Users\Username\AppData\Roaming\Darkpay
+    // Mac: ~/Library/Application Support/Darkpay
+    // Unix: ~/.darkpay
 #ifdef WIN32
     // Windows
-    return GetSpecialFolderPath(CSIDL_APPDATA) / "Particl";
+    return GetSpecialFolderPath(CSIDL_APPDATA) / "Darkpay";
 #else
     fs::path pathRet;
     char* pszHome = getenv("HOME");
@@ -919,10 +915,10 @@ fs::path GetDefaultDataDir()
         pathRet = fs::path(pszHome);
 #ifdef MAC_OSX
     // Mac
-    return pathRet / "Library/Application Support/Particl";
+    return pathRet / "Library/Application Support/Darkpay";
 #else
     // Unix
-    return pathRet / ".particl";
+    return pathRet / ".darkpay";
 #endif
 #endif
 }
@@ -1015,7 +1011,7 @@ static std::string TrimString(const std::string& str, const std::string& pattern
     return str.substr(front, end - front + 1);
 }
 
-static bool GetConfigOptions(std::istream& stream, const std::string& filepath, std::string& error, std::vector<std::pair<std::string, std::string>>& options, std::list<SectionInfo>& sections)
+static bool GetConfigOptions(std::istream& stream, std::string& error, std::vector<std::pair<std::string, std::string>>& options, std::set<std::string>& sections)
 {
     std::string str, prefix;
     std::string::size_type pos;
@@ -1031,7 +1027,7 @@ static bool GetConfigOptions(std::istream& stream, const std::string& filepath, 
         if (!str.empty()) {
             if (*str.begin() == '[' && *str.rbegin() == ']') {
                 const std::string section = str.substr(1, str.size() - 2);
-                sections.emplace_back(SectionInfo{section, filepath, linenr});
+                sections.insert(section);
                 prefix = section + '.';
             } else if (*str.begin() == '-') {
                 error = strprintf("parse error on line %i: %s, options in configuration file must be specified without leading -", linenr, str);
@@ -1044,8 +1040,8 @@ static bool GetConfigOptions(std::istream& stream, const std::string& filepath, 
                     return false;
                 }
                 options.emplace_back(name, value);
-                if ((pos = name.rfind('.')) != std::string::npos && prefix.length() <= pos) {
-                    sections.emplace_back(SectionInfo{name.substr(0, pos), filepath, linenr});
+                if ((pos = name.rfind('.')) != std::string::npos) {
+                    sections.insert(name.substr(0, pos));
                 }
             } else {
                 error = strprintf("parse error on line %i: %s", linenr, str);
@@ -1060,11 +1056,12 @@ static bool GetConfigOptions(std::istream& stream, const std::string& filepath, 
     return true;
 }
 
-bool ArgsManager::ReadConfigStream(std::istream& stream, const std::string& filepath, std::string& error, bool ignore_invalid_keys)
+bool ArgsManager::ReadConfigStream(std::istream& stream, std::string& error, bool ignore_invalid_keys)
 {
     LOCK(cs_args);
     std::vector<std::pair<std::string, std::string>> options;
-    if (!GetConfigOptions(stream, filepath, error, options, m_config_sections)) {
+    m_config_sections.clear();
+    if (!GetConfigOptions(stream, error, options, m_config_sections)) {
         return false;
     }
     for (const std::pair<std::string, std::string>& option : options) {
@@ -1095,7 +1092,6 @@ bool ArgsManager::ReadConfigFiles(std::string& error, bool ignore_invalid_keys)
     {
         LOCK(cs_args);
         m_config_args.clear();
-        m_config_sections.clear();
     }
 
     const std::string confPath = GetArg("-conf", BITCOIN_CONF_FILENAME);
@@ -1103,7 +1099,7 @@ bool ArgsManager::ReadConfigFiles(std::string& error, bool ignore_invalid_keys)
 
     // ok to not have a config file
     if (stream.good()) {
-        if (!ReadConfigStream(stream, confPath, error, ignore_invalid_keys)) {
+        if (!ReadConfigStream(stream, error, ignore_invalid_keys)) {
             return false;
         }
         // if there is an -includeconf in the override args, but it is empty, that means the user
@@ -1134,7 +1130,7 @@ bool ArgsManager::ReadConfigFiles(std::string& error, bool ignore_invalid_keys)
             for (const std::string& to_include : includeconf) {
                 fsbridge::ifstream include_config(GetConfigFile(to_include));
                 if (include_config.good()) {
-                    if (!ReadConfigStream(include_config, to_include, error, ignore_invalid_keys)) {
+                    if (!ReadConfigStream(include_config, error, ignore_invalid_keys)) {
                         return false;
                     }
                     LogPrintf("Included configuration file %s\n", to_include.c_str());
@@ -1428,11 +1424,11 @@ int GetNumCores()
 std::string CopyrightHolders(const std::string& strPrefix)
 {
     const int BTC_START_YEAR = 2009;
-    const int PART_START_YEAR = 2017;
+    const int DKPC_START_YEAR = 2017;
 
-    std::string sRange = PART_START_YEAR == COPYRIGHT_YEAR
+    std::string sRange = DKPC_START_YEAR == COPYRIGHT_YEAR
         ? strprintf(" %i ", COPYRIGHT_YEAR)
-        : strprintf(" %i-%i ", PART_START_YEAR, COPYRIGHT_YEAR);
+        : strprintf(" %i-%i ", DKPC_START_YEAR, COPYRIGHT_YEAR);
 
     std::string strCopyrightHolders = strPrefix + sRange + strprintf(_(COPYRIGHT_HOLDERS), _(COPYRIGHT_HOLDERS_SUBSTITUTION));
 

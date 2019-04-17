@@ -66,11 +66,11 @@
         <translation>آدرس‌های دریافتی</translation>
     </message>
     <message>
-        <source>These are your Particl addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
+        <source>These are your Darkpay addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
         <translation>این‌ها آدرس‌های بیتکوین برای پرداخت‌ها هستند. همیشه قبل از فرستادن سکه‌ها مقدار و آدرس دریافت‌کننده را بررسی نمایید.</translation>
     </message>
     <message>
-        <source>These are your Particl addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
+        <source>These are your Darkpay addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
         <translation>این‌ها آدرس‌های بیتکوین شما برای دریافت مبالغ می‌باشد. توصیه می‌شود برای هر تراکنش از یک آدرس جدید استفاده کنید.</translation>
     </message>
     <message>
@@ -140,6 +140,10 @@
         <translation>نمایش گذرواژه</translation>
     </message>
     <message>
+        <source>Enter the new passphrase to the wallet.&lt;br/&gt;Please use a passphrase of &lt;b&gt;ten or more random characters&lt;/b&gt;, or &lt;b&gt;eight or more words&lt;/b&gt;.</source>
+        <translation>کلمه رمز جدید را وارد کنید. &lt;br/&gt;لطفا کلمه رمزی که انتخاب میکنید &lt;b&gt;۱۰ یا بیشتر حرف تصادفی باشد &lt;b&gt; یا ۸ کلمه یا بیشتر باشد.</translation>
+    </message>
+    <message>
         <source>Encrypt wallet</source>
         <translation>رمزنگاری کیف پول</translation>
     </message>
@@ -178,6 +182,10 @@
     <message>
         <source>Wallet encrypted</source>
         <translation>کیف پول رمزنگاری شد</translation>
+    </message>
+    <message>
+        <source>Your wallet is now encrypted. Remember that encrypting your wallet cannot fully protect your darkpay from being stolen by malware infecting your computer.</source>
+        <translation>کیف بیت کوین رمزنگاری شد. به یاد داشته باشید رمزنگار کردن کیف بیت کوین نمیتواند به صورت کامل بیت کوین شما را در مقابل سرقت آنها توسط بدافزارهایی که ممکن است بر روی کامپیوتر شما نصب شوند، محافظت نماید.</translation>
     </message>
     <message>
         <source>Wallet encryption failed</source>
@@ -228,10 +236,6 @@
     <message>
         <source>&amp;Overview</source>
         <translation>&amp;بررسی اجمالی</translation>
-    </message>
-    <message>
-        <source>Node</source>
-        <translation>گره</translation>
     </message>
     <message>
         <source>Show general overview of wallet</source>
@@ -290,16 +294,12 @@
         <translation>&amp;تغییر گذرواژه...</translation>
     </message>
     <message>
-        <source>&amp;Sending addresses...</source>
-        <translation>&amp;در حال ارسال آدرس ها...</translation>
-    </message>
-    <message>
-        <source>&amp;Receiving addresses...</source>
-        <translation>&amp;در حال دریافت آدرس ها...</translation>
-    </message>
-    <message>
         <source>Open &amp;URI...</source>
         <translation>باز کردن &amp;آدرس</translation>
+    </message>
+    <message>
+        <source>Wallet:</source>
+        <translation>کیف:</translation>
     </message>
     <message>
         <source>Click to disable network activity.</source>
@@ -318,7 +318,7 @@
         <translation>بازنشانی بلوک‌ها روی دیسک...</translation>
     </message>
     <message>
-        <source>Send coins to a Particl address</source>
+        <source>Send coins to a Darkpay address</source>
         <translation>ارسال وجه به نشانی بیت‌کوین</translation>
     </message>
     <message>
@@ -342,12 +342,8 @@
         <translation>با&amp;زبینی پیام...</translation>
     </message>
     <message>
-        <source>Particl.</source>
+        <source>Darkpay</source>
         <translation>بیت‌کوین</translation>
-    </message>
-    <message>
-        <source>Wallet</source>
-        <translation>کیف پول</translation>
     </message>
     <message>
         <source>&amp;Send</source>
@@ -370,11 +366,11 @@
         <translation>رمزنگاری کلیدهای خصوصی متعلق به کیف پول شما</translation>
     </message>
     <message>
-        <source>Sign messages with your Particl addresses to prove you own them</source>
+        <source>Sign messages with your Darkpay addresses to prove you own them</source>
         <translation>برای اثبات اینکه پیام‌ها به شما تعلق دارند، آن‌ها را با نشانی بیت‌کوین خود امضا کنید</translation>
     </message>
     <message>
-        <source>Verify messages to ensure they were signed with specified Particl addresses</source>
+        <source>Verify messages to ensure they were signed with specified Darkpay addresses</source>
         <translation>برای حصول اطمینان از اینکه پیام با نشانی بیت‌کوین مشخص شده امضا است یا خیر، پیام را شناسایی کنید</translation>
     </message>
     <message>
@@ -394,7 +390,7 @@
         <translation>نوارابزار برگه‌ها</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and particl: URIs)</source>
+        <source>Request payments (generates QR codes and darkpay: URIs)</source>
         <translation>درخواست پرداخت ( تولید کد کیوار و ادرس بیت کوین)</translation>
     </message>
     <message>
@@ -406,7 +402,7 @@
         <translation>نمایش لیست آدرس های دریافت و لیبل ها</translation>
     </message>
     <message>
-        <source>Open a particl: URI or payment request</source>
+        <source>Open a darkpay: URI or payment request</source>
         <translation>بازکردن یک بیت کوین: آدرس یا درخواست پرداخت</translation>
     </message>
     <message>
@@ -414,7 +410,7 @@
         <translation>گزینه‌های خط‌فرمان</translation>
     </message>
     <message numerus="yes">
-        <source>%n active connection(s) to Particl network</source>
+        <source>%n active connection(s) to Darkpay network</source>
         <translation><numerusform>%n ارتباط فعال با شبکهٔ بیت‌کوین</numerusform><numerusform>%n ارتباط فعال با شبکهٔ بیت‌کوین</numerusform></translation>
     </message>
     <message>
@@ -452,6 +448,14 @@
     <message>
         <source>Up to date</source>
         <translation>وضعیت به‌روز</translation>
+    </message>
+    <message>
+        <source>&amp;Window</source>
+        <translation>&amp;پنجره</translation>
+    </message>
+    <message>
+        <source>Connecting to peers...</source>
+        <translation>در حال اتصال به همتایان</translation>
     </message>
     <message>
         <source>Catching up...</source>
@@ -658,7 +662,7 @@
         <translation>ویرایش آدرس قرستنده</translation>
     </message>
     <message>
-        <source>The entered address "%1" is not a valid Particl address.</source>
+        <source>The entered address "%1" is not a valid Darkpay address.</source>
         <translation>نشانی وارد شده "%1" یک نشانی معتبر بیت‌کوین نیست.</translation>
     </message>
     <message>
@@ -731,7 +735,7 @@
         <translation>استفاده از یک مسیر سفارشی:</translation>
     </message>
     <message>
-        <source>Particl.</source>
+        <source>Darkpay</source>
         <translation>بیت‌کوین</translation>
     </message>
     <message>
@@ -812,10 +816,6 @@
         <translation>اجرای خودکار %1 بعد زمان ورود به سیستم.</translation>
     </message>
     <message>
-        <source>MB</source>
-        <translation>مگابایت</translation>
-    </message>
-    <message>
         <source>Reset all client options to default.</source>
         <translation>بازنشانی تمام تنظیمات به پیش‌فرض.</translation>
     </message>
@@ -836,7 +836,7 @@
         <translation>استخراج</translation>
     </message>
     <message>
-        <source>Automatically open the Particl client port on the router. This only works when your router supports UPnP and it is enabled.</source>
+        <source>Automatically open the Darkpay client port on the router. This only works when your router supports UPnP and it is enabled.</source>
         <translation>باز کردن خودکار درگاه شبکهٔ بیت‌کوین روی روترها. تنها زمانی کار می‌کند که روتر از پروتکل UPnP پشتیبانی کند و این پروتکل فعال باشد.</translation>
     </message>
     <message>
@@ -939,7 +939,7 @@
         <translation>فرم</translation>
     </message>
     <message>
-        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Particl network after a connection is established, but this process has not completed yet.</source>
+        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Darkpay network after a connection is established, but this process has not completed yet.</source>
         <translation>اطلاعات نمایش‌داده شده ممکن است قدیمی باشند. بعد از این که یک اتصال با شبکه برقرار شد، کیف پول شما به‌صورت خودکار با شبکهٔ بیت‌کوین همگام‌سازی می‌شود. اما این روند هنوز کامل نشده است.</translation>
     </message>
     <message>
@@ -1016,7 +1016,7 @@
         <translation>مبلغ</translation>
     </message>
     <message>
-        <source>Enter a Particl address (e.g. %1)</source>
+        <source>Enter a Darkpay address (e.g. %1)</source>
         <translation>یک آدرس بیت‌کوین وارد کنید (مثلاً %1)</translation>
     </message>
     <message>
@@ -1496,7 +1496,7 @@
         <translation>این یک پرداخت عادی است</translation>
     </message>
     <message>
-        <source>The Particl address to send the payment to</source>
+        <source>The Darkpay address to send the payment to</source>
         <translation>نشانی بیت‌کوین برای ارسال پرداخت به آن</translation>
     </message>
     <message>
@@ -1549,7 +1549,7 @@
         <translation>ا&amp;مضای پیام</translation>
     </message>
     <message>
-        <source>The Particl address to sign the message with</source>
+        <source>The Darkpay address to sign the message with</source>
         <translation>نشانی بیت‌کوین برای امضاء پیغام با آن</translation>
     </message>
     <message>
@@ -1581,7 +1581,7 @@
         <translation>امضای فعلی را به حافظهٔ سیستم کپی کن</translation>
     </message>
     <message>
-        <source>Sign the message to prove you own this Particl address</source>
+        <source>Sign the message to prove you own this Darkpay address</source>
         <translation>برای اثبات تعلق این نشانی به شما، پیام را امضا کنید</translation>
     </message>
     <message>
@@ -1601,11 +1601,11 @@
         <translation>&amp;شناسایی پیام</translation>
     </message>
     <message>
-        <source>The Particl address the message was signed with</source>
+        <source>The Darkpay address the message was signed with</source>
         <translation>نشانی بیت‌کوین که پیغام با آن امضاء شده</translation>
     </message>
     <message>
-        <source>Verify the message to ensure it was signed with the specified Particl address</source>
+        <source>Verify the message to ensure it was signed with the specified Darkpay address</source>
         <translation>برای حصول اطمینان از اینکه پیام با نشانی بیت‌کوین مشخص شده امضا است یا خیر، پیام را شناسایی کنید</translation>
     </message>
     <message>
@@ -1811,6 +1811,9 @@
     <name>UnitDisplayStatusBarControl</name>
     </context>
 <context>
+    <name>WalletController</name>
+    </context>
+<context>
     <name>WalletFrame</name>
     </context>
 <context>
@@ -1846,8 +1849,8 @@
 <context>
     <name>bitcoin-core</name>
     <message>
-        <source>Particl Core</source>
-        <translation> هسته Particl </translation>
+        <source>Darkpay Core</source>
+        <translation> هسته Darkpay </translation>
     </message>
     <message>
         <source>Copyright (C) %i-%i</source>

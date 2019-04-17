@@ -24,7 +24,7 @@
 
 #include <univalue.h>
 
-extern bool fParticlMode;
+extern bool fDarkpayMode;
 
 static const size_t MAX_GETUTXOS_OUTPOINTS = 15; //allow a max of 15 outpoints to be queried at once
 
@@ -302,7 +302,7 @@ static bool rest_mempool_info(HTTPRequest* req, const std::string& strURIPart)
 
     switch (rf) {
     case RetFormat::JSON: {
-        UniValue mempoolInfoObject = MempoolInfoToJSON(::mempool);
+        UniValue mempoolInfoObject = mempoolInfoToJSON();
 
         std::string strJSON = mempoolInfoObject.write() + "\n";
         req->WriteHeader("Content-Type", "application/json");
@@ -324,7 +324,7 @@ static bool rest_mempool_contents(HTTPRequest* req, const std::string& strURIPar
 
     switch (rf) {
     case RetFormat::JSON: {
-        UniValue mempoolObject = MempoolToJSON(::mempool, true);
+        UniValue mempoolObject = mempoolToJSON(true);
 
         std::string strJSON = mempoolObject.write() + "\n";
         req->WriteHeader("Content-Type", "application/json");

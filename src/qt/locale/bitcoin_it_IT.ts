@@ -66,12 +66,12 @@
         <translation>Indirizzi riceventi</translation>
     </message>
     <message>
-        <source>These are your Particl addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
-        <translation>Questi sono i suoi indirizzi Particl per ricevere i pagamenti. Controlla sempre l'importo e gli indirizzi prima di inviare i coins.</translation>
+        <source>These are your Darkpay addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
+        <translation>Questi sono i suoi indirizzi Darkpay per ricevere i pagamenti. Controlla sempre l'importo e gli indirizzi prima di inviare i coins.</translation>
     </message>
     <message>
-        <source>These are your Particl addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
-        <translation>Questi sono i tuoi indirizzi Particl per ricevere i pagamenti. Si raccomanda di usare un nuovo indirizzo per ogni transazione.</translation>
+        <source>These are your Darkpay addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
+        <translation>Questi sono i tuoi indirizzi Darkpay per ricevere i pagamenti. Si raccomanda di usare un nuovo indirizzo per ogni transazione.</translation>
     </message>
     <message>
         <source>&amp;Copy Address</source>
@@ -172,8 +172,8 @@
         <translation>Conferma criptaggio portafoglio</translation>
     </message>
     <message>
-        <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR PARTICL&lt;/b&gt;!</source>
-        <translation>Attenzione: Se cripti il tuo portafoglio e perdi la password, &lt;b&gt;PERDERAI TUTTI I TUOI PARTICL&lt;/b&gt;!</translation>
+        <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR DARKPAY&lt;/b&gt;!</source>
+        <translation>Attenzione: Se cripti il tuo portafoglio e perdi la password, &lt;b&gt;PERDERAI TUTTI I TUOI DARKPAY&lt;/b&gt;!</translation>
     </message>
     <message>
         <source>Are you sure you wish to encrypt your wallet?</source>
@@ -182,10 +182,6 @@
     <message>
         <source>Wallet encrypted</source>
         <translation>Portafoglio criptato</translation>
-    </message>
-    <message>
-        <source>%1 will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your particl from being stolen by malware infecting your computer.</source>
-        <translation>%1 ora si chiuderà per concludere il processo di criptaggio. Ricorda che criptare il tuo portafoglio non può definitivamente proteggere i tuoi particl da furti tramite malware che infetta il tuo computer.</translation>
     </message>
     <message>
         <source>IMPORTANT: Any previous backups you have made of your wallet file should be replaced with the newly generated, encrypted wallet file. For security reasons, previous backups of the unencrypted wallet file will become useless as soon as you start using the new, encrypted wallet.</source>
@@ -250,10 +246,6 @@
         <translation>&amp;Panoramica</translation>
     </message>
     <message>
-        <source>Node</source>
-        <translation>Nodo</translation>
-    </message>
-    <message>
         <source>Show general overview of wallet</source>
         <translation>Mostra panoramica generale del portafoglio</translation>
     </message>
@@ -310,24 +302,12 @@
         <translation>Cambia Password...</translation>
     </message>
     <message>
-        <source>&amp;Sending addresses...</source>
-        <translation>Indirizzi di invio...</translation>
-    </message>
-    <message>
-        <source>&amp;Receiving addresses...</source>
-        <translation>Indirizzi di ricezione...</translation>
-    </message>
-    <message>
         <source>Open &amp;URI...</source>
         <translation>Apri &amp;URI...</translation>
     </message>
     <message>
         <source>Wallet:</source>
         <translation>Portafoglio</translation>
-    </message>
-    <message>
-        <source>default wallet</source>
-        <translation>Portafoglio predefinito</translation>
     </message>
     <message>
         <source>Click to disable network activity.</source>
@@ -350,8 +330,8 @@
         <translation>Reindicizzazione dei blocchi sul disco...</translation>
     </message>
     <message>
-        <source>Send coins to a Particl address</source>
-        <translation>Invia monete ad un indirizzo Particl...</translation>
+        <source>Send coins to a Darkpay address</source>
+        <translation>Invia monete ad un indirizzo Darkpay...</translation>
     </message>
     <message>
         <source>Backup wallet to another location</source>
@@ -374,12 +354,8 @@
         <translation>Verifica messaggio...</translation>
     </message>
     <message>
-        <source>Particl.</source>
-        <translation>Particl.</translation>
-    </message>
-    <message>
-        <source>Wallet</source>
-        <translation>Portafoglio</translation>
+        <source>Darkpay</source>
+        <translation>Darkpay</translation>
     </message>
     <message>
         <source>&amp;Send</source>
@@ -402,12 +378,12 @@
         <translation>Cripta le chiavi private che appartengono al tuo portafoglio</translation>
     </message>
     <message>
-        <source>Sign messages with your Particl addresses to prove you own them</source>
-        <translation>Firma messaggi con i tuoi indirizzi Particl per provare che li possiedi</translation>
+        <source>Sign messages with your Darkpay addresses to prove you own them</source>
+        <translation>Firma messaggi con i tuoi indirizzi Darkpay per provare che li possiedi</translation>
     </message>
     <message>
-        <source>Verify messages to ensure they were signed with specified Particl addresses</source>
-        <translation>Verifica messaggi per accertarti che siano firmati dagli indirizzi Particl specificati</translation>
+        <source>Verify messages to ensure they were signed with specified Darkpay addresses</source>
+        <translation>Verifica messaggi per accertarti che siano firmati dagli indirizzi Darkpay specificati</translation>
     </message>
     <message>
         <source>&amp;File</source>
@@ -426,8 +402,8 @@
         <translation>Barra degli strumenti</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and particl: URIs)</source>
-        <translation>Richiedi pagamenti (genera codici QR e particl: URI)</translation>
+        <source>Request payments (generates QR codes and darkpay: URIs)</source>
+        <translation>Richiedi pagamenti (genera codici QR e darkpay: URI)</translation>
     </message>
     <message>
         <source>Show the list of used sending addresses and labels</source>
@@ -438,8 +414,8 @@
         <translation>Mostra la lista degli indirizzi di ricezione usati e le relative etichette</translation>
     </message>
     <message>
-        <source>Open a particl: URI or payment request</source>
-        <translation>Apri un particl: URI o una richiesta di pagamento</translation>
+        <source>Open a darkpay: URI or payment request</source>
+        <translation>Apri un darkpay: URI o una richiesta di pagamento</translation>
     </message>
     <message>
         <source>&amp;Command-line options</source>
@@ -482,8 +458,12 @@
         <translation>Aggiornato</translation>
     </message>
     <message>
-        <source>Show the %1 help message to get a list with possible Particl command-line options</source>
-        <translation>Mostra il %1 messaggio d'aiuto per ottenere una lista con le possibili opzioni per la riga di comando di Particl.</translation>
+        <source>Show the %1 help message to get a list with possible Darkpay command-line options</source>
+        <translation>Mostra il %1 messaggio d'aiuto per ottenere una lista con le possibili opzioni per la riga di comando di Darkpay</translation>
+    </message>
+    <message>
+        <source>default wallet</source>
+        <translation>Portafoglio predefinito</translation>
     </message>
     <message>
         <source>Date: %1
@@ -524,8 +504,16 @@
         <translation>Transazione in arrivo</translation>
     </message>
     <message>
-        <source>A fatal error occurred. Particl can no longer continue safely and will quit.</source>
-        <translation>Si è verificato un errore fatale. Particl non può continuare in maniera sicura e sarà chiuso.</translation>
+        <source>HD key generation is &lt;b&gt;enabled&lt;/b&gt;</source>
+        <translation>Generazione  di chiavi HD &lt;b&gt;abilitata&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>HD key generation is &lt;b&gt;disabled&lt;/b&gt;</source>
+        <translation>Generazione di chiavi HD &lt;b&gt;disabilitata&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>A fatal error occurred. Darkpay can no longer continue safely and will quit.</source>
+        <translation>Si è verificato un errore fatale. Darkpay non può continuare in maniera sicura e sarà chiuso.</translation>
     </message>
 </context>
 <context>
@@ -698,8 +686,8 @@
         <translation>Modifica l'indirizzo di invio</translation>
     </message>
     <message>
-        <source>The entered address "%1" is not a valid Particl address.</source>
-        <translation>L'indirizzo inserito "%1" non è un indirizzo Particl valido.</translation>
+        <source>The entered address "%1" is not a valid Darkpay address.</source>
+        <translation>L'indirizzo inserito "%1" non è un indirizzo Darkpay valido.</translation>
     </message>
     <message>
         <source>Could not unlock wallet.</source>
@@ -755,8 +743,8 @@
         <translation>Benvenuto</translation>
     </message>
     <message>
-        <source>Particl.</source>
-        <translation>Particl.</translation>
+        <source>Darkpay</source>
+        <translation>Darkpay</translation>
     </message>
     <message>
         <source>The wallet will also be stored in this directory.</source>
@@ -770,12 +758,12 @@
 <context>
     <name>ModalOverlay</name>
     <message>
-        <source>Recent transactions may not yet be visible, and therefore your wallet's balance might be incorrect. This information will be correct once your wallet has finished synchronizing with the particl network, as detailed below.</source>
-        <translation>Le transazioni recenti potrebbero non essere ancora visibili, e quindi il saldo del wallet potrebbe essere incorretto. Questa informazione verra' corretta non appena il tuo wallet ha finito di sincronizzarsi con la rete particl, come specificato di seguito.</translation>
+        <source>Recent transactions may not yet be visible, and therefore your wallet's balance might be incorrect. This information will be correct once your wallet has finished synchronizing with the darkpay network, as detailed below.</source>
+        <translation>Le transazioni recenti potrebbero non essere ancora visibili, e quindi il saldo del wallet potrebbe essere incorretto. Questa informazione verra' corretta non appena il tuo wallet ha finito di sincronizzarsi con la rete darkpay, come specificato di seguito.</translation>
     </message>
     <message>
-        <source>Attempting to spend particl that are affected by not-yet-displayed transactions will not be accepted by the network.</source>
-        <translation>Tentare di spendere particl che sono affetti da transazioni non ancora mostrate, non verra' accettato dal network.</translation>
+        <source>Attempting to spend darkpay that are affected by not-yet-displayed transactions will not be accepted by the network.</source>
+        <translation>Tentare di spendere darkpay che sono affetti da transazioni non ancora mostrate, non verra' accettato dal network.</translation>
     </message>
     <message>
         <source>Number of blocks left</source>
@@ -815,19 +803,59 @@
         <translation>Saldo disponibile</translation>
     </message>
     <message>
+        <source>Total:</source>
+        <translation>Totale:</translation>
+    </message>
+    <message>
+        <source>Your current total balance</source>
+        <translation>Bilancio totale attuale</translation>
+    </message>
+    <message>
+        <source>Spendable:</source>
+        <translation>Spendibile:</translation>
+    </message>
+    <message>
         <source>Recent transactions</source>
         <translation>Transazioni recenti</translation>
     </message>
-    </context>
+    <message>
+        <source>Current total balance in watch-only addresses</source>
+        <translation>Bilancio totale attuale su indirizzi watch-only</translation>
+    </message>
+</context>
 <context>
     <name>PaymentServer</name>
+    <message>
+        <source>URI handling</source>
+        <translation>Gestione URI</translation>
+    </message>
+    <message>
+        <source>'darkpay://' is not a valid URI. Use 'darkpay:' instead.</source>
+        <translation>'darkpay://' non è un URI valido. Usa invece 'darkpay:'.</translation>
+    </message>
+    <message>
+        <source>Invalid payment address %1</source>
+        <translation>Indirizzo di pagamento non valido %1</translation>
+    </message>
     <message>
         <source>Payment request rejected</source>
         <translation>Richiesta di pagamento rifiutata</translation>
     </message>
     <message>
+        <source>Payment request expired.</source>
+        <translation>Richiesta di pagamento scaduta.</translation>
+    </message>
+    <message>
+        <source>Invalid payment request.</source>
+        <translation>Richiesta di pagamento non valida.</translation>
+    </message>
+    <message>
         <source>Refund from %1</source>
         <translation>Rimborso da %1</translation>
+    </message>
+    <message>
+        <source>Error communicating with %1: %2</source>
+        <translation>Errore nella comunicazione con %1: %2</translation>
     </message>
     </context>
 <context>
@@ -855,10 +883,6 @@
     <message>
         <source>Sent</source>
         <translation>Inviato</translation>
-    </message>
-    <message>
-        <source>default wallet</source>
-        <translation>Portafoglio predefinito</translation>
     </message>
     </context>
 <context>
@@ -955,6 +979,10 @@
     <message>
         <source>Copy change</source>
         <translation>Copia cambio</translation>
+    </message>
+    <message>
+        <source>Payment request expired.</source>
+        <translation>Richiesta di pagamento scaduta.</translation>
     </message>
     <message>
         <source>(no label)</source>
@@ -1055,11 +1083,18 @@
     <name>UnitDisplayStatusBarControl</name>
     </context>
 <context>
+    <name>WalletController</name>
+    </context>
+<context>
     <name>WalletFrame</name>
     </context>
 <context>
     <name>WalletModel</name>
-    </context>
+    <message>
+        <source>default wallet</source>
+        <translation>Portafoglio predefinito</translation>
+    </message>
+</context>
 <context>
     <name>WalletView</name>
     </context>

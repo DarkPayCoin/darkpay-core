@@ -8,8 +8,8 @@
 #include <policy/policy.h>
 
 #include <consensus/validation.h>
+#include <validation.h>
 #include <coins.h>
-#include <policy/settings.h>
 #include <tinyformat.h>
 #include <util/system.h>
 #include <util/strencodings.h>
@@ -93,15 +93,15 @@ CAmount GetDustThreshold(const CTxOutStandard *txout, const CFeeRate& dustRelayF
 bool IsDust(const CTxOutBase *txout, const CFeeRate& dustRelayFee)
 {
     if (txout->IsType(OUTPUT_STANDARD))
-        return (((CTxOutStandard*)txout)->nValue < GetDustThreshold((CTxOutStandard*)txout, dustRelayFee));
+        return (((CTxOutStandard*)txout)->nValue < GetDustThreshold((CTxOutStandard*)txout, minRelayTxFee));
     return false;
 };
 
-bool IsStandard(const CScript& scriptPubKey, txnouttype& whichType, int64_t time)
+bool IsStandard(const CScript& scriptPubKey, txnouttype& whichType)
 {
     const Consensus::Params& consensusParams = Params().GetConsensus();
 
-    if (time >= consensusParams.OpIsCoinstakeTime) {
+    if (chainActive.Time() >= consensusParams.OpIsCoinstakeTime) {
         // TODO: better method
         if (HasIsCoinstakeOp(scriptPubKey)) {
             CScript scriptA, scriptB;
@@ -133,9 +133,9 @@ bool IsStandard(const CScript& scriptPubKey, txnouttype& whichType, int64_t time
     return true;
 }
 
-bool IsStandardTx(const CTransaction& tx, bool permit_bare_multisig, const CFeeRate& dust_relay_fee, std::string& reason, int64_t time)
+bool IsStandardTx(const CTransaction& tx, std::string& reason)
 {
-    if (!tx.IsParticlVersion() && (tx.nVersion > CTransaction::MAX_STANDARD_VERSION || tx.nVersion < 1)) {
+    if (!tx.IsDarkpayVersion() && (tx.nVersion > CTransaction::MAX_STANDARD_VERSION || tx.nVersion < 1)) {
         reason = "version";
         return false;
     }
@@ -173,17 +173,17 @@ bool IsStandardTx(const CTransaction& tx, bool permit_bare_multisig, const CFeeR
     txnouttype whichType;
 
     for (const CTxOut& txout : tx.vout) {
-        if (!::IsStandard(txout.scriptPubKey, whichType, time)) {
+        if (!::IsStandard(txout.scriptPubKey, whichType)) {
             reason = "scriptpubkey";
             return false;
         }
 
         if (whichType == TX_NULL_DATA)
             nDataOut++;
-        else if ((whichType == TX_MULTISIG) && (!permit_bare_multisig)) {
+        else if ((whichType == TX_MULTISIG) && (!fIsBareMultisigStd)) {
             reason = "bare-multisig";
             return false;
-        } else if (IsDust(txout, dust_relay_fee)) {
+        } else if (IsDust(txout, ::dustRelayFee)) {
             reason = "dust";
             return false;
         }
@@ -195,7 +195,7 @@ bool IsStandardTx(const CTransaction& tx, bool permit_bare_multisig, const CFeeR
         if (!p->IsType(OUTPUT_STANDARD) && !p->IsType(OUTPUT_CT))
             continue;
 
-        if (!::IsStandard(*p->GetPScriptPubKey(), whichType, time)) {
+        if (!::IsStandard(*p->GetPScriptPubKey(), whichType)) {
             reason = "scriptpubkey";
             return false;
         }
@@ -236,53 +236,51 @@ bool IsStandardTx(const CTransaction& tx, bool permit_bare_multisig, const CFeeR
  * expensive-to-check-upon-redemption script like:
  *   DUP CHECKSIG DROP ... repeated 100 times... OP_1
  */
-bool AreInputsStandard(const CTransaction& tx, const CCoinsViewCache& mapInputs, int64_t time)
+bool AreInputsStandard(const CTransaction& tx, const CCoinsViewCache& mapInputs)
 {
     if (tx.IsCoinBase())
         return true; // Coinbases don't use vin normally
 
-    if (fParticlMode) {
-        for (unsigned int i = 0; i < tx.vin.size(); i++) {
-            if (tx.vin[i].IsAnonInput()) {
+    if (fDarkpayMode)
+    {
+        for (unsigned int i = 0; i < tx.vin.size(); i++)
+        {
+            if (tx.vin[i].IsAnonInput())
                 continue;
-            }
 
             const Coin& coin = mapInputs.AccessCoin(tx.vin[i].prevout);
             const CTxOut& prev = coin.out;
 
-            if (coin.nType != OUTPUT_STANDARD && coin.nType != OUTPUT_CT) {
+            if (coin.nType != OUTPUT_STANDARD && coin.nType != OUTPUT_CT)
                 return false;
-            }
 
             txnouttype whichType;
             // get the scriptPubKey corresponding to this input:
             const CScript& prevScript = prev.scriptPubKey;
 
             //if (!Solver(prevScript, whichType, vSolutions))
-            if (!::IsStandard(prevScript, whichType, time)) {
+            if (!::IsStandard(prevScript, whichType))
                 return false;
-            }
 
-            if (whichType == TX_SCRIPTHASH) {
-                if (tx.vin[i].scriptWitness.stack.size() < 1) {
+            if (whichType == TX_SCRIPTHASH)
+            {
+                if (tx.vin[i].scriptWitness.stack.size() < 1)
                     return false;
-                }
-                if (tx.vin[i].scriptWitness.stack.back().size() > MAX_STANDARD_P2WSH_SCRIPT_SIZE) {
+                if (tx.vin[i].scriptWitness.stack.back().size() > MAX_STANDARD_P2WSH_SCRIPT_SIZE)
                     return false;
-                }
                 size_t sizeWitnessStack = tx.vin[i].scriptWitness.stack.size() - 1;
-                if (sizeWitnessStack > MAX_STANDARD_P2WSH_STACK_ITEMS) {
+                if (sizeWitnessStack > MAX_STANDARD_P2WSH_STACK_ITEMS)
                     return false;
-                }
-                for (unsigned int j = 0; j < sizeWitnessStack; j++) {
-                    if (tx.vin[i].scriptWitness.stack[j].size() > MAX_STANDARD_P2WSH_STACK_ITEM_SIZE) {
+                for (unsigned int j = 0; j < sizeWitnessStack; j++)
+                {
+                    if (tx.vin[i].scriptWitness.stack[j].size() > MAX_STANDARD_P2WSH_STACK_ITEM_SIZE)
                         return false;
-                    }
                 }
-            }
-        }
+            };
+        };
+
         return true;
-    }
+    };
 
     for (unsigned int i = 0; i < tx.vin.size(); i++)
     {
@@ -348,7 +346,7 @@ bool IsWitnessStandard(const CTransaction& tx, const CCoinsViewCache& mapInputs)
             // into a stack. We do not check IsPushOnly nor compare the hash as these will be done later anyway.
             // If the check fails at this stage, we know that this txid must be a bad one.
 
-            if (!tx.IsParticlVersion())
+            if (!tx.IsDarkpayVersion())
             {
                 if (!EvalScript(stack, tx.vin[i].scriptSig, SCRIPT_VERIFY_NONE, BaseSignatureChecker(), SigVersion::BASE))
                     return false;
@@ -366,7 +364,7 @@ bool IsWitnessStandard(const CTransaction& tx, const CCoinsViewCache& mapInputs)
         std::vector<unsigned char> witnessprogram;
 
         // Non-witness program must not be associated with any witness
-        if (!tx.IsParticlVersion()
+        if (!tx.IsDarkpayVersion()
             && !prevScript.IsWitnessProgram(witnessversion, witnessprogram))
             return false;
 
@@ -389,17 +387,21 @@ bool IsWitnessStandard(const CTransaction& tx, const CCoinsViewCache& mapInputs)
     return true;
 }
 
-int64_t GetVirtualTransactionSize(int64_t nWeight, int64_t nSigOpCost, unsigned int bytes_per_sigop)
+CFeeRate incrementalRelayFee = CFeeRate(DEFAULT_INCREMENTAL_RELAY_FEE);
+CFeeRate dustRelayFee = CFeeRate(DUST_RELAY_TX_FEE);
+unsigned int nBytesPerSigOp = DEFAULT_BYTES_PER_SIGOP;
+
+int64_t GetVirtualTransactionSize(int64_t nWeight, int64_t nSigOpCost)
 {
-    return (std::max(nWeight, nSigOpCost * bytes_per_sigop) + WITNESS_SCALE_FACTOR - 1) / WITNESS_SCALE_FACTOR;
+    return (std::max(nWeight, nSigOpCost * nBytesPerSigOp) + WITNESS_SCALE_FACTOR - 1) / WITNESS_SCALE_FACTOR;
 }
 
-int64_t GetVirtualTransactionSize(const CTransaction& tx, int64_t nSigOpCost, unsigned int bytes_per_sigop)
+int64_t GetVirtualTransactionSize(const CTransaction& tx, int64_t nSigOpCost)
 {
-    return GetVirtualTransactionSize(GetTransactionWeight(tx), nSigOpCost, bytes_per_sigop);
+    return GetVirtualTransactionSize(GetTransactionWeight(tx), nSigOpCost);
 }
 
-int64_t GetVirtualTransactionInputSize(const CTxIn& txin, int64_t nSigOpCost, unsigned int bytes_per_sigop)
+int64_t GetVirtualTransactionInputSize(const CTxIn& txin, int64_t nSigOpCost)
 {
-    return GetVirtualTransactionSize(GetTransactionInputWeight(txin), nSigOpCost, bytes_per_sigop);
+    return GetVirtualTransactionSize(GetTransactionInputWeight(txin), nSigOpCost);
 }

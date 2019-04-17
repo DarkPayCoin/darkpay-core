@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-# Copyright (c) 2017-2018 The Particl Core developers
+# Copyright (c) 2017-2018 The Particl Core developers – modded for DarkPay
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-from test_framework.test_particl import ParticlTestFramework, isclose
+from test_framework.test_darkpay import DarkpayTestFramework, isclose
 from test_framework.util import connect_nodes_bi
 from test_framework.authproxy import JSONRPCException
 
 
-class PosTest(ParticlTestFramework):
+class PosTest(DarkpayTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = 4
@@ -43,27 +43,31 @@ class PosTest(ParticlTestFramework):
 
 
         # test reserve balance
-        nodes[0].walletsettings('stakelimit', {'height':1})
-        assert(isclose(nodes[0].getwalletinfo()['reserve'], 10000000.0))
+        ro = nodes[0].walletsettings('stakelimit', {'height':1})
+        ro = nodes[0].getwalletinfo()
+        assert(isclose(ro['reserve'], 10000000.0))
 
         ro = nodes[0].reservebalance(True, 100)
         assert(ro['reserve'] == True)
         assert(isclose(ro['amount'], 100.0))
 
-        assert(nodes[0].getwalletinfo()['reserve'] == 100)
+        ro = nodes[0].getwalletinfo()
+        assert(ro['reserve'] == 100)
 
         ro = nodes[0].reservebalance(False)
         assert(ro['reserve'] == False)
         assert(ro['amount'] == 0)
 
-        assert(nodes[0].getwalletinfo()['reserve'] == 0)
+        ro = nodes[0].getwalletinfo()
+        assert(ro['reserve'] == 0)
 
         assert(self.wait_for_height(nodes[0], 1))
-        nodes[0].reservebalance(True, 10000000)
+        ro = nodes[0].reservebalance(True, 10000000)
 
         addrTo = nodes[1].getnewaddress()
         txnHash = nodes[0].sendtoaddress(addrTo, 10)
-        assert(nodes[0].getmempoolentry(txnHash)['height'] == 1)
+        ro = nodes[0].getmempoolentry(txnHash)
+        assert(ro['height'] == 1)
 
         ro = nodes[0].listtransactions()
         fPass = False

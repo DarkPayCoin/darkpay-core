@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (c) 2015-2019 The Bitcoin Core developers
+# Copyright (c) 2015-2018 The Bitcoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Test the ZMQ notification interface."""
@@ -10,6 +10,7 @@ from test_framework.test_framework import BitcoinTestFramework
 from test_framework.messages import CTransaction
 from test_framework.util import (
     assert_equal,
+    bytes_to_hex_str,
     hash256,
 )
 from io import BytesIO
@@ -93,17 +94,17 @@ class ZMQTest (BitcoinTestFramework):
             tx = CTransaction()
             tx.deserialize(BytesIO(hex))
             tx.calc_sha256()
-            assert_equal(tx.hash, txid.hex())
+            assert_equal(tx.hash, bytes_to_hex_str(txid))
 
             # Should receive the generated block hash.
-            hash = self.hashblock.receive().hex()
+            hash = bytes_to_hex_str(self.hashblock.receive())
             assert_equal(genhashes[x], hash)
             # The block should only have the coinbase txid.
-            assert_equal([txid.hex()], self.nodes[1].getblock(hash)["tx"])
+            assert_equal([bytes_to_hex_str(txid)], self.nodes[1].getblock(hash)["tx"])
 
             # Should receive the generated raw block.
             block = self.rawblock.receive()
-            assert_equal(genhashes[x], hash256(block[:80]).hex())
+            assert_equal(genhashes[x], bytes_to_hex_str(hash256(block[:80])))
 
         if self.is_wallet_compiled():
             self.log.info("Wait for tx from second node")
@@ -112,11 +113,11 @@ class ZMQTest (BitcoinTestFramework):
 
             # Should receive the broadcasted txid.
             txid = self.hashtx.receive()
-            assert_equal(payment_txid, txid.hex())
+            assert_equal(payment_txid, bytes_to_hex_str(txid))
 
             # Should receive the broadcasted raw transaction.
             hex = self.rawtx.receive()
-            assert_equal(payment_txid, hash256(hex).hex())
+            assert_equal(payment_txid, bytes_to_hex_str(hash256(hex)))
 
 
         self.log.info("Test the getzmqnotifications RPC")

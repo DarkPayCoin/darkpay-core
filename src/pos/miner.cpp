@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018 The Particl Core developers
+// Copyright (c) 2017-2018 The Particl Core developers – modded for DarkPay
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -152,7 +152,7 @@ bool ImportOutputs(CBlockTemplate *pblocktemplate, int nHeight)
     }
 
     CMutableTransaction txn;
-    txn.nVersion = PARTICL_TXN_VERSION;
+    txn.nVersion = DARKPAY_TXN_VERSION;
     txn.SetType(TXN_COINBASE);
     txn.nLockTime = 0;
     txn.vin.push_back(CTxIn()); // null prevout
@@ -244,7 +244,7 @@ void StartThreadStakeMiner()
             size_t nEnd = (i == nThreads-1) ? nWallets : nPerThread * (i+1);
             StakeThread *t = new StakeThread();
             vStakeThreads.push_back(t);
-            GetParticlWallet(vpwallets[i].get())->nStakeThread = i;
+            GetDarkpayWallet(vpwallets[i].get())->nStakeThread = i;
             t->sName = strprintf("miner%d", i);
             t->thread = std::thread(&TraceThread<std::function<void()> >, t->sName.c_str(), std::function<void()>(std::bind(&ThreadStakeMiner, i, vpwallets, nStart, nEnd)));
         }
@@ -339,7 +339,7 @@ void ThreadStakeMiner(size_t nThreadID, std::vector<std::shared_ptr<CWallet>> &v
 
         if (fTryToSync) {
             fTryToSync = false;
-            if (num_nodes < 3 || nBestHeight < num_blocks_of_peers) {
+            if (num_nodes < 1 || nBestHeight < num_blocks_of_peers) { // ROM
                 fIsStaking = false;
                 LogPrint(BCLog::POS, "%s: TryToSync\n", __func__);
                 condWaitFor(nThreadID, 30000);
@@ -388,7 +388,7 @@ void ThreadStakeMiner(size_t nThreadID, std::vector<std::shared_ptr<CWallet>> &v
         size_t nWaitFor = 60000;
         CAmount reserve_balance;
         for (size_t i = nStart; i < nEnd; ++i) {
-            auto pwallet = GetParticlWallet(vpwallets[i].get());
+            auto pwallet = GetDarkpayWallet(vpwallets[i].get());
 
             if (!pwallet->fStakingEnabled) {
                 pwallet->m_is_staking = CHDWallet::NOT_STAKING_DISABLED;

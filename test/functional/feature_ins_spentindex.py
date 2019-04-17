@@ -7,11 +7,11 @@
 # Test addressindex generation and fetching
 #
 
-from test_framework.test_particl import ParticlTestFramework
+from test_framework.test_darkpay import DarkpayTestFramework
 from test_framework.util import connect_nodes, assert_equal
 
 
-class SpentIndexTest(ParticlTestFramework):
+class SpentIndexTest(DarkpayTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = 4
@@ -73,7 +73,7 @@ class SpentIndexTest(ParticlTestFramework):
 
         txsigned = nodes[0].signrawtransactionwithwallet(txfunded['hex'])
 
-        sent_txid = nodes[0].sendrawtransaction(txsigned['hex'], 0)
+        sent_txid = nodes[0].sendrawtransaction(txsigned['hex'], True)
 
 
         self.stakeBlocks(1)

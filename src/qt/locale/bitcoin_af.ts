@@ -62,12 +62,12 @@
         <translation>Ontvanger adresse</translation>
     </message>
     <message>
-        <source>These are your Particl addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
-        <translation>Hierdie is die adresse vanwaar u Particl betalings stuur. U moet altyd die bedrag en die adres van die ontvanger nagaan voordat u enige munte stuur.</translation>
+        <source>These are your Darkpay addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
+        <translation>Hierdie is die adresse vanwaar u Darkpay betalings stuur. U moet altyd die bedrag en die adres van die ontvanger nagaan voordat u enige munte stuur.</translation>
     </message>
     <message>
-        <source>These are your Particl addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
-        <translation>Hierdie is die adresse waar u Particl sal ontvang. Ons beveel aan dat u 'n nuwe adres kies vir elke transaksie</translation>
+        <source>These are your Darkpay addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
+        <translation>Hierdie is die adresse waar u Darkpay sal ontvang. Ons beveel aan dat u 'n nuwe adres kies vir elke transaksie</translation>
     </message>
     <message>
         <source>&amp;Copy Address</source>
@@ -172,8 +172,8 @@
         <translation>Bevestig dat die beursie gekodifiseer is</translation>
     </message>
     <message>
-        <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR PARTICL&lt;/b&gt;!</source>
-        <translation>Waarskuwing: Indien u die beursie kodifiseer en u vergeet u wagwoord &lt;b&gt;VERLOOR U AL U PARTICL&lt;/b&gt;!</translation>
+        <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR DARKPAY&lt;/b&gt;!</source>
+        <translation>Waarskuwing: Indien u die beursie kodifiseer en u vergeet u wagwoord &lt;b&gt;VERLOOR U AL U DARKPAY&lt;/b&gt;!</translation>
     </message>
     <message>
         <source>Are you sure you wish to encrypt your wallet?</source>
@@ -246,10 +246,6 @@
         <translation>&amp;Oorsig</translation>
     </message>
     <message>
-        <source>Node</source>
-        <translation>Node</translation>
-    </message>
-    <message>
         <source>Show general overview of wallet</source>
         <translation>Vertoon 'n algemene oorsig van die beursie</translation>
     </message>
@@ -306,14 +302,6 @@
         <translation>&amp;Verander Wagwoord</translation>
     </message>
     <message>
-        <source>&amp;Sending addresses...</source>
-        <translation>&amp;Versending adresse...</translation>
-    </message>
-    <message>
-        <source>&amp;Receiving addresses...</source>
-        <translation>&amp;Ontvanger adresse</translation>
-    </message>
-    <message>
         <source>Open &amp;URI...</source>
         <translation>Oop &amp; URI...</translation>
     </message>
@@ -334,8 +322,8 @@
         <translation>Besig met herindeksering van blokke op hardeskyf...</translation>
     </message>
     <message>
-        <source>Send coins to a Particl address</source>
-        <translation>Stuur munte na 'n Particl adres</translation>
+        <source>Send coins to a Darkpay address</source>
+        <translation>Stuur munte na 'n Darkpay adres</translation>
     </message>
     <message>
         <source>Backup wallet to another location</source>
@@ -358,12 +346,8 @@
         <translation>&amp;Verifieer boodskap...</translation>
     </message>
     <message>
-        <source>Particl.</source>
-        <translation>Particl.</translation>
-    </message>
-    <message>
-        <source>Wallet</source>
-        <translation>Beursie</translation>
+        <source>Darkpay</source>
+        <translation>Darkpay</translation>
     </message>
     <message>
         <source>&amp;Send</source>
@@ -386,12 +370,12 @@
         <translation>Kodifiseer die private sleutes wat aan jou beursie gekoppel is.</translation>
     </message>
     <message>
-        <source>Sign messages with your Particl addresses to prove you own them</source>
-        <translation>Onderteken boodskappe met u Particl adresse om u eienaarskap te bewys</translation>
+        <source>Sign messages with your Darkpay addresses to prove you own them</source>
+        <translation>Onderteken boodskappe met u Darkpay adresse om u eienaarskap te bewys</translation>
     </message>
     <message>
-        <source>Verify messages to ensure they were signed with specified Particl addresses</source>
-        <translation>Verifieër boodskappe om seker te maak dat dit met die gespesifiseerde Particl adresse</translation>
+        <source>Verify messages to ensure they were signed with specified Darkpay addresses</source>
+        <translation>Verifieër boodskappe om seker te maak dat dit met die gespesifiseerde Darkpay adresse</translation>
     </message>
     <message>
         <source>&amp;File</source>
@@ -410,8 +394,8 @@
         <translation>Orebalk</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and particl: URIs)</source>
-        <translation>Versoek betalings (genereer QR-kodes en particl: URI's)</translation>
+        <source>Request payments (generates QR codes and darkpay: URIs)</source>
+        <translation>Versoek betalings (genereer QR-kodes en darkpay: URI's)</translation>
     </message>
     <message>
         <source>Show the list of used sending addresses and labels</source>
@@ -422,8 +406,8 @@
         <translation>Vertoon die lys van gebruikte ontvangers-adresse en etikette</translation>
     </message>
     <message>
-        <source>Open a particl: URI or payment request</source>
-        <translation>Skep 'n particl: URI of betalingsversoek</translation>
+        <source>Open a darkpay: URI or payment request</source>
+        <translation>Skep 'n darkpay: URI of betalingsversoek</translation>
     </message>
     <message>
         <source>&amp;Command-line options</source>
@@ -464,6 +448,10 @@
     <message>
         <source>Up to date</source>
         <translation>Op datum</translation>
+    </message>
+    <message>
+        <source>&amp;Window</source>
+        <translation>&amp;Venster</translation>
     </message>
     <message>
         <source>%1 client</source>
@@ -516,8 +504,8 @@
         <translation>Inkomende transaksie</translation>
     </message>
     <message>
-        <source>A fatal error occurred. Particl can no longer continue safely and will quit.</source>
-        <translation>'N fatale fout het voorgekom. Particl kan nie meer veilig voortgaan nie en sal nou toemaak.</translation>
+        <source>A fatal error occurred. Darkpay can no longer continue safely and will quit.</source>
+        <translation>'N fatale fout het voorgekom. Darkpay kan nie meer veilig voortgaan nie en sal nou toemaak.</translation>
     </message>
 </context>
 <context>
@@ -706,8 +694,8 @@
         <translation>Wysig stuur adres</translation>
     </message>
     <message>
-        <source>The entered address "%1" is not a valid Particl address.</source>
-        <translation>Die ingevoerde adres "%1" is nie 'n geldige Particl adres nie.</translation>
+        <source>The entered address "%1" is not a valid Darkpay address.</source>
+        <translation>Die ingevoerde adres "%1" is nie 'n geldige Darkpay adres nie.</translation>
     </message>
     <message>
         <source>Could not unlock wallet.</source>
@@ -779,8 +767,8 @@
         <translation>Gebruik 'n persoonlike data gids:</translation>
     </message>
     <message>
-        <source>Particl.</source>
-        <translation>Particl.</translation>
+        <source>Darkpay</source>
+        <translation>Darkpay</translation>
     </message>
     <message>
         <source>The wallet will also be stored in this directory.</source>
@@ -833,11 +821,7 @@
         <source>Hide</source>
         <translation>Versteek</translation>
     </message>
-    <message>
-        <source>Unknown. Syncing Headers (%1)...</source>
-        <translation>Onbekend. Besig Met Sinchroniseer Van Hoofde (%1)...</translation>
-    </message>
-</context>
+    </context>
 <context>
     <name>OpenURIDialog</name>
     <message>
@@ -884,16 +868,8 @@
         <translation>Grootte van &amp;databasis kas</translation>
     </message>
     <message>
-        <source>MB</source>
-        <translation>MG</translation>
-    </message>
-    <message>
         <source>Number of script &amp;verification threads</source>
         <translation>Aantal skrip &amp;verifikasie drade</translation>
-    </message>
-    <message>
-        <source>Active command-line options that override above options:</source>
-        <translation>Aktiewe opdrag lyn opsies wat die boonste opsies ignoreer:</translation>
     </message>
     <message>
         <source>Open the %1 configuration file from the working directory.</source>
@@ -1144,8 +1120,8 @@
         <translation>Bedrag</translation>
     </message>
     <message>
-        <source>Enter a Particl address (e.g. %1)</source>
-        <translation>Voer in 'n Particl adres (bv. %1)</translation>
+        <source>Enter a Darkpay address (e.g. %1)</source>
+        <translation>Voer in 'n Darkpay adres (bv. %1)</translation>
     </message>
     <message>
         <source>%1 d</source>
@@ -1547,7 +1523,7 @@
     <message>
         <source>Using the fallbackfee can result in sending a transaction that will take several hours or days (or never) to confirm. Consider choosing your fee manually or wait until you have validated the complete chain.</source>
         <translation>Die verstekfooi kan veroorsaak dat 'n transaksie gestuur word wat
-etlike ure of dae (of nooit) sal neem om te bevestig. Oorweeg om
+etlike ure of dae (of nooit) sal neem om te bevestig. Oorweeg om 
 'n fooi met die hand te kies, of wag tot jy die hele ketting bevestig het.</translation>
     </message>
     <message>
@@ -1565,13 +1541,6 @@ etlike ure of dae (of nooit) sal neem om te bevestig. Oorweeg om
     <message>
         <source>Hide</source>
         <translation>Versteek</translation>
-    </message>
-    <message>
-        <source>Paying only the minimum fee is just fine as long as there is less transaction volume than space in the blocks. But be aware that this can end up in a never confirming transaction once there is more demand for particl transactions than the network can process.</source>
-        <translation>Om die minimumfooi te betaal is in die haak, mits daar minder transaksievolume
-as ruimte in die blok is. Wees bewus dat de gevolg kan wees dat 'n transaksie nooit
-bevestig nie indien daar meer aanvraag vir particl transaksies is as wat die netwerk kan
-verwerk.</translation>
     </message>
     <message>
         <source>Recommended:</source>
@@ -1607,7 +1576,7 @@ verwerk.</translation>
     </message>
     <message>
         <source>Enable Replace-By-Fee</source>
-        <translation>Bemontlik vervang-deur-fooi</translation>
+        <translation>Bemoontlik vervang-deur-fooi</translation>
     </message>
     <message>
         <source>With Replace-By-Fee (BIP-125) you can increase a transaction's fee after it is sent. Without this, a higher fee may be recommended to compensate for increased transaction delay risk.</source>
@@ -1617,11 +1586,11 @@ transaksievertragingsrisiko.</translation>
     </message>
     <message>
         <source>Clear &amp;All</source>
-        <translation>Maak skoon &amp;Alles</translation>
+        <translation>Vee &amp;Alles skoon</translation>
     </message>
     <message>
         <source>Balance:</source>
-        <translation>Balans:</translation>
+        <translation>Saldo:</translation>
     </message>
     <message>
         <source>Confirm the send action</source>
@@ -1728,12 +1697,8 @@ transaksievertragingsrisiko.</translation>
         <translation>Betalings versoek verstryk.</translation>
     </message>
     <message>
-        <source>Pay only the required fee of %1</source>
-        <translation>Betaal slegs die verlangde fooi van %1</translation>
-    </message>
-    <message>
-        <source>Warning: Invalid Particl address</source>
-        <translation>Waarskuwing: Ongeldige Particladres</translation>
+        <source>Warning: Invalid Darkpay address</source>
+        <translation>Waarskuwing: Ongeldige Darkpayadres</translation>
     </message>
     <message>
         <source>The address you selected for change is not part of this wallet. Any or all funds in your wallet may be sent to this address. Are you sure?</source>
@@ -1758,15 +1723,15 @@ Is u seker?</translation>
     </message>
     <message>
         <source>Choose previously used address</source>
-        <translation>Kies voorhen gebruikte adres</translation>
+        <translation>Kies voorheen gebruikte adres</translation>
     </message>
     <message>
         <source>This is a normal payment.</source>
         <translation>Hierdie is 'n gewone betaling</translation>
     </message>
     <message>
-        <source>The Particl address to send the payment to</source>
-        <translation>Die Particladres waarheen die betaling gestuur word</translation>
+        <source>The Darkpay address to send the payment to</source>
+        <translation>Die Darkpayadres waarheen die betaling gestuur word</translation>
     </message>
     <message>
         <source>Alt+A</source>
@@ -1781,9 +1746,9 @@ Is u seker?</translation>
         <translation>Verwyder hierdie inskrywing</translation>
     </message>
     <message>
-        <source>The fee will be deducted from the amount being sent. The recipient will receive less particl than you enter in the amount field. If multiple recipients are selected, the fee is split equally.</source>
+        <source>The fee will be deducted from the amount being sent. The recipient will receive less darkpay than you enter in the amount field. If multiple recipients are selected, the fee is split equally.</source>
         <translation>De fooi word afgetrek van die gestuurde bedrag.
-Die ontvanger sal minder ontvang as wat u in die
+Die ontvanger sal minder ontvang as wat u in die 
 bedrag opgee. As daar meer as een ontvanger is,
 word die fooi eweredig verdeel.</translation>
     </message>
@@ -1805,7 +1770,8 @@ word die fooi eweredig verdeel.</translation>
     </message>
     <message>
         <source>This is an authenticated payment request.</source>
-        <translation>Hierdie is 'n gemagtigde uitbetalingsversoek</translation>
+        <translation>Hierdie is 'n gemagtigde uitbetalingsversoek
+</translation>
     </message>
     <message>
         <source>Pay To:</source>
@@ -1830,7 +1796,7 @@ word die fooi eweredig verdeel.</translation>
     </message>
     <message>
         <source>Choose previously used address</source>
-        <translation>Kies voorhen gebruikte adres</translation>
+        <translation>Kies voorheen gebruikte adres</translation>
     </message>
     <message>
         <source>Alt+A</source>
@@ -1846,7 +1812,7 @@ word die fooi eweredig verdeel.</translation>
     </message>
     <message>
         <source>Clear &amp;All</source>
-        <translation>Maak skoon &amp;Alles</translation>
+        <translation>Vee &amp;Alles skoon</translation>
     </message>
     <message>
         <source>&amp;Verify Message</source>
@@ -2043,6 +2009,9 @@ word die fooi eweredig verdeel.</translation>
     <name>UnitDisplayStatusBarControl</name>
     </context>
 <context>
+    <name>WalletController</name>
+    </context>
+<context>
     <name>WalletFrame</name>
     </context>
 <context>
@@ -2070,8 +2039,8 @@ word die fooi eweredig verdeel.</translation>
 <context>
     <name>bitcoin-core</name>
     <message>
-        <source>Particl Core</source>
-        <translation>Particl Kern</translation>
+        <source>Darkpay Core</source>
+        <translation>Darkpay Kern</translation>
     </message>
     <message>
         <source>Error loading %s</source>

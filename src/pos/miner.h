@@ -1,9 +1,9 @@
-// Copyright (c) 2017 The Particl Core developers
+// Copyright (c) 2017 The Particl Core developers – modded for DarkPay
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PARTICL_POS_MINER_H
-#define PARTICL_POS_MINER_H
+#ifndef DARKPAY_POS_MINER_H
+#define DARKPAY_POS_MINER_H
 
 #include <primitives/block.h>
 #include <thread>
@@ -45,5 +45,5 @@ bool ThreadStakeMinerStopped(); // replace interruption_point
 
 void ThreadStakeMiner(size_t nThreadID, std::vector<std::shared_ptr<CWallet>> &vpwallets, size_t nStart, size_t nEnd);
 
-#endif // PARTICL_POS_MINER_H
+#endif // DARKPAY_POS_MINER_H
 

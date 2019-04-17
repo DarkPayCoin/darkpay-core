@@ -1,9 +1,9 @@
-// Copyright (c) 2017-2019 The Particl Core developers
+// Copyright (c) 2017-2019 The Particl Core developers – modded for DarkPay
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PARTICL_WALLET_HDWALLET_H
-#define PARTICL_WALLET_HDWALLET_H
+#ifndef DARKPAY_WALLET_HDWALLET_H
+#define DARKPAY_WALLET_HDWALLET_H
 
 #include <wallet/wallet.h>
 #include <wallet/hdwalletdb.h>
@@ -25,7 +25,6 @@ typedef std::map<uint256, CTransactionRecord> MapRecords_t;
 typedef std::multimap<int64_t, std::map<uint256, CTransactionRecord>::iterator> RtxOrdered_t;
 
 class UniValue;
-typedef struct secp256k1_scratch_space_struct secp256k1_scratch_space;
 
 const uint16_t OR_PLACEHOLDER_N = 0xFFFF; // index of a fake output to contain reconstructed amounts for txns with undecodeable outputs
 enum OutputRecordFlags
@@ -358,7 +357,7 @@ public:
 class CHDWallet : public CWallet
 {
 public:
-    CHDWallet(interfaces::Chain* chain, const WalletLocation& location, std::unique_ptr<WalletDatabase> dbw_in) : CWallet(chain, location, std::move(dbw_in)) {};
+    CHDWallet(interfaces::Chain& chain, const WalletLocation& location, std::unique_ptr<WalletDatabase> dbw_in) : CWallet(chain, location, std::move(dbw_in)) {};
 
     ~CHDWallet()
     {
@@ -465,12 +464,14 @@ public:
     bool InMempool(const uint256 &hash) const;
     bool IsTrusted(interfaces::Chain::Lock& locked_chain, const uint256 &hash, const uint256 &blockhash, int nIndex = 0) const;
 
-    CAmount GetSpendableBalance() const; // Includes watch_only_cs balance
+    CAmount GetBalance(const isminefilter& filter=ISMINE_SPENDABLE, const int min_depth=0) const override;
+    CAmount GetSpendableBalance() const;        // Includes watch_only_cs balance
+    CAmount GetUnconfirmedBalance() const override;
     CAmount GetBlindBalance();
     CAmount GetAnonBalance();
     CAmount GetStaked();
+    CAmount GetLegacyBalance(const isminefilter& filter, int minDepth) const override;
 
-    Balance GetBalance(int min_depth = 0) const override;
     bool GetBalances(CHDWalletBalances &bal);
     CAmount GetAvailableBalance(const CCoinControl* coinControl = nullptr) const override;
     CAmount GetAvailableAnonBalance(const CCoinControl* coinControl = nullptr) const;
@@ -482,41 +483,41 @@ public:
     int GetChangeAddress(CPubKey &pk);
 
     void AddOutputRecordMetaData(CTransactionRecord &rtx, std::vector<CTempRecipient> &vecSend);
-    int ExpandTempRecipients(std::vector<CTempRecipient> &vecSend, CStoredExtKey *pc, std::string &sError);
+    int ExpandTempRecipients(std::vector<CTempRecipient> &vecSend, CStoredExtKey *pc, std::string &sError) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
-    int AddCTData(CTxOutBase *txout, CTempRecipient &r, std::string &sError) EXCLUSIVE_LOCKS_REQUIRED(cs_wallet);
+    int AddCTData(CTxOutBase *txout, CTempRecipient &r, std::string &sError) EXCLUSIVE_LOCKS_REQUIRED(cs_main, cs_wallet);
 
     bool SetChangeDest(const CCoinControl *coinControl, CTempRecipient &r, std::string &sError);
 
     /** Update wallet after successful transaction */
     int PostProcessTempRecipients(std::vector<CTempRecipient> &vecSend);
 
-    int AddStandardInputs(interfaces::Chain::Lock& locked_chain, CWalletTx &wtx, CTransactionRecord &rtx,
+    int AddStandardInputs(CWalletTx &wtx, CTransactionRecord &rtx,
         std::vector<CTempRecipient> &vecSend,
         CExtKeyAccount *sea, CStoredExtKey *pc,
-        bool sign, CAmount &nFeeRet, const CCoinControl *coinControl, std::string &sError);
-    int AddStandardInputs(interfaces::Chain::Lock& locked_chain, CWalletTx &wtx, CTransactionRecord &rtx,
-        std::vector<CTempRecipient> &vecSend, bool sign, CAmount &nFeeRet, const CCoinControl *coinControl, std::string &sError);
+        bool sign, CAmount &nFeeRet, const CCoinControl *coinControl, std::string &sError) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
+    int AddStandardInputs(CWalletTx &wtx, CTransactionRecord &rtx,
+        std::vector<CTempRecipient> &vecSend, bool sign, CAmount &nFeeRet, const CCoinControl *coinControl, std::string &sError) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
-    int AddBlindedInputs(interfaces::Chain::Lock& locked_chain, CWalletTx &wtx, CTransactionRecord &rtx,
+    int AddBlindedInputs(CWalletTx &wtx, CTransactionRecord &rtx,
         std::vector<CTempRecipient> &vecSend,
         CExtKeyAccount *sea, CStoredExtKey *pc,
-        bool sign, CAmount &nFeeRet, const CCoinControl *coinControl, std::string &sError);
-    int AddBlindedInputs(interfaces::Chain::Lock& locked_chain, CWalletTx &wtx, CTransactionRecord &rtx,
-        std::vector<CTempRecipient> &vecSend, bool sign, CAmount &nFeeRet, const CCoinControl *coinControl, std::string &sError);
+        bool sign, CAmount &nFeeRet, const CCoinControl *coinControl, std::string &sError) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
+    int AddBlindedInputs(CWalletTx &wtx, CTransactionRecord &rtx,
+        std::vector<CTempRecipient> &vecSend, bool sign, CAmount &nFeeRet, const CCoinControl *coinControl, std::string &sError) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
 
     int PlaceRealOutputs(std::vector<std::vector<int64_t> > &vMI, size_t &nSecretColumn, size_t nRingSize, std::set<int64_t> &setHave,
         const std::vector<std::pair<MapRecords_t::const_iterator,unsigned int> > &vCoins, std::vector<uint8_t> &vInputBlinds, std::string &sError);
-    int PickHidingOutputs(interfaces::Chain::Lock& locked_chain, std::vector<std::vector<int64_t> > &vMI, size_t nSecretColumn, size_t nRingSize, std::set<int64_t> &setHave,
+    int PickHidingOutputs(std::vector<std::vector<int64_t> > &vMI, size_t nSecretColumn, size_t nRingSize, std::set<int64_t> &setHave,
         std::string &sError);
 
-    int AddAnonInputs(interfaces::Chain::Lock& locked_chain, CWalletTx &wtx, CTransactionRecord &rtx,
+    int AddAnonInputs(CWalletTx &wtx, CTransactionRecord &rtx,
         std::vector<CTempRecipient> &vecSend,
         CExtKeyAccount *sea, CStoredExtKey *pc,
-        bool sign, size_t nRingSize, size_t nInputsPerSig, CAmount &nFeeRet, const CCoinControl *coinControl, std::string &sError);
-    int AddAnonInputs(interfaces::Chain::Lock& locked_chain, CWalletTx &wtx, CTransactionRecord &rtx,
-        std::vector<CTempRecipient> &vecSend, bool sign, size_t nRingSize, size_t nInputsPerSig, CAmount &nFeeRet, const CCoinControl *coinControl, std::string &sError);
+        bool sign, size_t nRingSize, size_t nInputsPerSig, CAmount &nFeeRet, const CCoinControl *coinControl, std::string &sError) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
+    int AddAnonInputs(CWalletTx &wtx, CTransactionRecord &rtx,
+        std::vector<CTempRecipient> &vecSend, bool sign, size_t nRingSize, size_t nInputsPerSig, CAmount &nFeeRet, const CCoinControl *coinControl, std::string &sError) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
 
     void ClearCachedBalances() override;
@@ -618,8 +619,9 @@ public:
                            std::string& strFailReason, const CCoinControl& coin_control, bool sign = true) override;
     bool CreateTransaction(interfaces::Chain::Lock& locked_chain, std::vector<CTempRecipient>& vecSend, CTransactionRef& tx, CReserveKey& reservekey, CAmount& nFeeRet, int& nChangePosInOut,
                            std::string& strFailReason, const CCoinControl& coin_control, bool sign = true);
-    bool CommitTransaction(CTransactionRef tx, mapValue_t mapValue, std::vector<std::pair<std::string, std::string>> orderForm, CReserveKey& reservekey, CValidationState& state) override;
-    bool CommitTransaction(CWalletTx &wtxNew, CTransactionRecord &rtx, CReserveKey &reservekey, CValidationState &state);
+    bool CommitTransaction(CTransactionRef tx, mapValue_t mapValue, std::vector<std::pair<std::string, std::string>> orderForm, CReserveKey& reservekey, CConnman* connman, CValidationState& state) override;
+    bool CommitTransaction(CWalletTx &wtxNew, CTransactionRecord &rtx,
+        CReserveKey &reservekey, CConnman *connman, CValidationState &state);
 
     bool DummySignInput(CTxIn &tx_in, const CTxOut &txout, bool use_max_sig = false) const override;
 
@@ -671,8 +673,8 @@ public:
     bool AddToRecord(CTransactionRecord &rtxIn, const CTransaction &tx,
         const uint256& block_hash, int posInBlock, bool fFlushOnClose=true);
 
-    std::vector<uint256> ResendRecordTransactionsBefore(interfaces::Chain::Lock& locked_chain, int64_t nTime);
-    void ResendWalletTransactions() override;
+    std::vector<uint256> ResendRecordTransactionsBefore(interfaces::Chain::Lock& locked_chain, int64_t nTime, CConnman *connman);
+    void ResendWalletTransactions(int64_t nBestBlockTime, CConnman *connman) override EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
     /**
      * populate vCoins with vector of available COutputs.
@@ -782,7 +784,6 @@ public:
     int64_t nRCTOutSelectionGroup2 = 50000;
     size_t prefer_max_num_anon_inputs = 5; // if > x anon inputs are randomly selected attempt to reduce
     int m_mixin_selection_mode = 1;
-    secp256k1_scratch_space *m_blind_scratch = nullptr;
 
     int m_collapse_spent_mode = 0;
     int m_min_collapse_depth = 3;
@@ -824,7 +825,7 @@ public:
 int LoopExtKeysInDB(CHDWallet *pwallet, bool fInactive, bool fInAccount, LoopExtKeyCallback &callback);
 int LoopExtAccountsInDB(CHDWallet *pwallet, bool fInactive, LoopExtKeyCallback &callback);
 
-bool CheckOutputValue(interfaces::Chain& chain, const CTempRecipient &r, const CTxOutBase *txbout, CAmount nFeeRet, std::string sError);
+bool CheckOutputValue(const CTempRecipient &r, const CTxOutBase *txbout, CAmount nFeeRet, std::string sError);
 int CreateOutput(OUTPUT_PTR<CTxOutBase> &txbout, CTempRecipient &r, std::string &sError);
 void ExtractNarration(const uint256 &nonce, const std::vector<uint8_t> &vData, std::string &sNarr);
 
@@ -837,10 +838,10 @@ int64_t CalculateMaximumSignedTxSize(const CTransaction &tx, const CHDWallet *wa
 
 void RestartStakingThreads();
 
-bool IsParticlWallet(const CKeyStore *win);
-CHDWallet *GetParticlWallet(CKeyStore *win);
-const CHDWallet *GetParticlWallet(const CKeyStore *win);
+bool IsDarkpayWallet(const CKeyStore *win);
+CHDWallet *GetDarkpayWallet(CKeyStore *win);
+const CHDWallet *GetDarkpayWallet(const CKeyStore *win);
 
 
-#endif // PARTICL_WALLET_HDWALLET_H
+#endif // DARKPAY_WALLET_HDWALLET_H
 

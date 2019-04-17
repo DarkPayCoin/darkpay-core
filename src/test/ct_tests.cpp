@@ -1,8 +1,8 @@
-// Copyright (c) 2017-2018 The Particl Core developers
+// Copyright (c) 2017-2018 The Particl Core developers – modded for DarkPay
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <test/setup_common.h>
+#include <test/test_bitcoin.h>
 
 #include <crypto/sha256.h>
 

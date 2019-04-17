@@ -1,6 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
-// Copyright (c) 2017 The Particl Core developers
+// Copyright (c) 2017 The Particl Core developers – modded for DarkPay
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -97,11 +97,16 @@ void AddUri(JSONRPCRequest &request, std::string wallet)
 
 void CallRPC(UniValue &rv, const JSONRPCRequest &request)
 {
-    if (RPCIsInWarmup(nullptr)) SetRPCWarmupFinished();
+    const CRPCCommand *cmd = tableRPC[request.strMethod];
+
+    if (!cmd)
+        throw std::runtime_error(strprintf("CallRPC Unknown command, %s.", request.strMethod));
+    rpcfn_type method = tableRPC[request.strMethod]->actor;
     try {
-        rv= tableRPC.execute(request);
+        rv = (*method)(request);
     }
     catch (const UniValue& objError) {
         throw std::runtime_error(find_value(objError, "message").get_str());
     }
+    return;
 }

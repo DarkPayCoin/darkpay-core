@@ -83,10 +83,9 @@ public:
 constexpr uint8_t BASIC_FILTER_P = 19;
 constexpr uint32_t BASIC_FILTER_M = 784931;
 
-enum class BlockFilterType : uint8_t
+enum BlockFilterType : uint8_t
 {
     BASIC = 0,
-    INVALID = 255,
 };
 
 /**
@@ -96,7 +95,7 @@ enum class BlockFilterType : uint8_t
 class BlockFilter
 {
 private:
-    BlockFilterType m_filter_type = BlockFilterType::INVALID;
+    BlockFilterType m_filter_type;
     uint256 m_block_hash;
     GCSFilter m_filter;
 

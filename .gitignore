@@ -1,14 +1,14 @@
 *.tar.gz
 
 *.exe
-src/particl
-src/particld
-src/particl-cli
-src/particl-tx
-src/particl-wallet
-src/test/test_particl
-src/test/test_particl_fuzzy
-src/qt/test/test_particl-qt
+src/darkpay
+src/darkpayd
+src/darkpay-cli
+src/darkpay-tx
+src/darkpay-wallet
+src/test/test_darkpay
+src/test/test_darkpay_fuzzy
+src/qt/test/test_darkpay-qt
 
 # autoreconf
 src/Makefile.in
@@ -52,11 +52,11 @@ src/qt/bitcoin-qt.creator.user
 src/qt/bitcoin-qt.files
 src/qt/bitcoin-qt.includes
 
-src/qt/particl-qt.config
-src/qt/particl-qt.creator
-src/qt/particl-qt.creator.user
-src/qt/particl-qt.files
-src/qt/particl-qt.includes
+src/qt/darkpay-qt.config
+src/qt/darkpay-qt.creator
+src/qt/darkpay-qt.creator.user
+src/qt/darkpay-qt.files
+src/qt/darkpay-qt.includes
 
 .deps
 .dirstamp
@@ -73,7 +73,6 @@ src/qt/particl-qt.includes
 *.a
 *.pb.cc
 *.pb.h
-*.dat
 
 *.log
 *.trs
@@ -89,13 +88,13 @@ src/qt/particl-qt.includes
 # Compilation and Qt preprocessor part
 *.qm
 Makefile
-particl-qt
-Particl-Qt.app
+darkpay-qt
+Darkpay-Qt.app
 background.tiff*
 
 # Unit-tests
 Makefile.test
-particl-qt_test
+darkpay-qt_test
 
 # Resources cpp
 qrc_*.cpp
@@ -108,7 +107,7 @@ build
 *.gcno
 *.gcda
 /*.info
-test_particl.coverage/
+test_darkpay.coverage/
 total.coverage/
 coverage_percent.txt
 
@@ -123,7 +122,7 @@ test/cache/*
 
 /doc/doxygen/
 
-libparticlconsensus.pc
+libdarkpayconsensus.pc
 contrib/devtools/split-debug.sh
 
 # Output from running db4 installation
@@ -131,5 +130,3 @@ db4/
 
 .project
 .vscode
-# clang-check
-*.plist

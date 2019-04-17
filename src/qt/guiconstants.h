@@ -46,11 +46,11 @@ static const int MAX_URI_LENGTH = 255;
 /* Number of frames in spinner animation */
 #define SPINNER_FRAMES 36
 
-#define QAPP_ORG_NAME "Particl"
-#define QAPP_ORG_DOMAIN "particl.io"
-#define QAPP_APP_NAME_DEFAULT "Particl-Qt"
-#define QAPP_APP_NAME_TESTNET "Particl-Qt-testnet"
-#define QAPP_APP_NAME_REGTEST "Particl-Qt-regtest"
+#define QAPP_ORG_NAME "Darkpay"
+#define QAPP_ORG_DOMAIN "darkpaycoin.io"
+#define QAPP_APP_NAME_DEFAULT "Darkpay-Qt"
+#define QAPP_APP_NAME_TESTNET "Darkpay-Qt-testnet"
+#define QAPP_APP_NAME_REGTEST "Darkpay-Qt-regtest"
 
 /* One gigabyte (GB) in bytes */
 static constexpr uint64_t GB_BYTES{1000000000};
