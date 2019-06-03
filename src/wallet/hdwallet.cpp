@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Particl Core developers – modded for DarkPay
+// Copyright (c) 2017-2019 The Darkpay Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -1436,7 +1436,11 @@ DBErrors CHDWallet::LoadWallet(bool& fFirstRunRet)
         PrepareLookahead(); // Must happen after ExtKeyLoadAccountPacks
     }
 
-    return CWallet::LoadWallet(fFirstRunRet);
+    auto rv = CWallet::LoadWallet(fFirstRunRet);
+    if (pEKMaster || !idDefaultAccount.IsNull()) {
+        fFirstRunRet = false; // if fFirstRun is true, CreateWalletFromFile -> upgrade -> ChainStateFlushed -> WriteBestBlock before catch-up rescan tries to run
+    }
+    return rv;
 }
 
 bool CHDWallet::SetAddressBook(CHDWalletDB *pwdb, const CTxDestination &address, const std::string &strName,

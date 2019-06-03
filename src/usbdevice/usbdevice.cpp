@@ -1,4 +1,4 @@
-// Copyright (c) 2018 The Particl Core developers – modded for DarkPay
+// Copyright (c) 2018 The Darkpay Core developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -26,7 +26,9 @@ namespace usb_device {
 
 const DeviceType usbDeviceTypes[] = {
     DeviceType(0xffff, 0x0001, "Debug", "Device", USBDEVICE_DEBUG),
+    DeviceType(0x2c97, 0x0000, "Ledger", "Blue", USBDEVICE_LEDGER_BLUE),
     DeviceType(0x2c97, 0x0001, "Ledger", "Nano S", USBDEVICE_LEDGER_NANO_S),
+    DeviceType(0x2c97, 0x0004, "Ledger", "Nano X", USBDEVICE_LEDGER_NANO_X),
     //DeviceType(0x534c, 0x0001, "Trezor", "One", USBDEVICE_TREZOR_ONE),
 };
 
@@ -96,7 +98,7 @@ void ListHIDDevices(std::vector<std::unique_ptr<CUSBDevice> > &vDevices)
                 continue;
             }
 
-            if (type.type == USBDEVICE_LEDGER_NANO_S
+            if ((type.type == USBDEVICE_LEDGER_BLUE || type.type == USBDEVICE_LEDGER_NANO_S || type.type == USBDEVICE_LEDGER_NANO_X)
                 && MatchLedgerInterface(cur_dev)) {
                 char mbs[128];
                 wcstombs(mbs, cur_dev->serial_number, sizeof(mbs));

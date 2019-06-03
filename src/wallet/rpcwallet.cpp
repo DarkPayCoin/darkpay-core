@@ -1054,7 +1054,7 @@ static UniValue sendmany(const JSONRPCRequest& request)
             "\nSend two amounts to two different addresses setting the confirmation and comment:\n"
             + HelpExampleCli("sendmany", "\"\" \"{\\\"PswXnorAgjpAtaySWkPSmWQe3Fc8LmviVc\\\":0.01,\\\"PvhJj4j9s6SsuRsAkPZUfHPCjZRNKLeuqP\\\":0.02}\" 6 \"testing\"") +
             "\nSend two amounts to two different addresses, subtract fee from amount:\n"
-            + HelpExampleCli("sendmany", "\"\" \"{\\\"PswXnorAgjpAtaySWkPSmWQe3Fc8LmviVc\\\":0.01,\\\"PvhJj4j9s6SsuRsAkPZUfHPCjZRNKLeuqP\\\":0.02}\" 1 \"\" \"[\\\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XX\\\",\\\"1353tsE8YMTA4EuV7dgUXGjNFf9KpVvKHz\\\"]\"") +
+            + HelpExampleCli("sendmany", "\"\" \"{\\\"PswXnorAgjpAtaySWkPSmWQe3Fc8LmviVc\\\":0.01,\\\"PvhJj4j9s6SsuRsAkPZUfHPCjZRNKLeuqP\\\":0.02}\" 1 \"\" \"[\\\"PswXnorAgjpAtaySWkPSmWQe3Fc8LmviVc\\\",\\\"PvhJj4j9s6SsuRsAkPZUfHPCjZRNKLeuqP\\\"]\"") +
             "\nAs a JSON-RPC call\n"
             + HelpExampleRpc("sendmany", "\"\", {\"PswXnorAgjpAtaySWkPSmWQe3Fc8LmviVc\":0.01,\"PvhJj4j9s6SsuRsAkPZUfHPCjZRNKLeuqP\":0.02}, 6, \"testing\"")
                 },
@@ -4285,7 +4285,7 @@ class DescribeWalletAddressVisitor : public boost::static_visitor<UniValue>
 public:
     CWallet * const pwallet;
 
-    void ProcessSubScript(const CScript& subscript, UniValue& obj, bool include_addresses = false) const
+    void ProcessSubScript(const CScript& subscript, UniValue& obj) const
     {
         // Always present: script type and redeemscript
         std::vector<std::vector<unsigned char>> solutions_data;
@@ -4294,7 +4294,6 @@ public:
         obj.pushKV("hex", HexStr(subscript.begin(), subscript.end()));
 
         CTxDestination embedded;
-        UniValue a(UniValue::VARR);
         if (ExtractDestination(subscript, embedded)) {
             // Only when the script corresponds to an address.
             UniValue subobj(UniValue::VOBJ);
@@ -4307,7 +4306,6 @@ public:
             // Always report the pubkey at the top level, so that `getnewaddress()['pubkey']` always works.
             if (subobj.exists("pubkey")) obj.pushKV("pubkey", subobj["pubkey"]);
             obj.pushKV("embedded", std::move(subobj));
-            if (include_addresses) a.push_back(EncodeDestination(embedded));
         } else if (which_type == TX_MULTISIG) {
             // Also report some information on multisig scripts (which do not have a corresponding address).
             // TODO: abstract out the common functionality between this logic and ExtractDestinations.
@@ -4315,17 +4313,10 @@ public:
             UniValue pubkeys(UniValue::VARR);
             for (size_t i = 1; i < solutions_data.size() - 1; ++i) {
                 CPubKey key(solutions_data[i].begin(), solutions_data[i].end());
-                if (include_addresses) a.push_back(EncodeDestination(key.GetID()));
                 pubkeys.push_back(HexStr(key.begin(), key.end()));
             }
             obj.pushKV("pubkeys", std::move(pubkeys));
         }
-
-        // The "addresses" field is confusing because it refers to public keys using their P2PKH address.
-        // For that reason, only add the 'addresses' field when needed for backward compatibility. New applications
-        // can use the 'embedded'->'address' field for P2SH or P2WSH wrapped addresses, and 'pubkeys' for
-        // inspecting multisig participants.
-        if (include_addresses) obj.pushKV("addresses", std::move(a));
     }
 
     explicit DescribeWalletAddressVisitor(CWallet* _pwallet) : pwallet(_pwallet) {}
@@ -4348,7 +4339,7 @@ public:
         UniValue obj(UniValue::VOBJ);
         CScript subscript;
         if (pwallet && pwallet->GetCScript(scriptID, subscript)) {
-            ProcessSubScript(subscript, obj, IsDeprecatedRPCEnabled("validateaddress"));
+            ProcessSubScript(subscript, obj);
         }
         return obj;
     }
@@ -4493,8 +4484,8 @@ UniValue getaddressinfo(const JSONRPCRequest& request)
             "}\n"
                 },
                 RPCExamples{
-                    HelpExampleCli("getaddressinfo", "\"1PSSGeFHDnKNxiEyFrD1wcEaHr9hrQDDWc\"")
-            + HelpExampleRpc("getaddressinfo", "\"1PSSGeFHDnKNxiEyFrD1wcEaHr9hrQDDWc\"")
+                    HelpExampleCli("getaddressinfo", "\"PswXnorAgjpAtaySWkPSmWQe3Fc8LmviVc\"")
+            + HelpExampleRpc("getaddressinfo", "\"PswXnorAgjpAtaySWkPSmWQe3Fc8LmviVc\"")
                 },
             }.ToString());
     }

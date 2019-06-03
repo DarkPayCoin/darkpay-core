@@ -199,10 +199,18 @@ const std::pair<const char*, CAmount> regTestOutputs[] = {
 const size_t nGenesisOutputsRegtest = sizeof(regTestOutputs) / sizeof(regTestOutputs[0]);
 
 const std::pair<const char*, CAmount> genesisOutputs[] = {
-
-// MAINNET NOT STARTED
+     std::make_pair("ec9c649a77ee32f3cae3c5345d8c9cee0c0e84e7",100000 * COIN), // Init
+     std::make_pair("2087fcab7e52dafa4aa5c07388a01c39b1822b5b",1150000 * COIN), // swap1
+     std::make_pair("b8513c3207eea78610a59ab7329d504b8b1704bb",1150000 * COIN), // swap2
+     std::make_pair("3d7dd054262aa80acb90b4753b8284f9ebba3413",1150000 * COIN), // swap3
+     std::make_pair("770bae7329761a6179ae8716e25dae8f6f2cd02d",1150000 * COIN), // swap4
+     std::make_pair("75d570e4aa830919d8e6eddec1dc4390b1d8007b",100000 * COIN), // cht-altb fund
+     std::make_pair("76ca185f51c6146e7bdfbd59ad5183b9592a5256",20000 * COIN), // d1
+     std::make_pair("ec9c649a77ee32f3cae3c5345d8c9cee0c0e84e7",20000 * COIN), // d2
+// MAINNET STARTED
 
 };
+
 const size_t nGenesisOutputs = sizeof(genesisOutputs) / sizeof(genesisOutputs[0]);
 
 const std::pair<const char*, CAmount> genesisOutputsTestnet[] = {
@@ -384,7 +392,7 @@ public:
         consensus.nMinimumChainWork = uint256S("0x0000000000000000000000000000000000000000000000000000000000010001");
 
         // By default assume that the signatures in ancestors of this block are valid.
-   //     consensus.defaultAssumeValid = uint256S("0xd22f8acde6c5aed109087eb2799620c560a78e573fa587a1660aef854069d75d"); // 421718
+        consensus.defaultAssumeValid = uint256S("0x2788b3bf6e73ba9f96b1743ef9b3e41858f6fc0cd442942c99d14150eb915296"); // 35
 
         consensus.nMinRCTOutputDepth = 12;
 
@@ -393,7 +401,7 @@ public:
          * The characters are rarely used upper ASCII, not valid as UTF-8, and produce
          * a large 32-bit integer with any alignment.
          */
-  pchMessageStart[0] = 0x44;
+        pchMessageStart[0] = 0x44;
         pchMessageStart[1] = 0x54;
         pchMessageStart[2] = 0x32;
         pchMessageStart[3] = 0x4b;
@@ -412,30 +420,37 @@ public:
         m_assumed_blockchain_size = 1;
         m_assumed_chain_state_size = 1;
 
-        genesis = CreateGenesisBlockMainNet(1555488366, 23877, 0x1f00ffff); // NOT LAUNCHED YET - Wednesday 17 April 2019 08:06:06
+        genesis = CreateGenesisBlockMainNet(1558289166, 78502, 0x1f00ffff); // LAUNCHED 
         consensus.hashGenesisBlock = genesis.GetHash();
 
-        // assert(consensus.hashGenesisBlock == uint256S("0x0000ee0784c195317ac95623e22fddb8c7b8825dc3998e0bb924d66866eccf4c"));
-        // assert(genesis.hashMerkleRoot == uint256S("0xc95fb023cf4bc02ddfed1a59e2b2f53edd1a726683209e2780332edf554f1e3e"));
-        // assert(genesis.hashWitnessMerkleRoot == uint256S("0x619e94a7f9f04c8a1d018eb8bcd9c42d3c23171ebed8f351872256e36959d66c"));
+ //  std::cout << "  TESTNET GEN : " << genesis.ToString().c_str() <<  "\n"; // ROM
 
-        // Note that of those which support the service bits prefix, most only support a subset of
-        // possible options.
-        // This is fine at runtime as we'll fall back to using them as a oneshot if they don't support the
-        // service bits we want, but we should get them updated to support all service bits wanted by any
-        // release ASAP to avoid it where possible.
-        vSeeds.emplace_back("mainnet-seed.darkpay.io");
-        vSeeds.emplace_back("dnsseed-mainnet.darkpay.io");
-        vSeeds.emplace_back("mainnet.darkpay.io");
+
+
+         assert(consensus.hashGenesisBlock == uint256S("0x0000907a178385c9eef184e3208d4d0cd470440aed2ae5571c9b1ff11dbfb475"));
+         assert(genesis.hashMerkleRoot == uint256S("0x5e3576af3d8792f596e99decf47650ff427ab5bfeab2da9d315dddff5a7a5db7"));
+         assert(genesis.hashWitnessMerkleRoot == uint256S("0xee4d2cba0ad2feda59cd86bbf0b9eb105b71a729f85526909005559581efb391"));
+
+
+        vSeeds.emplace_back("explorer.darkpay.market");
+        vSeeds.emplace_back("dns.darkpay.market");
+        vSeeds.emplace_back("68.183.213.43");
+        vSeeds.emplace_back("104.248.247.44");
+        vSeeds.emplace_back("142.93.97.228");
+        vSeeds.emplace_back("178.62.80.178");
+        vSeeds.emplace_back("165.227.172.190");
+        vSeeds.emplace_back("167.99.220.116");
+        vSeeds.emplace_back("46.101.231.40");
+
 
 
         vDevFundSettings.emplace_back(0,
-            DevFundSettings("RJAPhgckEgRGVPZa9WoGSWW24spskSfLTQ", 10, 60));
+            DevFundSettings("DfJoMpkAN5MnBVG7N8ckxDXphXTMjTspaX", 10, 60));
         vDevFundSettings.emplace_back(consensus.OpIsCoinstakeTime,
-            DevFundSettings("RBiiQBnQsVPPQkUaJVQTjsZM9K2xMKozST", 10, 60));
+            DevFundSettings("DkD13eGNFQfbiyoF4zh9y3r2z87FA94MuX", 10, 60));
 
 
-         base58Prefixes[PUBKEY_ADDRESS]     = {0x1f}; // D
+        base58Prefixes[PUBKEY_ADDRESS]     = {0x1f}; // D
         base58Prefixes[SCRIPT_ADDRESS]     = {0x3c};
         base58Prefixes[PUBKEY_ADDRESS_256] = {0x39};
         base58Prefixes[SCRIPT_ADDRESS_256] = {0x3d};
@@ -448,17 +463,17 @@ public:
         base58Prefixes[EXT_PUBLIC_KEY_BTC] = {0x04, 0x88, 0xB2, 0x1E}; // xpub
         base58Prefixes[EXT_SECRET_KEY_BTC] = {0x04, 0x88, 0xAD, 0xE4}; // xprv
 
-        bech32Prefixes[PUBKEY_ADDRESS].assign       ("dh","dh"+2);
-        bech32Prefixes[SCRIPT_ADDRESS].assign       ("dr","dr"+2);
-        bech32Prefixes[PUBKEY_ADDRESS_256].assign   ("dl","dl"+2);
-        bech32Prefixes[SCRIPT_ADDRESS_256].assign   ("dj","dj"+2);
-        bech32Prefixes[SECRET_KEY].assign           ("dx","dx"+2);
-        bech32Prefixes[EXT_PUBLIC_KEY].assign       ("dep","dep"+3);
-        bech32Prefixes[EXT_SECRET_KEY].assign       ("dex","dex"+3);
-        bech32Prefixes[STEALTH_ADDRESS].assign      ("ds","ds"+2);
-        bech32Prefixes[EXT_KEY_HASH].assign         ("dek","dek"+3);
-        bech32Prefixes[EXT_ACC_HASH].assign         ("dea","dea"+3);
-        bech32Prefixes[STAKE_ONLY_PKADDR].assign    ("dcs","dcs"+3);
+        bech32Prefixes[PUBKEY_ADDRESS].assign       ("dh",(const char*)"dh"+2);
+        bech32Prefixes[SCRIPT_ADDRESS].assign       ("dr",(const char*)"dr"+2);
+        bech32Prefixes[PUBKEY_ADDRESS_256].assign   ("dl",(const char*)"dl"+2);
+        bech32Prefixes[SCRIPT_ADDRESS_256].assign   ("dj",(const char*)"dj"+2);
+        bech32Prefixes[SECRET_KEY].assign           ("dx",(const char*)"dx"+2);
+        bech32Prefixes[EXT_PUBLIC_KEY].assign       ("dep",(const char*)"dep"+3);
+        bech32Prefixes[EXT_SECRET_KEY].assign       ("dex",(const char*)"dex"+3);
+        bech32Prefixes[STEALTH_ADDRESS].assign      ("ds",(const char*)"ds"+2);
+        bech32Prefixes[EXT_KEY_HASH].assign         ("dek",(const char*)"dek"+3);
+        bech32Prefixes[EXT_ACC_HASH].assign         ("dea",(const char*)"dea"+3);
+        bech32Prefixes[STAKE_ONLY_PKADDR].assign    ("dcs",(const char*)"dcs"+3);
 
 
         bech32_hrp = "bc";
@@ -470,10 +485,10 @@ public:
         fMineBlocksOnDemand = false;
 
         checkpointData = {
-            // {
-            //     { 1000,     uint256S("0xe786020ab94bc5461a07d744f3631a811b4ebf424fceda12274f2321883713f4")},
+             {
+               { 2621,     uint256S("0x2788b3bf6e73ba9f96b1743ef9b3e41858f6fc0cd442942c99d14150eb915296")},
 
-            // }
+             }
         };
 
         chainTxData = ChainTxData {
@@ -589,7 +604,7 @@ public:
 
         consensus.hashGenesisBlock = genesis.GetHash();
        
-   std::cout << "  TESTNET GEN : " << genesis.ToString().c_str() <<  "\n"; // ROM
+  // std::cout << "  TESTNET GEN : " << genesis.ToString().c_str() <<  "\n"; // ROM
 
 
   // nonce: 136406
@@ -622,17 +637,17 @@ public:
         base58Prefixes[EXT_PUBLIC_KEY_BTC] = {0x04, 0x35, 0x87, 0xCF}; // tpub
         base58Prefixes[EXT_SECRET_KEY_BTC] = {0x04, 0x35, 0x83, 0x94}; // tprv
 
-        bech32Prefixes[PUBKEY_ADDRESS].assign       ("tph","tph"+3);
-        bech32Prefixes[SCRIPT_ADDRESS].assign       ("tpr","tpr"+3);
-        bech32Prefixes[PUBKEY_ADDRESS_256].assign   ("tpl","tpl"+3);
-        bech32Prefixes[SCRIPT_ADDRESS_256].assign   ("tpj","tpj"+3);
-        bech32Prefixes[SECRET_KEY].assign           ("tpx","tpx"+3);
-        bech32Prefixes[EXT_PUBLIC_KEY].assign       ("tpep","tpep"+4);
-        bech32Prefixes[EXT_SECRET_KEY].assign       ("tpex","tpex"+4);
-        bech32Prefixes[STEALTH_ADDRESS].assign      ("tps","tps"+3);
-        bech32Prefixes[EXT_KEY_HASH].assign         ("tpek","tpek"+4);
-        bech32Prefixes[EXT_ACC_HASH].assign         ("tpea","tpea"+4);
-        bech32Prefixes[STAKE_ONLY_PKADDR].assign    ("tpcs","tpcs"+4);
+        bech32Prefixes[PUBKEY_ADDRESS].assign       ("tph",(const char*)"tph"+3);
+        bech32Prefixes[SCRIPT_ADDRESS].assign       ("tpr",(const char*)"tpr"+3);
+        bech32Prefixes[PUBKEY_ADDRESS_256].assign   ("tpl",(const char*)"tpl"+3);
+        bech32Prefixes[SCRIPT_ADDRESS_256].assign   ("tpj",(const char*)"tpj"+3);
+        bech32Prefixes[SECRET_KEY].assign           ("tpx",(const char*)"tpx"+3);
+        bech32Prefixes[EXT_PUBLIC_KEY].assign       ("tpep",(const char*)"tpep"+4);
+        bech32Prefixes[EXT_SECRET_KEY].assign       ("tpex",(const char*)"tpex"+4);
+        bech32Prefixes[STEALTH_ADDRESS].assign      ("tps",(const char*)"tps"+3);
+        bech32Prefixes[EXT_KEY_HASH].assign         ("tpek",(const char*)"tpek"+4);
+        bech32Prefixes[EXT_ACC_HASH].assign         ("tpea",(const char*)"tpea"+4);
+        bech32Prefixes[STAKE_ONLY_PKADDR].assign    ("tpcs",(const char*)"tpcs"+4);
 
         bech32_hrp = "tb";
 
@@ -774,17 +789,17 @@ public:
         base58Prefixes[EXT_PUBLIC_KEY_BTC] = {0x04, 0x35, 0x87, 0xCF}; // tpub
         base58Prefixes[EXT_SECRET_KEY_BTC] = {0x04, 0x35, 0x83, 0x94}; // tprv
 
-        bech32Prefixes[PUBKEY_ADDRESS].assign       ("tph","tph"+3);
-        bech32Prefixes[SCRIPT_ADDRESS].assign       ("tpr","tpr"+3);
-        bech32Prefixes[PUBKEY_ADDRESS_256].assign   ("tpl","tpl"+3);
-        bech32Prefixes[SCRIPT_ADDRESS_256].assign   ("tpj","tpj"+3);
-        bech32Prefixes[SECRET_KEY].assign           ("tpx","tpx"+3);
-        bech32Prefixes[EXT_PUBLIC_KEY].assign       ("tpep","tpep"+4);
-        bech32Prefixes[EXT_SECRET_KEY].assign       ("tpex","tpex"+4);
-        bech32Prefixes[STEALTH_ADDRESS].assign      ("tps","tps"+3);
-        bech32Prefixes[EXT_KEY_HASH].assign         ("tpek","tpek"+4);
-        bech32Prefixes[EXT_ACC_HASH].assign         ("tpea","tpea"+4);
-        bech32Prefixes[STAKE_ONLY_PKADDR].assign    ("tpcs","tpcs"+4);
+        bech32Prefixes[PUBKEY_ADDRESS].assign       ("tph",(const char*)"tph"+3);
+        bech32Prefixes[SCRIPT_ADDRESS].assign       ("tpr",(const char*)"tpr"+3);
+        bech32Prefixes[PUBKEY_ADDRESS_256].assign   ("tpl",(const char*)"tpl"+3);
+        bech32Prefixes[SCRIPT_ADDRESS_256].assign   ("tpj",(const char*)"tpj"+3);
+        bech32Prefixes[SECRET_KEY].assign           ("tpx",(const char*)"tpx"+3);
+        bech32Prefixes[EXT_PUBLIC_KEY].assign       ("tpep",(const char*)"tpep"+4);
+        bech32Prefixes[EXT_SECRET_KEY].assign       ("tpex",(const char*)"tpex"+4);
+        bech32Prefixes[STEALTH_ADDRESS].assign      ("tps",(const char*)"tps"+3);
+        bech32Prefixes[EXT_KEY_HASH].assign         ("tpek",(const char*)"tpek"+4);
+        bech32Prefixes[EXT_ACC_HASH].assign         ("tpea",(const char*)"tpea"+4);
+        bech32Prefixes[STAKE_ONLY_PKADDR].assign    ("tpcs",(const char*)"tpcs"+4);
 
         bech32_hrp = "bcrt";
 

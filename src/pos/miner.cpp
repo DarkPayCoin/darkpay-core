@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018 The Particl Core developers – modded for DarkPay
+// Copyright (c) 2017-2018 The Darkpay Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -339,7 +339,7 @@ void ThreadStakeMiner(size_t nThreadID, std::vector<std::shared_ptr<CWallet>> &v
 
         if (fTryToSync) {
             fTryToSync = false;
-            if (num_nodes < 1 || nBestHeight < num_blocks_of_peers) { // ROM
+            if (num_nodes < 3 || nBestHeight < num_blocks_of_peers) {
                 fIsStaking = false;
                 LogPrint(BCLog::POS, "%s: TryToSync\n", __func__);
                 condWaitFor(nThreadID, 30000);

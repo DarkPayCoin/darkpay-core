@@ -459,7 +459,7 @@ bool CBlockTreeDB::LoadBlockIndexGuts(const Consensus::Params& consensusParams, 
 
                 if (fDarkpayMode)
                 {
-//assert(false);
+                    // only CheckProofOfWork for genesis blocks
 
                 } else
                 if (!CheckProofOfWork(pindexNew->GetBlockHash(), pindexNew->nBits, Params().GetConsensus()))

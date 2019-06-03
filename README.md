@@ -1,11 +1,18 @@
-# ▼ DarkPay
+Darkpay Core integration/staging tree
+=====================================
 
-https://darkpaycoin.io
+[![Build Status](https://travis-ci.org/darkpay/darkpay-core.svg?branch=master)](https://travis-ci.org/darkpay/darkpay-core)
 
+https://darkpay.io
 
-DarkPay is a privacy focused community ecosystem, iteratively improved with the most advanced technological features.
+What is Darkpay?
+----------------
 
-DarkPay is 100% community governed and built. Every move is community-driven, as Darkpaycoin technology includes a decentralized budgeting system and immutable proposal and voting systems.
+An open source, decentralized privacy platform
+built for global person to person eCommerce.
+
+For more information, as well as an immediately useable, binary version of
+the Darkpay Core software, see https://darkpay.io.
 
 
 Getting Started

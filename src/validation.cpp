@@ -1219,12 +1219,9 @@ bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos, const Consensus:
     }
 
     // Check the header
-    if (fDarkpayMode) { /*
+    if (fDarkpayMode) {
         // only CheckProofOfWork for genesis blocks
-        if (block.hashPrevBlock.IsNull()
-            && !CheckProofOfWork(block.GetHash(), block.nBits, consensusParams, 0, Params().GetLastImportHeight())) {
-            return error("ReadBlockFromDisk: Errors in block header at %s", pos.ToString());
-        } */
+        
     } else {
         if (!CheckProofOfWork(block.GetHash(), block.nBits, consensusParams))
             return error("ReadBlockFromDisk: Errors in block header at %s", pos.ToString());
@@ -4260,25 +4257,8 @@ unsigned int GetNextTargetRequired(const CBlockIndex *pindexLast)
     unsigned int nProofOfWorkLimit;
     int nHeight = pindexLast ? pindexLast->nHeight+1 : 0;
 
-//     if (nHeight < (int)Params().GetLastImportHeight()) {
-//         if (nHeight == 0) {
-//             return arith_uint256("00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff").GetCompact(); // 5.960464477539063e-8 2000ffff
-// // ROM
-//    std::cout << "  L4267 - BLOCK 0 DIIF IS SET AT  : " << arith_uint256("00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff").GetCompact().ToString().c_str() <<  "\n"; // ROM
-
-
-//         }
-//         int nLastImportHeight = (int) Params().GetLastImportHeight();
-//         arith_uint256 nMaxProofOfWorkLimit = arith_uint256("000000000008ffffffffffffffffffffffffffffffffffffffffffffffffffff"); // 7281.67901217823 
-//         arith_uint256 nMinProofOfWorkLimit = UintToArith256(consensus.powLimit);
-//         arith_uint256 nStep = (nMaxProofOfWorkLimit - nMinProofOfWorkLimit) / nLastImportHeight;
-
-//         bnProofOfWorkLimit = nMaxProofOfWorkLimit - (nStep * nHeight);
-//         nProofOfWorkLimit = bnProofOfWorkLimit.GetCompact();
- //   } else {
         bnProofOfWorkLimit = UintToArith256(consensus.powLimit);
         nProofOfWorkLimit = bnProofOfWorkLimit.GetCompact();
-  //  }
 
     if (pindexLast == nullptr)
         return nProofOfWorkLimit; // Genesis block
@@ -4460,11 +4440,12 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
             }
         } else
         {
-//assert(false);
+            //assert(false);
 // Only the genesis block should get here
 if (block.GetHash() != consensusParams.hashGenesisBlock) {
 return state.DoS(50, false, REJECT_INVALID, "bad-hash", false, "Unexpected PoW block found.");
 }
+
 
             // Enforce rule that the coinbase/ ends with serialized block height
             // genesis block scriptSig size will be different
