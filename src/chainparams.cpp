@@ -389,10 +389,10 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_SEGWIT].nTimeout = 1510704000; // November 15th, 2017.
 
         // The best chain should have at least this much work.
-        consensus.nMinimumChainWork = uint256S("0x0000000000000000000000000000000000000000000000000000000000010001");
+        consensus.nMinimumChainWork = uint256S("0x00000000000000000000000000000000000000000000000fc3ef4b4b2caf1f62"); // 126022
 
         // By default assume that the signatures in ancestors of this block are valid.
-        consensus.defaultAssumeValid = uint256S("0x2788b3bf6e73ba9f96b1743ef9b3e41858f6fc0cd442942c99d14150eb915296"); // 35
+        consensus.defaultAssumeValid = uint256S("0x3fc364ef5deedc6dbee55d6705a44ec8208815a6be7659626eed2f67678afa7e"); // 126022
 
         consensus.nMinRCTOutputDepth = 12;
 
@@ -486,16 +486,28 @@ public:
 
         checkpointData = {
              {
-               { 2621,     uint256S("0x2788b3bf6e73ba9f96b1743ef9b3e41858f6fc0cd442942c99d14150eb915296")},
+               { 2621,      uint256S("0x2788b3bf6e73ba9f96b1743ef9b3e41858f6fc0cd442942c99d14150eb915296")},              
+               { 31455,     uint256S("0xaa6ea64c67491d474512850b995fbf7da23546ab572efb30f5905068238e8354")},
+               { 58929,     uint256S("0x266a5716aede1e88f300f44cdabca81d8c6325998f2b6e9f25966f132716b396")},
+               { 60000,     uint256S("0x76725f6548c365743ce329fb105e7611b81aed3dc66853962a92898d60b8c40d")},
+               { 67103,     uint256S("0x7618bca8ec8ebbf542b1938f1ab1bdc48d7efeeff2667bac38b298eaa8ef70e3")},
+               { 67104,     uint256S("0x7ad2a584e23f4f0cd58ab94d7a668bf10a2c01ceb49b3d93b3d9c6fdfb4c0389")},
+               { 70000,     uint256S("0x0336a4d3ec9468dd008c846a06bd8323cd032f0186c3842d6360fe131bf4e144")},
+               { 80000,     uint256S("0x81baf5f8c6d16ed4fbe85876c19edd8a7c4b114c30bb16e505c7c9f07f4edc03")},
+               { 90000,     uint256S("0x2369d7083b786c341c73bde8b0f7dcd94e24e899dc4df1abb3aa398ca594e1fe")},
+               { 100000,    uint256S("0x90d9dfb91a587f3c4395e7d9fffde4ac9a742231d7b398c3dfdb3a692ad0f867")},
+               { 110000,    uint256S("0x84e845144ac98ede873a237461c17a4b742605587d53815c27e1bd028246705a")},
+               { 120000,    uint256S("0x97ce323136dfca797618e1bc5bb80339bcf1c94d10dd41cb2e654b3bcfe43374")},
+               { 126022,    uint256S("0x3fc364ef5deedc6dbee55d6705a44ec8208815a6be7659626eed2f67678afa7e")},
 
              }
         };
 
         chainTxData = ChainTxData {
-            // Data from rpc: getchaintxstats 4096 d22f8acde6c5aed109087eb2799620c560a78e573fa587a1660aef854069d75d
-            /* nTime    */ //1554625440,
-            /* nTxCount */ //467906,
-            /* dTxRate  */ //0.008
+            // Data from rpc: getchaintxstats 4096 3fc364ef5deedc6dbee55d6705a44ec8208815a6be7659626eed2f67678afa7e
+            /* nTime    */ 1574618896,
+            /* nTxCount */ 130039,
+            /* dTxRate  */ 0.008
         };
 
         /* disable fallback fee on mainnet */
