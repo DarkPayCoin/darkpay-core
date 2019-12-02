@@ -43,12 +43,9 @@
 #include <warnings.h>
 #include <smsg/smessage.h>
 #include <pos/kernel.h>
-#include <blind.h>
 #include <anon.h>
 #include <rctindex.h>
 #include <insight/insight.h>
-
-#include <secp256k1_rangeproof.h>
 
 #include <future>
 #include <sstream>
@@ -252,9 +249,6 @@ std::atomic_bool fImporting(false);
 std::atomic_bool fReindex(false);
 std::atomic_bool fSkipRangeproof(false);
 std::atomic_bool fBusyImporting(false);        // covers ActivateBestChain too
-bool fAddressIndex = false;
-bool fTimestampIndex = false;
-bool fSpentIndex = false;
 bool fHavePruned = false;
 bool fPruneMode = false;
 bool fIsBareMultisigStd = DEFAULT_PERMIT_BAREMULTISIG;
@@ -282,8 +276,6 @@ CScript COINBASE_FLAGS;
 
 
 const std::string strMessageMagic = "Bitcoin Signed Message:\n";
-
-extern bool IncomingBlockChecked(const CBlock &block, CValidationState &state);
 
 // Internal stuff
 namespace {
@@ -1221,8 +1213,15 @@ bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos, const Consensus:
     // Check the header
     if (fDarkpayMode) {
         // only CheckProofOfWork for genesis blocks
-        
+      /*
+        if (block.hashPrevBlock.IsNull()
+            && !CheckProofOfWork(block.GetHash(), block.nBits, consensusParams, 0, Params().GetLastImportHeight())) {
+            return error("ReadBlockFromDisk: Errors in block header at %s", pos.ToString());
+        }
     } else {
+      */
+      } else
+    {
         if (!CheckProofOfWork(block.GetHash(), block.nBits, consensusParams))
             return error("ReadBlockFromDisk: Errors in block header at %s", pos.ToString());
     }
@@ -4257,8 +4256,21 @@ unsigned int GetNextTargetRequired(const CBlockIndex *pindexLast)
     unsigned int nProofOfWorkLimit;
     int nHeight = pindexLast ? pindexLast->nHeight+1 : 0;
 
+    // if (nHeight < (int)Params().GetLastImportHeight()) {
+    //     if (nHeight == 0) {
+    //         return arith_uint256("00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff").GetCompact();
+    //     }
+    //     int nLastImportHeight = (int) Params().GetLastImportHeight();
+    //     arith_uint256 nMaxProofOfWorkLimit = arith_uint256("000000000008ffffffffffffffffffffffffffffffffffffffffffffffffffff");
+    //     arith_uint256 nMinProofOfWorkLimit = UintToArith256(consensus.powLimit);
+    //     arith_uint256 nStep = (nMaxProofOfWorkLimit - nMinProofOfWorkLimit) / nLastImportHeight;
+
+    //     bnProofOfWorkLimit = nMaxProofOfWorkLimit - (nStep * nHeight);
+    //     nProofOfWorkLimit = bnProofOfWorkLimit.GetCompact();
+    // } else {
         bnProofOfWorkLimit = UintToArith256(consensus.powLimit);
-        nProofOfWorkLimit = bnProofOfWorkLimit.GetCompact();
+         nProofOfWorkLimit = bnProofOfWorkLimit.GetCompact();
+    // }
 
     if (pindexLast == nullptr)
         return nProofOfWorkLimit; // Genesis block
@@ -4440,12 +4452,11 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
             }
         } else
         {
-            //assert(false);
-// Only the genesis block should get here
-if (block.GetHash() != consensusParams.hashGenesisBlock) {
-return state.DoS(50, false, REJECT_INVALID, "bad-hash", false, "Unexpected PoW block found.");
-}
-
+          //assert(false);
+            // Only the genesis block should get here
+            if (block.GetHash() != consensusParams.hashGenesisBlock) {
+                return state.DoS(50, false, REJECT_INVALID, "bad-hash", false, "Unexpected PoW block found.");
+            }
 
             // Enforce rule that the coinbase/ ends with serialized block height
             // genesis block scriptSig size will be different
@@ -4629,6 +4640,7 @@ public:
 std::list<DelayedBlock> list_delayed_blocks;
 
 extern void Misbehaving(NodeId nodeid, int howmuch, const std::string& message="") EXCLUSIVE_LOCKS_REQUIRED(cs_main);
+extern void IncPersistentMisbehaviour(NodeId node_id, int howmuch) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 extern bool AddNodeHeader(NodeId node_id, const uint256 &hash) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 extern void RemoveNodeHeader(const uint256 &hash) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 extern void RemoveNonReceivedHeaderFromNodes(BlockMap::iterator mi) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
@@ -4827,7 +4839,6 @@ bool CChainState::AcceptBlockHeader(const CBlockHeader& block, CValidationState&
     if (hash != chainparams.GetConsensus().hashGenesisBlock) {
         if (miSelf != mapBlockIndex.end()) {
             // Block header is already known.
-
             if (fDarkpayMode && !IsInitialBlockDownload() && state.nodeId >= 0
                 && !IncDuplicateHeaders(state.nodeId)) {
                 return state.DoS(5, error("%s: DoS limits, too many duplicates", __func__), REJECT_INVALID, "dos-limits");
@@ -5051,6 +5062,7 @@ bool CChainState::AcceptBlock(const std::shared_ptr<const CBlock>& pblock, CVali
 
     if (state.nFlags & BLOCK_STAKE_KERNEL_SPENT && !(state.nFlags & BLOCK_FAILED_DUPLICATE_STAKE)) {
         if (state.nodeId > -1) {
+            IncPersistentMisbehaviour(state.nodeId, 20);
             Misbehaving(state.nodeId, 20, "Spent kernel");
         }
     }
@@ -5061,11 +5073,10 @@ bool CChainState::AcceptBlock(const std::shared_ptr<const CBlock>& pblock, CVali
 
     // Header is valid/has work, merkle tree and segwit merkle tree are good...RELAY NOW
     // (but if it does not build on our best tip, let the SendMessages loop relay it)
-    if (!IsInitialBlockDownload() && chainActive.Tip() == pindex->pprev)
-    {
-        if (!(state.nFlags & BLOCK_FAILED_DUPLICATE_STAKE))
-            GetMainSignals().NewPoWValidBlock(pindex, pblock);
-    };
+    if (!(state.nFlags & (BLOCK_STAKE_KERNEL_SPENT | BLOCK_FAILED_DUPLICATE_STAKE))
+        && !IsInitialBlockDownload() && chainActive.Tip() == pindex->pprev) {
+        GetMainSignals().NewPoWValidBlock(pindex, pblock);
+    }
 
     // Write block to history file
     if (fNewBlock) *fNewBlock = true;
@@ -5087,7 +5098,7 @@ bool CChainState::AcceptBlock(const std::shared_ptr<const CBlock>& pblock, CVali
     return true;
 }
 
-bool ProcessNewBlock(const CChainParams& chainparams, const std::shared_ptr<const CBlock> pblock, bool fForceProcessing, bool *fNewBlock)
+bool ProcessNewBlock(const CChainParams& chainparams, const std::shared_ptr<const CBlock> pblock, bool fForceProcessing, bool *fNewBlock, NodeId node_id)
 {
     AssertLockNotHeld(cs_main);
 
@@ -5103,6 +5114,9 @@ bool ProcessNewBlock(const CChainParams& chainparams, const std::shared_ptr<cons
 
         if (fNewBlock) *fNewBlock = false;
         CValidationState state;
+        if (node_id > -1) {
+            state.nodeId = node_id;
+        }
 
         // CheckBlock() does not support multi-threaded block validation because CBlock::fChecked can cause data race.
         // Therefore, the following critical section must include the CheckBlock() call as well.
@@ -5124,8 +5138,6 @@ bool ProcessNewBlock(const CChainParams& chainparams, const std::shared_ptr<cons
                 // Block will have been added to the block index in AcceptBlockHeader
                 CBlockIndex *pindex = g_chainstate.AddToBlockIndex(*pblock);
                 g_chainstate.InvalidBlockFound(pindex, *pblock, state);
-
-                IncomingBlockChecked(*pblock, state);
             }
             GetMainSignals().BlockChecked(*pblock, state);
             return error("%s: AcceptBlock FAILED (%s)", __func__, FormatStateMessage(state));
@@ -5135,8 +5147,7 @@ bool ProcessNewBlock(const CChainParams& chainparams, const std::shared_ptr<cons
             pindex->nFlags |= BLOCK_FAILED_DUPLICATE_STAKE;
             setDirtyBlockIndex.insert(pindex);
             LogPrint(BCLog::POS, "%s Marking duplicate stake: %s.\n", __func__, pindex->GetBlockHash().ToString());
-            //GetMainSignals().BlockChecked(*pblock, state);
-            IncomingBlockChecked(*pblock, state);
+            GetMainSignals().BlockChecked(*pblock, state);
         }
     }
 

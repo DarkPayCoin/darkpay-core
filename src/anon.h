@@ -5,7 +5,7 @@
 #ifndef DARKPAY_ANON_H
 #define DARKPAY_ANON_H
 
-#include <inttypes.h>
+#include <stdint.h>
 
 #include <primitives/transaction.h>
 

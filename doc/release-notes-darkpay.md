@@ -1,5 +1,42 @@
-Master
+0.18.0.11
 ==============
+
+- Fixed regression causing unloadwallet to fail.
+- Added smsggetinfo RPC command to display SMSG related information.
+- Added smsgsetwallet RPC command to switch the active SMSG wallet without disabling SMSG.
+- Unloading the active SMSG wallet will leave SMSG enabled.
+- Fixed DOS vulnerability.
+- Fixed rpc cmd filtertransactions filtering by type.
+
+
+0.18.0.10
+==============
+
+- Fixed avoidpartialspends.
+- Testnet fork scheduled for 2019-07-01 12:00:00 UTC
+  - Enable variable difficulty for smsg free messages.
+- Mainnet fork scheduled for 2019.07.16-12:00:00 UTC
+  - Enable bulletproof rangeproofs.
+  - Enable RingCT transactions.
+  - Enable variable fee rate for smsg paid messages.
+  - Enable variable difficulty for smsg free messages.
+
+
+0.18.0.9
+==============
+
+- pruneorphanedblocks shows shutdown warning if not in test mode.
+- Fixed Qt 'Request payment' button greyed out after importing mnemonic.
+
+
+0.18.0.8
+==============
+
+- Fixed issue where clearing the rewardaddress requires a restart.
+- Fixed regression where disablewallet required nosmsg also.
+- Fixed getrawtransaction failing where scripts are nonstandard with OP_ISCOINSTAKE.
+- New balance category for immature anon coin.
+
 
 0.18.0.7
 ==============

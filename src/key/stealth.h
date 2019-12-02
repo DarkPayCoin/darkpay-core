@@ -6,14 +6,13 @@
 #ifndef DARKPAY_KEY_STEALTH_H
 #define DARKPAY_KEY_STEALTH_H
 
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+#include <string>
 #include <vector>
-#include <inttypes.h>
 
 #include <key.h>
-#include <serialize.h>
-#include <uint256.h>
 #include <key/types.h>
 
 class CScript;

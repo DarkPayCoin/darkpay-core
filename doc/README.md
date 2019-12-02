@@ -1,72 +1,87 @@
-# ▼ DarkPay
+Darkpay Core
+=============
 
-https://darkpaycoin.io
+Setup
+---------------------
+Darkpay Core is the original Darkpay client and it builds the backbone of the network. It downloads and, by default, stores the entire history of Darkpay transactions, which requires a few gigabytes of disk space. Depending on the speed of your computer and network connection, the synchronization process can take anywhere from a few hours to a day or more.
 
+To download Darkpay Core, visit [darkpay.io](https://darkpay.io/downloads/).
 
-DarkPay is a privacy focused community ecosystem, iteratively improved with the most advanced technological features.
+Running
+---------------------
+The following are some helpful notes on how to run Darkpay Core on your native platform.
 
-DarkPay is 100% community governed and built. Every move is community-driven, as Darkpaycoin technology includes a decentralized budgeting system and immutable proposal and voting systems.
+### Unix
 
+Unpack the files into a directory and run:
 
-Getting Started
----------------
+- `bin/darkpay-qt` (GUI) or
+- `bin/darkpayd` (headless)
 
-A new Darkpay wallet will need an HD master key loaded and an initial account
-derived before it will be functional.
+### Windows
 
-The GUI programs will guide you through the initial setup.
+Unpack the files into a directory, and then run darkpay-qt.exe.
 
-It is recommended to use a mnemonic passphrase.
-To generate a new passphrase see the mnemonic rpc command.
-Loading the new mnemonic with the extkeyimportmaster command will setup the
-master HD key and first account.
+### macOS
 
-To create an initial new HD master key and account from random data, start
-darkpayd or darkpay-qt with the parameter: -createdefaultmasterkey.
+Drag Darkpay Core to your applications folder, and then run Darkpay Core.
 
-Remember to backup your passphrase and/or wallet.dat file!
+### Need Help?
+
+* See the documentation at the [Darkpay Wiki](https://darkpay.wiki/start)
+for help and more information.
+* Ask for help on [#darkpay](https://riot.im/app/#/room/#darkpay:matrix.org) on Riot.
+* Ask for help on [Discord](https://discord.me/darkpay).
+
+Building
+---------------------
+The following are developer notes on how to build Darkpay Core on your native platform. They are not complete guides, but include notes on the necessary libraries, compile flags, etc.
+
+- [Dependencies](dependencies.md)
+- [macOS Build Notes](build-osx.md)
+- [Unix Build Notes](build-unix.md)
+- [Windows Build Notes](build-windows.md)
+- [FreeBSD Build Notes](build-freebsd.md)
+- [OpenBSD Build Notes](build-openbsd.md)
+- [NetBSD Build Notes](build-netbsd.md)
+- [Gitian Building Guide (External Link)](https://github.com/bitcoin-core/docs/blob/master/gitian-building.md)
+
+Development
+---------------------
+The Darkpay repo's [root README](/README.md) contains relevant information on the development process and automated testing.
+
+- [Developer Notes](developer-notes.md)
+- [Productivity Notes](productivity.md)
+- [Release Notes](release-notes.md)
+- [Release Process](release-process.md)
+- [Source Code Documentation (External Link)](https://dev.visucore.com/bitcoin/doxygen/)
+- [Translation Process](translation_process.md)
+- [Translation Strings Policy](translation_strings_policy.md)
+- [Travis CI](travis-ci.md)
+- [JSON-RPC Interface](JSON-RPC-interface.md)
+- [Unauthenticated REST Interface](REST-interface.md)
+- [Shared Libraries](shared-libraries.md)
+- [BIPS](bips.md)
+- [Dnsseed Policy](dnsseed-policy.md)
+- [Benchmarking](benchmarking.md)
+
+### Resources
+* Discuss on [BitcoinTalk](https://bitcointalk.org/index.php?topic=1835782.0) forums.
+* Discuss project-specific development on [#darkpay](https://riot.im/app/#/room/#darkpay-dev:matrix.org) on Riot.
+
+### Miscellaneous
+- [Assets Attribution](assets-attribution.md)
+- [bitcoin.conf Configuration File](bitcoin-conf.md)
+- [Files](files.md)
+- [Fuzz-testing](fuzzing.md)
+- [Reduce Traffic](reduce-traffic.md)
+- [Tor Support](tor.md)
+- [Init Scripts (systemd/upstart/openrc)](init.md)
+- [ZMQ](zmq.md)
+- [PSBT support](psbt.md)
 
 License
--------
-
-Darkpay Core is released under the terms of the MIT license. See [COPYING](COPYING) for more
-information or see https://opensource.org/licenses/MIT.
-
-Development Process
--------------------
-
-The `master` branch is regularly built and tested, but is not guaranteed to be
-completely stable. [Tags](https://github.com/DarkPayCoin/darkpay-core/tags) are created
-regularly to indicate new official, stable release versions of Darkpay Core.
-
-The contribution workflow is described in [CONTRIBUTING.md](CONTRIBUTING.md)
-and useful hints for developers can be found in [doc/developer-notes.md](doc/developer-notes.md).
-
-Testing
--------
-
-Testing and code review is the bottleneck for development; we get more pull
-requests than we can review and test on short notice. Please be patient and help out by testing
-other people's pull requests, and remember this is a security-critical project where any mistake might cost people
-lots of money.
-
-### Automated Testing
-
-Developers are strongly encouraged to write [unit tests](src/test/README.md) for new code, and to
-submit new unit tests for old code. Unit tests can be compiled and run
-(assuming they weren't disabled in configure) with: `make check`. Further details on running
-and extending unit tests can be found in [/src/test/README.md](/src/test/README.md).
-
-There are also [regression and integration tests](/test), written
-in Python, that are run automatically on the build server.
-These tests can be run (if the [test dependencies](/test) are installed) with: `test/functional/test_runner.py`
-
-The Travis CI system makes sure that every pull request is built for Windows, Linux, and macOS, and that unit/sanity tests are run automatically.
-
-### Manual Quality Assurance (QA) Testing
-
-Changes should be tested by somebody other than the developer who wrote the
-code. This is especially important for large or high-risk changes. It is useful
-to add a test plan to the pull request description if testing the changes is
-not straightforward.
-
+---------------------
+Distributed under the [MIT software license](/COPYING).
+This product includes software developed by the OpenSSL Project for use in the [OpenSSL Toolkit](https://www.openssl.org/). This product includes
+cryptographic software written by Eric Young ([eay@cryptsoft.com](mailto:eay@cryptsoft.com)), and UPnP software written by Thomas Bernard.

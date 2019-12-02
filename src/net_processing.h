@@ -88,8 +88,6 @@ struct CNodeStateStats {
     int nLooseHeadersCount = 0;
 };
 
-bool IncomingBlockChecked(const CBlock &block, CValidationState &state);
-
 /** Get statistics from node state */
 bool GetNodeStateStats(NodeId nodeid, CNodeStateStats &stats);
 /** Increase a node's misbehavior score. */
@@ -98,5 +96,8 @@ bool GetNodeStateStats(NodeId nodeid, CNodeStateStats &stats);
 void DecMisbehaving(NodeId nodeid, int howmuch) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
 NodeId GetBlockSource(uint256 hash) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
+
+void IncPersistentMisbehaviour(NodeId node_id, int howmuch) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
+int GetNumDOSStates() EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
 #endif // BITCOIN_NET_PROCESSING_H

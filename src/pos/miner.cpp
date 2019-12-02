@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018 The Darkpay Core developers
+// Copyright (c) 2017-2019 The Darkpay Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -8,14 +8,13 @@
 #include <miner.h>
 #include <chainparams.h>
 #include <util/moneystr.h>
+#include <primitives/block.h>
+#include <primitives/transaction.h>
 
-#include <fs.h>
 #include <sync.h>
 #include <net.h>
 #include <validation.h>
 #include <consensus/validation.h>
-#include <base58.h>
-#include <crypto/sha256.h>
 
 #include <wallet/hdwallet.h>
 
@@ -139,7 +138,6 @@ bool ImportOutputs(CBlockTemplate *pblocktemplate, int nHeight)
     }
 
     fs::path fPath = GetDataDir() / "genesisOutputs.txt";
-
     if (!fs::exists(fPath)) {
         return error("%s: File not found 'genesisOutputs.txt'.", __func__);
     }

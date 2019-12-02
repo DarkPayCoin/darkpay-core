@@ -7,13 +7,10 @@
 
 #include <wallet/wallet.h>
 #include <wallet/hdwalletdb.h>
-#include <wallet/rpchdwallet.h>
 
 #include <key_io.h>
 #include <key/extkey.h>
 #include <key/stealth.h>
-
-#include <miner.h>
 
 typedef std::map<CKeyID, CStealthKeyMetadata> StealthKeyMetaMap;
 typedef std::map<CKeyID, CExtKeyAccount*> ExtKeyAccountMap;
@@ -25,6 +22,8 @@ typedef std::map<uint256, CTransactionRecord> MapRecords_t;
 typedef std::multimap<int64_t, std::map<uint256, CTransactionRecord>::iterator> RtxOrdered_t;
 
 class UniValue;
+
+struct CBlockTemplate;
 
 const uint16_t OR_PLACEHOLDER_N = 0xFFFF; // index of a fake output to contain reconstructed amounts for txns with undecodeable outputs
 enum OutputRecordFlags
@@ -337,6 +336,7 @@ public:
 
         nAnon = 0;
         nAnonUnconf = 0;
+        nAnonImmature = 0;
     }
 
     CAmount nPart = 0;
@@ -352,6 +352,7 @@ public:
 
     CAmount nAnon = 0;
     CAmount nAnonUnconf = 0;
+    CAmount nAnonImmature = 0;
 };
 
 class CHDWallet : public CWallet
@@ -376,6 +377,9 @@ public:
 
     /* Returns true if HD is enabled, and default account set */
     bool IsHDEnabled() const override;
+
+    /** Unsets a single wallet flag, returns false on fail */
+    bool UnsetWalletFlagRV(CHDWalletDB *pwdb, uint64_t flag);
 
     bool DumpJson(UniValue &rv, std::string &sError);
     bool LoadJson(const UniValue &inj, std::string &sError);
@@ -462,7 +466,7 @@ public:
 
     int GetDepthInMainChain(interfaces::Chain::Lock& locked_chain, const uint256 &blockhash, int nIndex = 0) const;
     bool InMempool(const uint256 &hash) const;
-    bool IsTrusted(interfaces::Chain::Lock& locked_chain, const uint256 &hash, const uint256 &blockhash, int nIndex = 0) const;
+    bool IsTrusted(interfaces::Chain::Lock& locked_chain, const uint256 &hash, const uint256 &blockhash, int nIndex = 0, int *depth_out = nullptr) const;
 
     CAmount GetBalance(const isminefilter& filter=ISMINE_SPENDABLE, const int min_depth=0) const override;
     CAmount GetSpendableBalance() const;        // Includes watch_only_cs balance

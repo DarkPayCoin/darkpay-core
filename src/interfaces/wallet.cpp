@@ -30,8 +30,10 @@
 #include <wallet/fees.h>
 #include <wallet/rpcwallet.h>
 #include <wallet/wallet.h>
-#include <wallet/hdwallet.h>
 #include <wallet/walletutil.h>
+#include <wallet/hdwallet.h>
+#include <wallet/rpchdwallet.h>
+#include <smsg/smessage.h>
 
 #include <memory>
 #include <string>
@@ -510,6 +512,7 @@ public:
             result.balanceAnon = bal.nAnon;
             result.unconfirmed_balance = bal.nPartUnconf + bal.nBlindUnconf + bal.nAnonUnconf;
             result.immature_balance = bal.nPartImmature;
+            result.immature_anon_balance = bal.nAnonImmature;
             result.have_watch_only = bal.nPartWatchOnly || bal.nPartWatchOnlyUnconf || bal.nPartWatchOnlyStaked;
             if (result.have_watch_only) {
                 result.watch_only_balance = bal.nPartWatchOnly;
@@ -656,6 +659,11 @@ public:
     void remove() override
     {
         RemoveWallet(m_wallet);
+        if (m_wallet_part) {
+            smsgModule.WalletUnloaded(m_wallet_part);
+            m_wallet_part = nullptr;
+            RestartStakingThreads();
+        }
     }
     std::unique_ptr<Handler> handleUnload(UnloadFn fn) override
     {
@@ -763,7 +771,7 @@ public:
             return false;
         m_wallet_part->fUnlockForStakingOnly = true;
         return true;
-    };
+    }
 
     bool isDefaultAccountSet() override
     {

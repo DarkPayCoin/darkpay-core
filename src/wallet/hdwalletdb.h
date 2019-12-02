@@ -5,20 +5,22 @@
 #ifndef DARKPAY_WALLET_HDWALLETDB_H
 #define DARKPAY_WALLET_HDWALLETDB_H
 
-#include <amount.h>
 #include <primitives/transaction.h>
-#include <wallet/wallet.h>
 #include <wallet/walletdb.h>
-#include <key.h>
 #include <key/types.h>
-#include <key/stealth.h>
-#include <key/extkey.h>
 
-#include <list>
-#include <stdint.h>
 #include <string>
-#include <utility>
 #include <vector>
+
+class CAddressBookData;
+class CEKAKeyPack;
+class CEKASCKeyPack;
+class CEKAStealthKeyPack;
+class CExtKeyAccount;
+class CStealthAddress;
+class CStoredExtKey;
+class uint160;
+class uint256;
 
 /*
 prefixes
@@ -124,7 +126,7 @@ public:
         pkEphem = pkEphem_;
         pkScan = pkScan_;
         outpoint = outpoint_;
-    };
+    }
 
     CPubKey   pkEphem;
     CPubKey   pkScan;
@@ -137,7 +139,7 @@ public:
         READWRITE(pkEphem);
         READWRITE(pkScan);
         READWRITE(outpoint);
-    };
+    }
 };
 
 class COwnedAnonOutput
@@ -151,7 +153,7 @@ public:
     {
         outpoint = outpoint_;
         fSpent   = fSpent_;
-    };
+    }
 
     ec_point vchImage;
     int64_t nValue;
@@ -165,7 +167,7 @@ public:
     {
         READWRITE(outpoint);
         READWRITE(fSpent);
-    };
+    }
 };
 
 class CStealthAddressIndexed
@@ -181,7 +183,7 @@ public:
     inline void SerializationOp(Stream &s, Operation ser_action)
     {
         READWRITE(addrRaw);
-    };
+    }
 };
 
 class CVoteToken
@@ -204,7 +206,7 @@ public:
         READWRITE(nStart);
         READWRITE(nEnd);
         READWRITE(nTimeAdded);
-    };
+    }
 };
 
 /** Access to the wallet database */
@@ -218,7 +220,7 @@ public:
     bool InTxn()
     {
         return m_batch.pdb && m_batch.activeTxn;
-    };
+    }
 
     Dbc *GetTxnCursor()
     {
@@ -234,12 +236,12 @@ public:
             return nullptr;
         }
         return pcursor;
-    };
+    }
 
     Dbc *GetCursor()
     {
         return m_batch.GetCursor();
-    };
+    }
 
     template< typename T>
     bool Replace(Dbc *pcursor, const T &value)
@@ -359,6 +361,7 @@ public:
 
     bool ReadFlag(const std::string &name, int32_t &nValue, uint32_t nFlags=DB_READ_UNCOMMITTED);
     bool WriteFlag(const std::string &name, int32_t nValue);
+    bool WriteWalletFlags(const uint64_t flags);
 
 
     bool ReadExtKeyIndex(uint32_t id, CKeyID &identifier, uint32_t nFlags=DB_READ_UNCOMMITTED);
@@ -404,7 +407,5 @@ public:
     bool WriteWalletSetting(const std::string &setting, const std::string &json);
     bool EraseWalletSetting(const std::string &setting);
 };
-
-//void ThreadFlushHDWalletDB();
 
 #endif // DARKPAY_WALLET_HDWALLETDB_H

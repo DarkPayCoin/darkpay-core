@@ -16,7 +16,8 @@
 #include <base58.h>
 #include <rpc/util.h>
 #include <validation.h>
-#include <fs.h>
+
+#include <leveldb/db.h>
 
 #ifdef ENABLE_WALLET
 #include <wallet/wallet.h>
@@ -36,12 +37,17 @@ static UniValue smsgenable(const JSONRPCRequest &request)
         throw std::runtime_error(
             RPCHelpMan{"smsgenable",
                 "Enable secure messaging on the specified wallet.\n"
+                "Uses the first available wallet if none specified.\n"
                 "SMSG can only be enabled on one wallet.\n",
                 {
                     {"walletname", RPCArg::Type::STR, /* default */ "wallet.dat", "Enable smsg on a specific wallet."},
                 },
                 RPCResults{},
-                RPCExamples{""},
+                RPCExamples{
+            HelpExampleCli("smsgenable", "\"wallet_name\"") +
+            "\nAs a JSON-RPC call\n"
+            + HelpExampleRpc("smsgenable", "\"wallet_name\"")
+                },
             }.ToString());
 
     if (smsg::fSecMsgEnabled) {
@@ -51,7 +57,7 @@ static UniValue smsgenable(const JSONRPCRequest &request)
     UniValue result(UniValue::VOBJ);
 
     std::shared_ptr<CWallet> pwallet;
-    std::string walletName = "none";
+    std::string wallet_name = "Not set.";
 #ifdef ENABLE_WALLET
     auto vpwallets = GetWallets();
 
@@ -74,12 +80,12 @@ static UniValue smsgenable(const JSONRPCRequest &request)
         }
     }
     if (pwallet) {
-        walletName = pwallet->GetName();
+        wallet_name = pwallet->GetName();
     }
 #endif
 
-    result.pushKV("result", (smsgModule.Enable(pwallet) ? "Enabled secure messaging." : "Failed to enable secure messaging."));
-    result.pushKV("wallet", walletName);
+    result.pushKV("result", (smsgModule.Enable(pwallet) ? "Enabled secure messaging." : "Failed."));
+    result.pushKV("wallet", wallet_name);
 
     return result;
 }
@@ -93,7 +99,11 @@ static UniValue smsgdisable(const JSONRPCRequest &request)
                 {
                 },
                 RPCResults{},
-                RPCExamples{""},
+                RPCExamples{
+            HelpExampleCli("smsgdisable", "") +
+            "\nAs a JSON-RPC call\n"
+            + HelpExampleRpc("smsgdisable", "")
+                },
             }.ToString());
 
     if (!smsg::fSecMsgEnabled)
@@ -101,7 +111,64 @@ static UniValue smsgdisable(const JSONRPCRequest &request)
 
     UniValue result(UniValue::VOBJ);
 
-    result.pushKV("result", (smsgModule.Disable() ? "Disabled secure messaging." : "Failed to disable secure messaging."));
+    result.pushKV("result", (smsgModule.Disable() ? "Disabled secure messaging." : "Failed."));
+
+    return result;
+}
+
+static UniValue smsgsetwallet(const JSONRPCRequest &request)
+{
+    if (request.fHelp || request.params.size() > 1)
+        throw std::runtime_error(
+            RPCHelpMan{"smsgsetwallet",
+                "Set secure messaging to use the specified wallet.\n"
+                "SMSG can only be enabled on one wallet.\n"
+                "Call with no parameters to unset the active wallet.\n",
+                {
+                    {"walletname", RPCArg::Type::STR, /* default */ "wallet.dat", "Enable smsg on a specific wallet."},
+                },
+                RPCResults{},
+                RPCExamples{
+            HelpExampleCli("smsgsetwallet", "\"wallet_name\"") +
+            "\nAs a JSON-RPC call\n"
+            + HelpExampleRpc("smsgsetwallet", "\"wallet_name\"")
+                },
+            }.ToString());
+
+    if (!smsg::fSecMsgEnabled) {
+        throw JSONRPCError(RPC_MISC_ERROR, "Secure messaging must be enabled.");
+    }
+
+    UniValue result(UniValue::VOBJ);
+
+    std::shared_ptr<CWallet> pwallet;
+    std::string wallet_name = "Not set.";
+#ifndef ENABLE_WALLET
+    throw JSONRPCError(RPC_MISC_ERROR, "Wallet is disabled.");
+#else
+    auto vpwallets = GetWallets();
+
+    if (!request.params[0].isNull()) {
+        std::string sFindWallet = request.params[0].get_str();
+
+        for (auto pw : vpwallets) {
+            if (pw->GetName() != sFindWallet) {
+                continue;
+            }
+            pwallet = pw;
+            break;
+        }
+        if (!pwallet) {
+            throw JSONRPCError(RPC_MISC_ERROR, "Wallet not found: \"" + sFindWallet + "\"");
+        }
+    }
+    if (pwallet) {
+        wallet_name = pwallet->GetName();
+    }
+#endif
+
+    result.pushKV("result", (smsgModule.SetActiveWallet(pwallet) ? "Set active wallet." : "Failed."));
+    result.pushKV("wallet", wallet_name);
 
     return result;
 }
@@ -1695,7 +1762,7 @@ static UniValue smsgimport(const JSONRPCRequest &request)
 {
     if (request.fHelp || request.params.size() < 1 || request.params.size() > 3)
         throw std::runtime_error(
-        RPCHelpMan{"smsgimpport",
+        RPCHelpMan{"smsgimport",
                 "\nImport smsg from hex string.\n",
                 {
                     {"msg", RPCArg::Type::STR, RPCArg::Optional::NO, "Hex encoded smsg."},
@@ -1712,9 +1779,9 @@ static UniValue smsgimport(const JSONRPCRequest &request)
             "}\n"
                 },
                 RPCExamples{
-            HelpExampleCli("smsgimpport", "\"msg\"") +
+            HelpExampleCli("smsgimport", "\"msg\"") +
             "\nAs a JSON-RPC call\n"
-            + HelpExampleRpc("smsgimpport", "\"msg\"")
+            + HelpExampleRpc("smsgimport", "\"msg\"")
                 },
             }.ToString());
 
@@ -1860,10 +1927,42 @@ static UniValue smsggetdifficulty(const JSONRPCRequest &request)
     return smsg::GetDifficulty(target_compact);
 }
 
+static UniValue smsggetinfo(const JSONRPCRequest &request)
+{
+    if (request.fHelp || request.params.size() > 0)
+        throw std::runtime_error(
+            RPCHelpMan{"smsggetinfo",
+                "\nReturns an object containing SMSG-related information.\n",
+                {
+                },
+                RPCResult{
+            "{\n"
+            "  \"enabled\": true|false,         (boolean) if SMSG is enabled or not\n"
+            "  \"wallet\": \"...\"              (string) name of the currently active wallet or \"None set\"\n"
+            "}\n"
+                },
+                RPCExamples{
+            HelpExampleCli("smsggetinfo", "") +
+            "\nAs a JSON-RPC call\n"
+            + HelpExampleRpc("smsggetinfo", "")
+                },
+            }.ToString());
+
+    UniValue obj(UniValue::VOBJ);
+
+    obj.pushKV("enabled", smsg::fSecMsgEnabled);
+    if (smsg::fSecMsgEnabled) {
+        obj.pushKV("wallet", smsgModule.GetWalletName());
+    }
+
+    return obj;
+}
+
 static const CRPCCommand commands[] =
 { //  category              name                      actor (function)         argNames
   //  --------------------- ------------------------  -----------------------  ----------
     { "smsg",               "smsgenable",             &smsgenable,             {"walletname"} },
+    { "smsg",               "smsgsetwallet",          &smsgsetwallet,          {"smsgsetwallet"} },
     { "smsg",               "smsgdisable",            &smsgdisable,            {} },
     { "smsg",               "smsgoptions",            &smsgoptions,            {} },
     { "smsg",               "smsglocalkeys",          &smsglocalkeys,          {} },
@@ -1884,6 +1983,7 @@ static const CRPCCommand commands[] =
     { "smsg",               "smsgpurge",              &smsgpurge,              {"msgid"}},
     { "smsg",               "smsggetfeerate",         &smsggetfeerate,         {"height"}},
     { "smsg",               "smsggetdifficulty",      &smsggetdifficulty,      {"time"}},
+    { "smsg",               "smsggetinfo",            &smsggetinfo,            {""}},
 };
 
 void RegisterSmsgRPCCommands(CRPCTable &tableRPC)

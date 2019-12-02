@@ -12,7 +12,6 @@
 #include <addrman.h>
 #include <amount.h>
 #include <banman.h>
-#include <blind.h>
 #include <chain.h>
 #include <chainparams.h>
 #include <checkpoints.h>
@@ -48,12 +47,14 @@
 #include <util/system.h>
 #include <util/moneystr.h>
 #include <validationinterface.h>
+#include <blind.h>
 #include <smsg/smessage.h>
 #include <smsg/rpcsmessage.h>
 #include <insight/rpc.h>
 #include <pos/miner.h>
 #ifdef ENABLE_WALLET
 #include <wallet/hdwallet.h>
+#include <wallet/rpchdwallet.h>
 #endif
 #if ENABLE_USBDEVICE
 #include <usbdevice/rpcusbdevice.h>
@@ -1962,15 +1963,14 @@ bool AppInitMain(InitInterfaces& interfaces)
 
     // ********************************************************* Step 10.1: start secure messaging
 
-    if (fDarkpayMode) { // SMSG breaks functional tests with services flag, see version msg
+    if (fDarkpayMode && gArgs.GetBoolArg("-smsg", true)) { // SMSG breaks functional tests with services flag, see version msg
 #ifdef ENABLE_WALLET
         auto vpwallets = GetWallets();
-        smsgModule.Start(vpwallets.size() > 0 ? vpwallets[0] : nullptr, !gArgs.GetBoolArg("-smsg", true), gArgs.GetBoolArg("-smsgscanchain", false));
+        smsgModule.Start(vpwallets.size() > 0 ? vpwallets[0] : nullptr, gArgs.GetBoolArg("-smsgscanchain", false));
 #else
-        smsgModule.Start(nullptr, !gArgs.GetBoolArg("-smsg", true), gArgs.GetBoolArg("-smsgscanchain", false));
+        smsgModule.Start(nullptr, gArgs.GetBoolArg("-smsgscanchain", false));
 #endif
     }
-
 
     if (ShutdownRequestedMainThread()) {
         return false;

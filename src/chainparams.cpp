@@ -20,18 +20,6 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 
-// Swap : approx. 4 500 000 or 4 750 000
-// Swap + 1y : 5 500 000 DKPC => 20%
-// Swap + 2y : 6 500 000 DKPC => 18%
-// Swap + 3y : 7 500 000 DKPC => 15%
-// Swap + 4y : 8 500 000 DKPC => 13%
-// Swap + 5y : 9 000 000 DKPC =>  5%
-// Swap + 6y : 9 500 000 DKPC => 5%
-// Swap + 7y : 10 000 000 DKPC  => 5%
-// Swap + 8y : 10 250 000 DKPC => 2.5%
-// Swap + 9y : 10 500 000 DKPC => 2.5%
-// Swap + 10y : 10 750 000 DKPC => 2%
-
 int64_t CChainParams::GetCoinYearReward(int64_t nTime) const
  {
      static const int64_t nSecondsInYear = 365 * 24 * 60 * 60;
@@ -207,7 +195,7 @@ const std::pair<const char*, CAmount> genesisOutputs[] = {
      std::make_pair("75d570e4aa830919d8e6eddec1dc4390b1d8007b",100000 * COIN), // cht-altb fund
      std::make_pair("76ca185f51c6146e7bdfbd59ad5183b9592a5256",20000 * COIN), // d1
      std::make_pair("ec9c649a77ee32f3cae3c5345d8c9cee0c0e84e7",20000 * COIN), // d2
-// MAINNET STARTED
+
 
 };
 
@@ -219,16 +207,16 @@ const std::pair<const char*, CAmount> genesisOutputsTestnet[] = {
      std::make_pair("dcab706749bf77f8a745f2f11c893866c6467559",1050000 * COIN), // swap2
      std::make_pair("a48e394040eb37d637b9632ed8e2ccd717787c90",1050000 * COIN), // swap3
      std::make_pair("2ca83c8eb8b55b5eec02a262617dcdb4217772cc",1050000 * COIN), // swap4
-     std::make_pair("6a54a70b57deb85e07e49f65ebaf215df032931c",1000 * COIN),// seed1 6a54a70b57deb85e07e49f65ebaf215df032931c
-     std::make_pair("4a6005075c730a84b8249bfdc6962990bd1bdfc7",1000 * COIN),// seed2 4a6005075c730a84b8249bfdc6962990bd1bdfc7
+     std::make_pair("6a54a70b57deb85e07e49f65ebaf215df032931c",1000 * COIN),// seed1 
+     std::make_pair("4a6005075c730a84b8249bfdc6962990bd1bdfc7",1000 * COIN),// seed2
 
-     std::make_pair("e435137d93a55098359766afafe06a996fbbae61",1000 * COIN),// seed3 e435137d93a55098359766afafe06a996fbbae61
-     std::make_pair("992bf01fbcfb3ddc788afc8c40e73422bfd8dc38",1000 * COIN),// seed4 992bf01fbcfb3ddc788afc8c40e73422bfd8dc38
-     std::make_pair("d7d77137062d21f5a1b8016e93ad5d86843867a1",1000 * COIN),// seed5 d7d77137062d21f5a1b8016e93ad5d86843867a1
-     std::make_pair("e1dc40bc23d14db83845122c626c0ac4000536ae",1000 * COIN),// seed6 e1dc40bc23d14db83845122c626c0ac4000536ae
+     std::make_pair("e435137d93a55098359766afafe06a996fbbae61",1000 * COIN),// seed3 
+     std::make_pair("992bf01fbcfb3ddc788afc8c40e73422bfd8dc38",1000 * COIN),// seed4 
+     std::make_pair("d7d77137062d21f5a1b8016e93ad5d86843867a1",1000 * COIN),// seed5 
+     std::make_pair("e1dc40bc23d14db83845122c626c0ac4000536ae",1000 * COIN),// seed6 
 
-     std::make_pair("c94c1910f05a30810066408e165a67200322eea8",100000 * COIN),// CHTALTBET fund c94c1910f05a30810066408e165a67200322eea8
-     std::make_pair("366f9145136da38d9a72a58bf6721ab9ea001e95",10000 * COIN),// seed7 for further seeds 366f9145136da38d9a72a58bf6721ab9ea001e95
+     std::make_pair("c94c1910f05a30810066408e165a67200322eea8",100000 * COIN),// 
+     std::make_pair("366f9145136da38d9a72a58bf6721ab9ea001e95",10000 * COIN),// seed7 
 
 
 
@@ -351,14 +339,14 @@ public:
         consensus.BIP34Height = 0;
         consensus.BIP65Height = 0;
         consensus.BIP66Height = 0;
-        consensus.OpIsCoinstakeTime = 1510272000; // 2017-11-10 00:00:00 UTC
+        consensus.OpIsCoinstakeTime = 0x5A04EC00;       // 2017-11-10 00:00:00 UTC
         consensus.fAllowOpIsCoinstakeWithP2PKH = false;
-        consensus.nPaidSmsgTime = 0x5C791EC0;       // 2019-03-01 12:00:00
-        consensus.csp2shTime = 0x5C791EC0;          // 2019-03-01 12:00:00
-        consensus.smsg_fee_time = 0xFFFFFFFF;       // 2106 TODO: lower
-        consensus.bulletproof_time = 0xFFFFFFFF;    // 2106 TODO: lower
-        consensus.rct_time = 0xFFFFFFFF;            // 2106 TODO: lower
-        consensus.smsg_difficulty_time = 0xFFFFFFFF; // 2106 TODO: lower
+        consensus.nPaidSmsgTime = 0x5C791EC0;           // 2019-03-01 12:00:00
+        consensus.csp2shTime = 0x5C791EC0;              // 2019-03-01 12:00:00
+        consensus.smsg_fee_time = 0x5E02FAE0;           // 1577253600 Date and time (GMT): Wednesday 25 December 2019 06:00:00
+        consensus.bulletproof_time = 0x5E02FAE0;        // 1577253600 Date and time (GMT): Wednesday 25 December 2019 06:00:00
+        consensus.rct_time = 0x5E02FAE0;                // 1577253600 Date and time (GMT): Wednesday 25 December 2019 06:00:00
+        consensus.smsg_difficulty_time = 0x5E02FAE0;    // 1577253600 Date and time (GMT): Wednesday 25 December 2019 06:00:00
 
         consensus.smsg_fee_period = 5040;
         consensus.smsg_fee_funding_tx_per_k = 200000;
@@ -368,6 +356,7 @@ public:
         consensus.smsg_difficulty_max_delta = 0xffff;
 
         consensus.powLimit = uint256S("000000000005ffffffffffffffffffffffffffffffffffffffffffffffffffff"); //uint256S("00000ffff0000000000000000000000000000000000000000000000000000000");
+
         consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // two weeks
         consensus.nPowTargetSpacing = 10 * 60;
         consensus.fPowAllowMinDifficultyBlocks = false;
@@ -423,9 +412,6 @@ public:
         genesis = CreateGenesisBlockMainNet(1558289166, 78502, 0x1f00ffff); // LAUNCHED 
         consensus.hashGenesisBlock = genesis.GetHash();
 
- //  std::cout << "  TESTNET GEN : " << genesis.ToString().c_str() <<  "\n"; // ROM
-
-
 
          assert(consensus.hashGenesisBlock == uint256S("0x0000907a178385c9eef184e3208d4d0cd470440aed2ae5571c9b1ff11dbfb475"));
          assert(genesis.hashMerkleRoot == uint256S("0x5e3576af3d8792f596e99decf47650ff427ab5bfeab2da9d315dddff5a7a5db7"));
@@ -433,7 +419,10 @@ public:
 
 
         vSeeds.emplace_back("explorer.darkpay.market");
-        vSeeds.emplace_back("dns.darkpay.market");
+        vSeeds.emplace_back("swap.darkpay.market");
+        vSeeds.emplace_back("coin.darkpay.market");
+        vSeeds.emplace_back("dystopia.darkpay.market");
+        vSeeds.emplace_back("darkpay.market");
         vSeeds.emplace_back("68.183.213.43");
         vSeeds.emplace_back("104.248.247.44");
         vSeeds.emplace_back("142.93.97.228");
@@ -475,7 +464,6 @@ public:
         bech32Prefixes[EXT_ACC_HASH].assign         ("dea",(const char*)"dea"+3);
         bech32Prefixes[STAKE_ONLY_PKADDR].assign    ("dcs",(const char*)"dcs"+3);
 
-
         bech32_hrp = "bc";
 
         vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_main, pnSeed6_main + ARRAYLEN(pnSeed6_main));
@@ -485,7 +473,7 @@ public:
         fMineBlocksOnDemand = false;
 
         checkpointData = {
-             {
+            {
                { 2621,      uint256S("0x2788b3bf6e73ba9f96b1743ef9b3e41858f6fc0cd442942c99d14150eb915296")},              
                { 31455,     uint256S("0xaa6ea64c67491d474512850b995fbf7da23546ab572efb30f5905068238e8354")},
                { 58929,     uint256S("0x266a5716aede1e88f300f44cdabca81d8c6325998f2b6e9f25966f132716b396")},
@@ -499,15 +487,16 @@ public:
                { 110000,    uint256S("0x84e845144ac98ede873a237461c17a4b742605587d53815c27e1bd028246705a")},
                { 120000,    uint256S("0x97ce323136dfca797618e1bc5bb80339bcf1c94d10dd41cb2e654b3bcfe43374")},
                { 126022,    uint256S("0x3fc364ef5deedc6dbee55d6705a44ec8208815a6be7659626eed2f67678afa7e")},
-
-             }
+               { 130525,    uint256S("0x1568355d3478727fe054c6cbdc7b225219a97ea9a331c1a748f70d7a53c272c1")},
+            }
         };
 
         chainTxData = ChainTxData {
-            // Data from rpc: getchaintxstats 4096 3fc364ef5deedc6dbee55d6705a44ec8208815a6be7659626eed2f67678afa7e
-            /* nTime    */ 1574618896,
-            /* nTxCount */ 130039,
+            // Data from rpc: getchaintxstats 4096 1568355d3478727fe054c6cbdc7b225219a97ea9a331c1a748f70d7a53c272c1
+            /* nTime    */ 1575198832,
+            /* nTxCount */ 134631,
             /* dTxRate  */ 0.008
+
         };
 
         /* disable fallback fee on mainnet */
@@ -546,13 +535,13 @@ public:
         consensus.BIP65Height = 0;
         consensus.BIP66Height = 0;
         consensus.OpIsCoinstakeTime = 0;
-        consensus.fAllowOpIsCoinstakeWithP2PKH = true; // TODO: clear for next testnet
-        consensus.nPaidSmsgTime = 0;
-        consensus.csp2shTime = 0x5C67FB40;          // 2019-02-16 12:00:00
-        consensus.smsg_fee_time = 0x5C67FB40;       // 2019-02-16 12:00:00
-        consensus.bulletproof_time = 0x5C67FB40;    // 2019-02-16 12:00:00
-        consensus.rct_time = 0;
-        consensus.smsg_difficulty_time = 0xFFFFFFFF; // 2106 TODO: lower
+        consensus.fAllowOpIsCoinstakeWithP2PKH = false; // TODO: clear for next testnet
+        consensus.nPaidSmsgTime = 0x5C791EC0;       // 2019-03-01 12:00:00
+        consensus.csp2shTime = 0x5C791EC0;          // 2019-03-01 12:00:00
+        consensus.smsg_fee_time = 0x5DE3B402;       // 1575203842000 Date and time (GMT): Sunday 1 December 2019 12:37:22
+        consensus.bulletproof_time = 0x5DE3B402;    // 1575203842000 Date and time (GMT): Sunday 1 December 2019 12:37:22
+        consensus.rct_time = 0x5DE3B402; // 1575203842000 Date and time (GMT): Sunday 1 December 2019 12:37:22
+        consensus.smsg_difficulty_time = 0x5DE3B402; // 1575203842000 Date and time (GMT): Sunday 1 December 2019 12:37:22
 
         consensus.smsg_fee_period = 5040;
         consensus.smsg_fee_funding_tx_per_k = 200000;
@@ -561,7 +550,7 @@ public:
         consensus.smsg_min_difficulty = 0x1effffff;
         consensus.smsg_difficulty_max_delta = 0xffff;
 
-        consensus.powLimit = uint256S("000000000005ffffffffffffffffffffffffffffffffffffffffffffffffffff"); //uint256S("00000ffff0000000000000000000000000000000000000000000000000000000");
+        consensus.powLimit = uint256S("000000000005ffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // two weeks
         consensus.nPowTargetSpacing = 10 * 60;
         consensus.fPowAllowMinDifficultyBlocks = true;
@@ -586,7 +575,7 @@ public:
         consensus.nMinimumChainWork = uint256S("0x0000000000000000000000000000000000000000000000000000000000010001");
 
         // By default assume that the signatures in ancestors of this block are valid.
-        //consensus.defaultAssumeValid = uint256S("0x96bb6bb7085d0fdb85757069af7b1513c6a86b476ba531a67af6e9dd21385255"); // 375987
+        consensus.defaultAssumeValid = uint256S("0x0000000000000000000000000000000000000000000000000000000000010001"); // 1
 
         consensus.nMinRCTOutputDepth = 12;
 
@@ -610,19 +599,9 @@ public:
         m_assumed_blockchain_size = 1;
         m_assumed_chain_state_size = 1;
 
-        
         genesis = CreateGenesisBlockTestNet(1550297166, 23877, 0x1f00ffff);
-
-
         consensus.hashGenesisBlock = genesis.GetHash();
-       
-  // std::cout << "  TESTNET GEN : " << genesis.ToString().c_str() <<  "\n"; // ROM
 
-
-  // nonce: 136406
-  //  time: 1550297166
-  //  hash: 0000d16b55b16d7ea316eef1147401b69edcdb4535abaaeafe61c50cfb4c1b40
-  //  merklehash: 5cc77c9e605cc980a9c75d33c36333cd72802806226cf7e4d548a1afb3a0deef
 
          assert(consensus.hashGenesisBlock == uint256S("0x0000212ef900921742874395299701bf68413a63467e774a96e7391bb757c07e"));
          assert(genesis.hashMerkleRoot == uint256S("0x49395b97760d8069666e699c8efd09e21554655c4139d0c1ddeffdb52851a179"));
@@ -631,10 +610,11 @@ public:
         vFixedSeeds.clear();
         vSeeds.clear();
         // nodes with support for servicebits filtering should be at the top
-        vSeeds.emplace_back("testnet-seed.darkpay.io");
-        vSeeds.emplace_back("dnsseed-testnet.darkpay.io");
+        vSeeds.emplace_back("explorer-testnet.darkpay.market");
+        vSeeds.emplace_back("testnet-seed.darkpay.market");
+        vSeeds.emplace_back("testnet.darkpay.market");
 
-        vDevFundSettings.push_back(std::make_pair(0, DevFundSettings("rHZBq9rDV1Z7asGxY9K8E5JW45x3jin1rW", 10, 60)));
+        vDevFundSettings.push_back(std::make_pair(0, DevFundSettings("dpPEidKSFRXj6jRj3cM2K2Ntw2TzusSDbi", 10, 60)));
 
         base58Prefixes[PUBKEY_ADDRESS]     = {0x5b}; // d
         base58Prefixes[SCRIPT_ADDRESS]     = {0x7a};
@@ -649,17 +629,18 @@ public:
         base58Prefixes[EXT_PUBLIC_KEY_BTC] = {0x04, 0x35, 0x87, 0xCF}; // tpub
         base58Prefixes[EXT_SECRET_KEY_BTC] = {0x04, 0x35, 0x83, 0x94}; // tprv
 
-        bech32Prefixes[PUBKEY_ADDRESS].assign       ("tph",(const char*)"tph"+3);
-        bech32Prefixes[SCRIPT_ADDRESS].assign       ("tpr",(const char*)"tpr"+3);
-        bech32Prefixes[PUBKEY_ADDRESS_256].assign   ("tpl",(const char*)"tpl"+3);
-        bech32Prefixes[SCRIPT_ADDRESS_256].assign   ("tpj",(const char*)"tpj"+3);
-        bech32Prefixes[SECRET_KEY].assign           ("tpx",(const char*)"tpx"+3);
-        bech32Prefixes[EXT_PUBLIC_KEY].assign       ("tpep",(const char*)"tpep"+4);
-        bech32Prefixes[EXT_SECRET_KEY].assign       ("tpex",(const char*)"tpex"+4);
-        bech32Prefixes[STEALTH_ADDRESS].assign      ("tps",(const char*)"tps"+3);
-        bech32Prefixes[EXT_KEY_HASH].assign         ("tpek",(const char*)"tpek"+4);
-        bech32Prefixes[EXT_ACC_HASH].assign         ("tpea",(const char*)"tpea"+4);
-        bech32Prefixes[STAKE_ONLY_PKADDR].assign    ("tpcs",(const char*)"tpcs"+4);
+        bech32Prefixes[PUBKEY_ADDRESS].assign       ("tdh",(const char*)"tdh"+3);
+        bech32Prefixes[SCRIPT_ADDRESS].assign       ("tdr",(const char*)"tdr"+3);
+        bech32Prefixes[PUBKEY_ADDRESS_256].assign   ("tdl",(const char*)"tdl"+3);
+        bech32Prefixes[SCRIPT_ADDRESS_256].assign   ("tdj",(const char*)"tdj"+3);
+        bech32Prefixes[SECRET_KEY].assign           ("tdx",(const char*)"tdx"+3);
+        bech32Prefixes[EXT_PUBLIC_KEY].assign       ("tdep",(const char*)"tdep"+4);
+        bech32Prefixes[EXT_SECRET_KEY].assign       ("tdex",(const char*)"tdex"+4);
+        bech32Prefixes[STEALTH_ADDRESS].assign      ("tds",(const char*)"tds"+3);
+        bech32Prefixes[EXT_KEY_HASH].assign         ("tdek",(const char*)"tdek"+4);
+        bech32Prefixes[EXT_ACC_HASH].assign         ("tdea",(const char*)"tdea"+4);
+        bech32Prefixes[STAKE_ONLY_PKADDR].assign    ("tdcs",(const char*)"tdcs"+4);
+
 
         bech32_hrp = "tb";
 
@@ -670,20 +651,14 @@ public:
         fMineBlocksOnDemand = false;
 
         checkpointData = {
-            // {
-            //     {127620, uint256S("0xe5ab909fc029b253bad300ccf859eb509e03897e7853e8bfdde2710dbf248dd1")},
-            //     {210920, uint256S("0x5534f546c3b5a264ca034703b9694fabf36d749d66e0659eef5f0734479b9802")},
-            //     {259290, uint256S("0x58267bdf935a2e0716cb910d055b8cdaa019089a5f71c3db90765dc7101dc5dc")},
-            //     {312860, uint256S("0xaba2e3b2dcf1970b53b67c869325c5eefd3a107e62518fa4640ddcfadf88760d")},
-            //     {375987, uint256S("0x96bb6bb7085d0fdb85757069af7b1513c6a86b476ba531a67af6e9dd21385255")},
-            // }
+            {
+
+            }
         };
 
         chainTxData = ChainTxData{
-            // Data from rpc: getchaintxstats 4096 96bb6bb7085d0fdb85757069af7b1513c6a86b476ba531a67af6e9dd21385255
-            /* nTime    */ //1554626352,
-            /* nTxCount */ //406684,
-            /* dTxRate  */ //0.007
+            // Data from rpc: getchaintxstats 4096 
+
         };
 
         /* enable fallback fee on testnet */
@@ -788,6 +763,7 @@ public:
             }
         };
 
+
          base58Prefixes[PUBKEY_ADDRESS]     = {0x5b}; // d
         base58Prefixes[SCRIPT_ADDRESS]     = {0x7a};
         base58Prefixes[PUBKEY_ADDRESS_256] = {0x77};
@@ -801,17 +777,17 @@ public:
         base58Prefixes[EXT_PUBLIC_KEY_BTC] = {0x04, 0x35, 0x87, 0xCF}; // tpub
         base58Prefixes[EXT_SECRET_KEY_BTC] = {0x04, 0x35, 0x83, 0x94}; // tprv
 
-        bech32Prefixes[PUBKEY_ADDRESS].assign       ("tph",(const char*)"tph"+3);
-        bech32Prefixes[SCRIPT_ADDRESS].assign       ("tpr",(const char*)"tpr"+3);
-        bech32Prefixes[PUBKEY_ADDRESS_256].assign   ("tpl",(const char*)"tpl"+3);
-        bech32Prefixes[SCRIPT_ADDRESS_256].assign   ("tpj",(const char*)"tpj"+3);
-        bech32Prefixes[SECRET_KEY].assign           ("tpx",(const char*)"tpx"+3);
-        bech32Prefixes[EXT_PUBLIC_KEY].assign       ("tpep",(const char*)"tpep"+4);
-        bech32Prefixes[EXT_SECRET_KEY].assign       ("tpex",(const char*)"tpex"+4);
-        bech32Prefixes[STEALTH_ADDRESS].assign      ("tps",(const char*)"tps"+3);
-        bech32Prefixes[EXT_KEY_HASH].assign         ("tpek",(const char*)"tpek"+4);
-        bech32Prefixes[EXT_ACC_HASH].assign         ("tpea",(const char*)"tpea"+4);
-        bech32Prefixes[STAKE_ONLY_PKADDR].assign    ("tpcs",(const char*)"tpcs"+4);
+        bech32Prefixes[PUBKEY_ADDRESS].assign       ("tdh","tdh"+3);
+        bech32Prefixes[SCRIPT_ADDRESS].assign       ("tdr","tdr"+3);
+        bech32Prefixes[PUBKEY_ADDRESS_256].assign   ("tdl","tdl"+3);
+        bech32Prefixes[SCRIPT_ADDRESS_256].assign   ("tdj","tdj"+3);
+        bech32Prefixes[SECRET_KEY].assign           ("tdx","tdx"+3);
+        bech32Prefixes[EXT_PUBLIC_KEY].assign       ("tdep","tdep"+4);
+        bech32Prefixes[EXT_SECRET_KEY].assign       ("tdex","tdex"+4);
+        bech32Prefixes[STEALTH_ADDRESS].assign      ("tds","tds"+3);
+        bech32Prefixes[EXT_KEY_HASH].assign         ("tdek","tdek"+4);
+        bech32Prefixes[EXT_ACC_HASH].assign         ("tdea","tdea"+4);
+        bech32Prefixes[STAKE_ONLY_PKADDR].assign    ("tdcs","tdcs"+4);
 
         bech32_hrp = "bcrt";
 
