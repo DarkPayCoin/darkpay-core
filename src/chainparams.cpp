@@ -421,6 +421,7 @@ public:
         vSeeds.emplace_back("explorer.darkpay.market");
         vSeeds.emplace_back("swap.darkpay.market");
         vSeeds.emplace_back("coin.darkpay.market");
+        vSeeds.emplace_back("bws.darkpay.market");
         vSeeds.emplace_back("dystopia.darkpay.market");
         vSeeds.emplace_back("darkpay.market");
         vSeeds.emplace_back("68.183.213.43");
