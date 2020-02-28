@@ -419,18 +419,11 @@ public:
 
 
         vSeeds.emplace_back("explorer.darkpay.market");
-        vSeeds.emplace_back("swap.darkpay.market");
-        vSeeds.emplace_back("coin.darkpay.market");
+        vSeeds.emplace_back("pool.darkpay.market");
         vSeeds.emplace_back("bws.darkpay.market");
-        vSeeds.emplace_back("dystopia.darkpay.market");
-        vSeeds.emplace_back("darkpay.market");
-        vSeeds.emplace_back("68.183.213.43");
-        vSeeds.emplace_back("104.248.247.44");
-        vSeeds.emplace_back("142.93.97.228");
-        vSeeds.emplace_back("178.62.80.178");
-        vSeeds.emplace_back("165.227.172.190");
-        vSeeds.emplace_back("167.99.220.116");
-        vSeeds.emplace_back("46.101.231.40");
+        vSeeds.emplace_back("104.248.247.44 "); //DNS
+        vSeeds.emplace_back("46.101.231.40"); // DK
+        vSeeds.emplace_back("178.62.213.14"); // SW
 
 
 
@@ -491,6 +484,13 @@ public:
                { 130525,    uint256S("0x1568355d3478727fe054c6cbdc7b225219a97ea9a331c1a748f70d7a53c272c1")},
                { 145000,    uint256S("0x5bcb914622a3b881848955db533b19250b465e7fdb585a30b6da903869f9b4ba")},
                { 147455,    uint256S("0x4451297f5855b344683a2cdb5d9c6e6dc9f41d20512098c3a4a8cb136d9cbea1")},
+               { 150269,    uint256S("0x5149b839167daf0048dc2ad3c6ada2c93aaf4f733236a7e43f7b9b821249759d")},
+               { 151531,    uint256S("0xc72d9beca39663b4412f959419fe1b5b5b1a9757383d846a5eb19c8e15c9d615")},
+               { 152522,    uint256S("0xff0dd761eabef937bb3366b2472f1166e1f3d20cc11fe209d2181938534d0d20")},
+               { 156166,    uint256S("0xc16483795c1cad245d09c3d1d3dbeb73f4970562f41497f947b77d179897490e")},
+               { 160000,    uint256S("0x3076718b303f3d5158b8d8fc2e204190d04210bce669fffd6b7f646eb3e0dd49")},
+               { 170000,    uint256S("0x4ccbdcdf95779cbdd260fc787a7743f065789c5e940880ac0ae9a729431f4bb3")},
+               { 180000,    uint256S("0x493c1bdfa37231633d7fc2b6980577321e5f4fc7d7a7a14afe32f7a45db20ab6")},
                { 190170,    uint256S("0xcb306593246f3ba07c506bc2353ebff48ec0a6b9d72dbcaa92b36ca37a1003d2")} 
             }
         };
