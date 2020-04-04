@@ -96,6 +96,8 @@ static constexpr unsigned int AVG_FEEFILTER_BROADCAST_INTERVAL = 10 * 60;
 /** Maximum feefilter broadcast delay after significant change. */
 static constexpr unsigned int MAX_FEEFILTER_CHANGE_DELAY = 5 * 60;
 
+extern void UpdateNumBlocksOfPeers(NodeId id, int height);
+
 // Internal stuff
 namespace {
     /** Number of nodes with fSyncStarted. */
@@ -367,7 +369,7 @@ static void PushNodeVersion(CNode *pnode, CConnman* connman, int64_t nTime)
     CAddress addrMe = CAddress(CService(), nLocalNodeServices);
 
     connman->PushMessage(pnode, CNetMsgMaker(INIT_PROTO_VERSION).Make(NetMsgType::VERSION, PROTOCOL_VERSION, (uint64_t)nLocalNodeServices, nTime, addrYou, addrMe,
-            nonce, strSubVersion, nNodeStartingHeight, ::fRelayTxes));
+            nonce, strSubVersion, nNodeStartingHeight, ::g_relay_txes));
 
     if (fLogIPs) {
         LogPrint(BCLog::NET, "send version message: version %d, blocks=%d, us=%s, them=%s, peer=%d\n", PROTOCOL_VERSION, nNodeStartingHeight, addrMe.ToString(), addrYou.ToString(), nodeid);
@@ -942,6 +944,15 @@ void RemoveNonReceivedHeaderFromNodes(BlockMap::iterator mi) EXCLUSIVE_LOCKS_REQ
     }
 }
 
+void PassOnMisbehaviour(CNodeState *state, NodeId node_id, int howmuch) {
+    state->nMisbehavior = howmuch;
+
+    if (state->nMisbehavior >= gArgs.GetArg("-banscore", DEFAULT_BANSCORE_THRESHOLD)) {
+        state->fShouldBan = true;
+    }
+    LogPrint(BCLog::NET, "%s: %s peer=%d Inherited misbehavior (%d)%s\n", __func__, state->name, node_id, state->nMisbehavior, state->fShouldBan ? ", Banned" : "");
+}
+
 /** Increase misbehavior scores by address. */
 void MisbehavingByAddr(CNetAddr addr, int misbehavior_cfwd, int howmuch, const std::string& message="") EXCLUSIVE_LOCKS_REQUIRED(cs_main)
 {
@@ -951,8 +962,7 @@ void MisbehavingByAddr(CNetAddr addr, int misbehavior_cfwd, int howmuch, const s
         }
         if (addr == (CNetAddr)it->second.address) {
             if (it->second.nMisbehavior < misbehavior_cfwd) {
-                it->second.nMisbehavior = misbehavior_cfwd;
-                LogPrint(BCLog::NET, "%s: %s peer=%d Inherited misbehavior (%d)\n", __func__, it->second.name, it->first, it->second.nMisbehavior);
+                PassOnMisbehaviour(&it->second, it->first, misbehavior_cfwd);
             }
             Misbehaving(it->first, howmuch, message);
         }
@@ -1006,7 +1016,7 @@ bool IncDuplicateHeaders(NodeId node_id) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
 {
     CNodeState *state = State(node_id);
     if (state == nullptr) {
-        return false;
+        return true; // Node already disconnected
     }
     auto it = map_dos_state.find(state->address);
     if (it != map_dos_state.end()) {
@@ -1016,8 +1026,7 @@ bool IncDuplicateHeaders(NodeId node_id) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
             return true;
         }
         if (state->nMisbehavior < it->second.m_misbehavior) {
-            state->nMisbehavior = it->second.m_misbehavior;
-            LogPrint(BCLog::NET, "%s: %s peer=%d Inherited misbehavior (%d)\n", __func__, state->name, node_id, state->nMisbehavior);
+            PassOnMisbehaviour(state, node_id, it->second.m_misbehavior);
         }
         it->second.m_misbehavior += 5;
         return false;
@@ -1036,8 +1045,7 @@ void IncPersistentMisbehaviour(NodeId node_id, int howmuch)
     auto it = map_dos_state.find(state->address);
     if (it != map_dos_state.end()) {
         if (state->nMisbehavior < it->second.m_misbehavior) {
-            state->nMisbehavior = it->second.m_misbehavior;
-            LogPrint(BCLog::NET, "%s: %s peer=%d Inherited misbehavior (%d)\n", __func__, state->name, node_id, state->nMisbehavior);
+            PassOnMisbehaviour(state, node_id, it->second.m_misbehavior);
         }
         it->second.m_misbehavior += howmuch;
         return;
@@ -1049,6 +1057,11 @@ void IncPersistentMisbehaviour(NodeId node_id, int howmuch)
 int GetNumDOSStates()
 {
     return map_dos_state.size();
+}
+
+void ClearDOSStates()
+{
+    map_dos_state.clear();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2012,7 +2025,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         pfrom->nChainHeight = nStartingHeight;
         {
             LOCK(cs_main);
-            connman->cPeerBlockCounts.input(pfrom->nChainHeight);
+            UpdateNumBlocksOfPeers(pfrom->GetId(), nStartingHeight);
         }
         pfrom->nServices = nServices;
         pfrom->SetAddrLocal(addrMe);
@@ -2250,7 +2263,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
             return false;
         }
 
-        bool fBlocksOnly = !fRelayTxes;
+        bool fBlocksOnly = !g_relay_txes;
 
         // Allow whitelisted peers to send data other than blocks in blocks only mode if whitelistrelay is true
         if (pfrom->fWhitelisted && gArgs.GetBoolArg("-whitelistrelay", DEFAULT_WHITELISTRELAY))
@@ -2510,7 +2523,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
     if (strCommand == NetMsgType::TX) {
         // Stop processing the transaction early if
         // We are in blocks only mode and peer is either not whitelisted or whitelistrelay is off
-        if (!fRelayTxes && (!pfrom->fWhitelisted || !gArgs.GetBoolArg("-whitelistrelay", DEFAULT_WHITELISTRELAY)))
+        if (!g_relay_txes && (!pfrom->fWhitelisted || !gArgs.GetBoolArg("-whitelistrelay", DEFAULT_WHITELISTRELAY)))
         {
             LogPrint(BCLog::NET, "transaction sent in violation of protocol peer=%d\n", pfrom->GetId());
             return true;
@@ -3074,7 +3087,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
             pfrom->nChainHeight = nChainHeight;
             {
                 LOCK(cs_main);
-                connman->cPeerBlockCounts.input(nChainHeight);
+                UpdateNumBlocksOfPeers(pfrom->GetId(), nChainHeight);
             }
 
             // Echo the message back with the nonce. This allows for two useful features:
@@ -3361,23 +3374,22 @@ bool PeerLogicValidation::ProcessMessages(CNode* pfrom, std::atomic<bool>& inter
         if (m_enable_bip61) {
             connman->PushMessage(pfrom, CNetMsgMaker(INIT_PROTO_VERSION).Make(NetMsgType::REJECT, strCommand, REJECT_MALFORMED, std::string("error parsing message")));
         }
-        if (strstr(e.what(), "end of data"))
-        {
+        if (strstr(e.what(), "end of data")) {
             // Allow exceptions from under-length message on vRecv
             LogPrint(BCLog::NET, "%s(%s, %u bytes): Exception '%s' caught, normally caused by a message being shorter than its stated length\n", __func__, SanitizeString(strCommand), nMessageSize, e.what());
-        }
-        else if (strstr(e.what(), "size too large"))
-        {
+        } else if (strstr(e.what(), "size too large")) {
             // Allow exceptions from over-long size
             LogPrint(BCLog::NET, "%s(%s, %u bytes): Exception '%s' caught\n", __func__, SanitizeString(strCommand), nMessageSize, e.what());
-        }
-        else if (strstr(e.what(), "non-canonical ReadCompactSize()"))
-        {
+        } else if (strstr(e.what(), "non-canonical ReadCompactSize()")) {
             // Allow exceptions from non-canonical encoding
             LogPrint(BCLog::NET, "%s(%s, %u bytes): Exception '%s' caught\n", __func__, SanitizeString(strCommand), nMessageSize, e.what());
-        }
-        else
-        {
+        } else if (strstr(e.what(), "Superfluous witness record")) {
+            // Allow exceptions from illegal witness encoding
+            LogPrint(BCLog::NET, "%s(%s, %u bytes): Exception '%s' caught\n", __func__, SanitizeString(strCommand), nMessageSize, e.what());
+        } else if (strstr(e.what(), "Unknown transaction optional data")) {
+            // Allow exceptions from unknown witness encoding
+            LogPrint(BCLog::NET, "%s(%s, %u bytes): Exception '%s' caught\n", __func__, SanitizeString(strCommand), nMessageSize, e.what());
+        } else {
             PrintExceptionContinue(&e, "ProcessMessages()");
         }
     }

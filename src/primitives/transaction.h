@@ -700,6 +700,10 @@ inline void UnserializeTransaction(TxType& tx, Stream& s) {
         for (size_t i = 0; i < tx.vin.size(); i++) {
             s >> tx.vin[i].scriptWitness.stack;
         }
+        if (!tx.HasWitness()) {
+            /* It's illegal to encode witnesses when all witness stacks are empty. */
+            throw std::ios_base::failure("Superfluous witness record");
+        }
     }
     if (flags) {
         /* Unknown flag in the serialization */
@@ -917,6 +921,8 @@ public:
         }
         return vpout[0]->GetSmsgDifficulty(compact);
     }
+
+    CAmount GetTotalSMSGFees() const;
 
     friend bool operator==(const CTransaction& a, const CTransaction& b)
     {

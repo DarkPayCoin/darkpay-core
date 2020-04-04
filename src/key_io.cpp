@@ -314,13 +314,11 @@ bool CBase58Data::SetString(const char* psz, unsigned int nVersionBytes)
 
     if (rc58
         && nVersionBytes != 4
-        && vchTemp.size() == BIP32_KEY_N_BYTES + 4) // no point checking smaller keys
-    {
-        if (0 == memcmp(&vchTemp[0], &Params().Base58Prefix(CChainParams::EXT_PUBLIC_KEY)[0], 4))
+        && vchTemp.size() == BIP32_KEY_N_BYTES + 4) { // no point checking smaller keys
+        if (0 == memcmp(&vchTemp[0], &Params().Base58Prefix(CChainParams::EXT_PUBLIC_KEY)[0], 4)) {
             nVersionBytes = 4;
-        else
-        if (0 == memcmp(&vchTemp[0], &Params().Base58Prefix(CChainParams::EXT_SECRET_KEY)[0], 4))
-        {
+        } else
+        if (0 == memcmp(&vchTemp[0], &Params().Base58Prefix(CChainParams::EXT_SECRET_KEY)[0], 4)) {
             nVersionBytes = 4;
 
             // Never display secret in a CBitcoinAddress
@@ -333,8 +331,8 @@ bool CBase58Data::SetString(const char* psz, unsigned int nVersionBytes)
             ekp.EncodeP(&vchData[0]);
             memory_cleanse(&vchTemp[0], vchData.size());
             return true;
-        };
-    };
+        }
+    }
 
     if ((!rc58) || (vchTemp.size() < nVersionBytes)) {
         vchData.clear();
@@ -730,43 +728,6 @@ bool CBitcoinAddress::GetKeyID(CKeyID &keyID, CChainParams::Base58Type prefix) c
     keyID = CKeyID(id);
     return true;
 }
-
-bool CBitcoinAddress::GetIndexKey(uint256 &hashBytes, int &type) const
-{
-    if (!IsValid())
-        return false;
-
-    hashBytes.SetNull();
-    if (vchVersion == Params().Base58Prefix(CChainParams::PUBKEY_ADDRESS))
-    {
-        memcpy(hashBytes.begin(), vchData.data(), 20);
-        type = ADDR_INDT_PUBKEY_ADDRESS;
-        return true;
-    };
-
-    if (vchVersion == Params().Base58Prefix(CChainParams::SCRIPT_ADDRESS))
-    {
-        memcpy(hashBytes.begin(), vchData.data(), 20);
-        type = ADDR_INDT_SCRIPT_ADDRESS;
-        return true;
-    };
-
-    if (vchVersion == Params().Base58Prefix(CChainParams::PUBKEY_ADDRESS_256))
-    {
-        memcpy(hashBytes.begin(), vchData.data(), 32);
-        type = ADDR_INDT_PUBKEY_ADDRESS_256;
-        return true;
-    };
-
-    if (vchVersion == Params().Base58Prefix(CChainParams::SCRIPT_ADDRESS_256))
-    {
-        memcpy(hashBytes.begin(), vchData.data(), 32);
-        type = ADDR_INDT_SCRIPT_ADDRESS_256;
-        return true;
-    };
-
-    return false;
-};
 
 bool CBitcoinAddress::IsScript() const
 {

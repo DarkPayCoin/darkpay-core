@@ -55,6 +55,7 @@ static const bool DEFAULT_WHITELISTFORCERELAY = false;
 static const unsigned int DEFAULT_MIN_RELAY_TX_FEE = 1000;
 //! -maxtxfee default
 static const CAmount DEFAULT_TRANSACTION_MAXFEE = COIN / 2;
+static const CAmount DEFAULT_TRANSACTION_MAXFEE_BTC = COIN / 10;
 //! Discourage users to set fees higher than this amount (in satoshis) per kB
 static const CAmount HIGH_TX_FEE_PER_KB = COIN / 100;
 //! -maxtxfee will warn if called with a higher fee than this amount (in satoshis)
@@ -286,10 +287,12 @@ bool LoadChainTip(const CChainParams& chainparams) EXCLUSIVE_LOCKS_REQUIRED(cs_m
 void UnloadBlockIndex();
 /** Run an instance of the script checking thread */
 void ThreadScriptCheck();
-/** Return the average number of blocks that other nodes claim to have */
-int GetNumBlocksOfPeers() EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 /** Check whether we are doing an initial block download (synchronizing from disk or network) */
 bool IsInitialBlockDownload();
+/** Return the average number of blocks that other nodes claim to have */
+int GetNumBlocksOfPeers();
+/** Return the median number of connected nodes */
+int GetNumPeers();
 /** Retrieve a transaction (from memory pool, or from disk, if possible) */
 bool GetTransaction(const uint256 &hash, CTransactionRef &tx, const Consensus::Params& params, uint256 &hashBlock, const CBlockIndex* const block_index = nullptr);
 

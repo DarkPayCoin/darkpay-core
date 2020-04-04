@@ -11,6 +11,7 @@
 #include <streams.h>
 #include <txmempool.h>
 #include <util/system.h>
+#include <anon.h>
 
 static constexpr double INF_FEERATE = 1e99;
 
@@ -38,7 +39,6 @@ std::string StringForFeeReason(FeeReason reason) {
         {FeeReason::PAYTXFEE, "PayTxFee set"},
         {FeeReason::FALLBACK, "Fallback fee"},
         {FeeReason::REQUIRED, "Minimum Required Fee"},
-        {FeeReason::MAXTXFEE, "MaxTxFee limit"}
     };
     auto reason_string = fee_reason_strings.find(reason);
 
@@ -564,6 +564,39 @@ CBlockPolicyEstimator::~CBlockPolicyEstimator()
 {
 }
 
+bool GetFeeRate(const CTxMemPoolEntry *entry, CFeeRate &feeRate)
+{
+    const CTransaction &tx = entry->GetTx();
+    CAmount tx_fee = entry->GetFee();
+    CAmount smsg_fees = tx.GetTotalSMSGFees();
+
+    bool has_anon_outputs = false;
+    for (const auto &txout : tx.vpout) {
+        if (txout->IsType(OUTPUT_RINGCT)) {
+            has_anon_outputs = true;
+            continue;
+        }
+        const CScript *pScriptPubKey = txout->GetPScriptPubKey();
+        if (pScriptPubKey && pScriptPubKey->size() >= 1 && *pScriptPubKey->begin() == OP_RETURN) {
+            LogPrint(BCLog::ESTIMATEFEE, "Tx %s may be a destruction tx.\n",
+                 tx.GetHash().ToString());
+            return false;
+        }
+    }
+
+    if (has_anon_outputs) {
+        tx_fee /= ANON_FEE_MULTIPLIER;
+    }
+
+    if (smsg_fees > tx_fee) {
+        LogPrint(BCLog::ESTIMATEFEE, "Blockpolicy error tx %s pays more smsg fees than total.\n",
+                 tx.GetHash().ToString());
+        return false;
+    }
+    feeRate = CFeeRate(tx_fee - smsg_fees, entry->GetTxSize());
+    return true;
+}
+
 void CBlockPolicyEstimator::processTransaction(const CTxMemPoolEntry& entry, bool validFeeEstimate)
 {
     LOCK(m_cs_fee_estimator);
@@ -589,10 +622,15 @@ void CBlockPolicyEstimator::processTransaction(const CTxMemPoolEntry& entry, boo
         untrackedTxs++;
         return;
     }
-    trackedTxs++;
 
     // Feerates are stored and reported as BTC-per-kb:
-    CFeeRate feeRate(entry.GetFee(), entry.GetTxSize());
+    CFeeRate feeRate;
+    if (!GetFeeRate(&entry, feeRate)) {
+        untrackedTxs++;
+        return;
+    }
+
+    trackedTxs++;
 
     mapMemPoolTxs[hash].blockHeight = txHeight;
     unsigned int bucketIndex = feeStats->NewTx(txHeight, (double)feeRate.GetFeePerK());
@@ -622,7 +660,10 @@ bool CBlockPolicyEstimator::processBlockTx(unsigned int nBlockHeight, const CTxM
     }
 
     // Feerates are stored and reported as BTC-per-kb:
-    CFeeRate feeRate(entry->GetFee(), entry->GetTxSize());
+    CFeeRate feeRate;
+    if (!GetFeeRate(entry, feeRate)) {
+        return false;
+    }
 
     feeStats->Record(blocksToConfirm, (double)feeRate.GetFeePerK());
     shortStats->Record(blocksToConfirm, (double)feeRate.GetFeePerK());

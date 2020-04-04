@@ -337,9 +337,8 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fChe
             return state.DoS(10, false, REJECT_INVALID, "bad-txns-vout-not-empty");
         }
 
-        size_t nStandardOutputs = 0;
+        size_t nStandardOutputs = 0, nDataOutputs = 0, nBlindOutputs = 0, nAnonOutputs = 0;
         CAmount nValueOut = 0;
-        size_t nDataOutputs = 0;
         for (const auto &txout : tx.vpout) {
             switch (txout->nVersion) {
                 case OUTPUT_STANDARD:
@@ -352,11 +351,13 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fChe
                     if (!CheckBlindOutput(state, (CTxOutCT*) txout.get())) {
                         return false;
                     }
+                    nBlindOutputs++;
                     break;
                 case OUTPUT_RINGCT:
                     if (!CheckAnonOutput(state, (CTxOutRingCT*) txout.get())) {
                         return false;
                     }
+                    nAnonOutputs++;
                     break;
                 case OUTPUT_DATA:
                     if (!CheckDataOutput(state, (CTxOutData*) txout.get())) {
@@ -373,7 +374,11 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fChe
             }
         }
 
-        if (nDataOutputs > 1 + nStandardOutputs) { // extra 1 for ct fee output
+        size_t max_data_outputs = 1 + nStandardOutputs; // extra 1 for ct fee output
+        if (state.fIncDataOutputs) {
+            max_data_outputs += nBlindOutputs + nAnonOutputs;
+        }
+        if (nDataOutputs > max_data_outputs) {
             return state.DoS(100, false, REJECT_INVALID, "too-many-data-outputs");
         }
     } else {
@@ -431,8 +436,8 @@ bool Consensus::CheckTxInputs(const CTransaction& tx, CValidationState& state, c
     state.fHasAnonOutput = false;
     state.fHasAnonInput = false;
 
-    // early out for darkpay txns
-    if (tx.IsDarkpayVersion() && tx.vin.size() < 1) {
+    bool is_darkpay_tx = tx.IsDarkpayVersion();
+    if (is_darkpay_tx && tx.vin.size() < 1) { // early out
         return state.DoS(100, false, REJECT_INVALID, "bad-txn-no-inputs", false,
                          strprintf("%s: no inputs", __func__));
     }
@@ -464,7 +469,7 @@ bool Consensus::CheckTxInputs(const CTransaction& tx, CValidationState& state, c
         {
             if (nSpendHeight - coin.nHeight < COINBASE_MATURITY)
             {
-                if (fDarkpayMode) {
+                if (is_darkpay_tx) {
                     // Scale in the depth restriction to start the chain
                     int nRequiredDepth = std::min(COINBASE_MATURITY, (int)(coin.nHeight / 2));
                     if (nSpendHeight - coin.nHeight < nRequiredDepth) {
@@ -480,7 +485,7 @@ bool Consensus::CheckTxInputs(const CTransaction& tx, CValidationState& state, c
         }
 
         // Check for negative or overflow input values
-        if (fDarkpayMode) {
+        if (is_darkpay_tx) {
             if (coin.nType == OUTPUT_STANDARD) {
                 nValueIn += coin.out.nValue;
                 if (!MoneyRange(coin.out.nValue) || !MoneyRange(nValueIn)) {
@@ -512,7 +517,7 @@ bool Consensus::CheckTxInputs(const CTransaction& tx, CValidationState& state, c
     state.fHasAnonOutput = nRingCT > nRingCTInputs;
 
     nTxFee = 0;
-    if (fDarkpayMode) {
+    if (is_darkpay_tx) {
         if (!tx.IsCoinStake()) {
             // Tally transaction fees
             if (nCt > 0 || nRingCT > 0) {
@@ -538,22 +543,7 @@ bool Consensus::CheckTxInputs(const CTransaction& tx, CValidationState& state, c
             }
 
             // Enforce smsg fees
-            CAmount nTotalMsgFees = 0;
-            for (const auto &v : tx.vpout) {
-                if (!v->IsType(OUTPUT_DATA)) {
-                    continue;
-                }
-                CTxOutData *txd = (CTxOutData*) v.get();
-                if (txd->vData.size() < 25 || txd->vData[0] != DO_FUND_MSG) {
-                    continue;
-                }
-                size_t n = (txd->vData.size()-1) / 24;
-                for (size_t k = 0; k < n; ++k) {
-                    uint32_t nAmount;
-                    memcpy(&nAmount, &txd->vData[1+k*24+20], 4);
-                    nTotalMsgFees += nAmount;
-                }
-            }
+            CAmount nTotalMsgFees = tx.GetTotalSMSGFees();
             if (nTotalMsgFees > 0) {
                 size_t nTxBytes = GetVirtualTransactionSize(tx);
                 const Consensus::Params& consensusParams = ::Params().GetConsensus();
@@ -600,7 +590,6 @@ bool Consensus::CheckTxInputs(const CTransaction& tx, CValidationState& state, c
         if (!MoneyRange(nPlainValueOut)) {
             return state.DoS(100, false, REJECT_INVALID, "bad-txns-out-outofrange");
         }
-
         if (!MoneyRange(nValueIn)) {
             return state.DoS(100, false, REJECT_INVALID, "bad-txns-in-outofrange");
         }

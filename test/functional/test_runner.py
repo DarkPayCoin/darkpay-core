@@ -134,6 +134,7 @@ BASE_SCRIPTS = [
     'rpc_net.py',
     'wallet_keypool.py',
     'p2p_mempool.py',
+    'p2p_blocksonly.py',
     'mining_prioritisetransaction.py',
     'p2p_invalid_locator.py',
     'p2p_invalid_block.py',
@@ -229,6 +230,11 @@ DARKPAY_SCRIPTS = [
     'wallet_part_watchonly.py',
     'rpc_part_atomicswap.py',
     'rpc_part_signmessage.py',
+    'wallet_part_segwit_scripts.py',
+]
+
+DARKPAY_SCRIPTS_EXT = [
+    'feature_part_smsg_multiwallet.py',
 ]
 
 INSIGHT_SCRIPTS = [
@@ -240,7 +246,7 @@ INSIGHT_SCRIPTS = [
 ]
 
 # Place EXTENDED_SCRIPTS first since it has the 3 longest running tests
-ALL_SCRIPTS = EXTENDED_SCRIPTS + BASE_SCRIPTS + DARKPAY_SCRIPTS + INSIGHT_SCRIPTS
+ALL_SCRIPTS = EXTENDED_SCRIPTS + BASE_SCRIPTS + DARKPAY_SCRIPTS + INSIGHT_SCRIPTS + DARKPAY_SCRIPTS_EXT
 
 NON_SCRIPTS = [
     # These are python files that live in the functional tests directory, but are not test scripts.
@@ -266,6 +272,7 @@ def main():
     parser.add_argument('--extended', action='store_true', help='run the extended test suite in addition to the basic tests')
     parser.add_argument('--bitcoin', action='store_true', help='run Bitcoin specific tests')
     parser.add_argument('--darkpay', action='store_true', help='run Darkpay specific tests')
+    parser.add_argument('--darkpayext', action='store_true', help='run Darkpay extended tests')
     parser.add_argument('--insight', action='store_true', help='run Insight specific tests')
     parser.add_argument('--withstdout', action='store_true', help='print stdout when test passed also')
     parser.add_argument('--help', '-h', '-?', action='store_true', help='print help text and exit')
@@ -332,6 +339,8 @@ def main():
             test_list += INSIGHT_SCRIPTS
         if args.bitcoin:
             test_list += BASE_SCRIPTS
+        if args.darkpayext:
+            test_list += DARKPAY_SCRIPTS_EXT
 
     # Remove the test cases that the user has explicitly asked to exclude.
     if args.exclude:

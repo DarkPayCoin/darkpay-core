@@ -1,3 +1,89 @@
+
+0.18.1.7
+==============
+- wallet: Fix missing low amount error string.
+- hardware devices: Add ID for Ledger Nano S firmware 1.6
+
+
+0.18.1.6
+==============
+- Fixed crash when rescanning a watchonly account.
+- Fixed errors when calling the mnemonic rpc function concurrently.
+- Fixed crash when initaccountfromdevice is called before setting udev rules.
+- Added udev rule hint to Qt gui if initaccountfromdevice fails.
+- Creating a stealth address from the Qt gui works if the wallet was initialised with a hardware device.
+- Added moneysupply and anonoutputs to getblockheader rpc output.
+
+
+0.18.1.5
+==============
+
+- rpc: smsgsend accepts a coincontrol parameter.
+- Fixed infinite loop bug in AddStandardInputs when sum of specified inputs is too low.
+- Fixed bug preventing outputs received with extkey addresses from hardware linked wallets being spent.
+- rpc: importstealthaddress can import watchonly stealth addresses.
+- rpc: smsgzmqpush resends zmq smsg notifications.
+- Fixed bug causing wallet unlock to freeze.
+
+
+0.18.1.4
+==============
+
+- Stealth address lookahead when rescanning an uncrypted or unlocked wallet.
+- RingCT send options are saved by the Qt gui.
+- SMSG can listen for incoming messages on multiple wallets.
+
+
+0.18.1.3
+==============
+
+- Log source of change address, allow p2wpkh changeaddresses.
+- rpc: smsggetfeerate cmd will display target rate if passed a negative height.
+- rpc: smsg cmd can export full message.
+- rpc: Add smsgpeers command.
+- net: Enable per message received byte counters for smsg.
+- rpc: smsgscanbuckets will skip expired messages.
+- rpc: Added smsgdumpprivkey command.
+- Relaxed smsg anti-spam constraint to allow backdated free messages if they pass the current difficulty.
+
+
+0.18.1.2
+==============
+
+- Improved fee estimation.
+
+
+0.18.1.1
+==============
+
+- Don't include paid smsg fees for fee estimates.
+- Fixed rescanblockchain needing to be run after clearwallettransactions to find anon-tx spends.
+- SMSG is incompatible with earlier releases, new bucket dir and db prefixes prevent collisions with existing data.
+- Changed SMSG days retention to ttl in seconds.
+- Listen for anon messages is set to false by default.
+- Moved some smsgsend arguments to an options object
+- New parameter ttl_is_seconds for smsgsend, if true interprets days_retention as seconds
+- New min ttl of 1 hour, max 31 days for paid and 14 for free
+
+
+0.18.1.0
+==============
+
+- clearbanned rpc cmd clears persistent DOS counters too.
+- Added segwit scripts to insight.
+
+
+0.18.0.12
+==============
+
+- Merged Bitcoin 0.18.1 backports.
+- Fixed help text for createsignaturewith commands.
+- Added 'pubkey' to output of extkey info extended-secret-key.
+- Fixed help text for getspentinfo.
+- Enabled segwit addresses in Darkpay mode for easier integrations.
+- Raised minimum peer version to 90009.
+
+
 0.18.0.11
 ==============
 

@@ -178,6 +178,7 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "tallyvotes", 1, "height_start" },
     { "tallyvotes", 2, "height_end" },
 
+
     { "sendparttoblind", 1, "amount" },
     { "sendparttoblind", 4, "subtractfeefromamount" },
     { "sendparttoanon", 1, "amount" },
@@ -214,7 +215,8 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "buildscript", 0, "json" },
     { "createsignaturewithwallet", 1, "prevtx" },
     { "createsignaturewithkey", 1, "prevtx" },
-
+    { "createsignaturewithwallet", 4, "options" },
+    { "createsignaturewithkey", 4, "options" },
 
 
     { "walletsettings", 1, "json" },
@@ -224,6 +226,7 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "getnewstealthaddress", 3, "bech32" },
     { "getnewstealthaddress", 4, "makeV2" },
     { "importstealthaddress", 5, "bech32" },
+    { "liststealthaddresses", 1, "options" },
 
     { "listunspentanon", 0, "minconf" },
     { "listunspentanon", 1, "maxconf" },
@@ -257,16 +260,17 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "smsgsend", 3, "paid_msg" },
     { "smsgsend", 4, "days_retention" },
     { "smsgsend", 5, "testfee" },
-    { "smsgsend", 6, "fromfile" },
-    { "smsgsend", 7, "decodehex" },
-    { "smsgsend", 8, "submitmsg" },
-    { "smsgsend", 9, "savemsg" },
+    { "smsgsend", 6, "options" },
+    { "smsgsend", 7, "coincontrol" },
     { "smsg", 1, "options" },
     { "smsgimport", 1, "options" },
     { "smsginbox", 2, "options" },
     { "smsgoutbox", 2, "options" },
     { "smsggetfeerate", 0, "height" },
     { "smsggetdifficulty", 0, "time" },
+    { "smsgscanbuckets", 0, "options" },
+    { "smsgpeers", 0, "index" },
+    { "smsgzmqpush", 0, "options" },
 
 
     { "devicesignrawtransaction", 1, "prevtxs" },

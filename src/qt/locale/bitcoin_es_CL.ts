@@ -2819,7 +2819,7 @@
     </message>
     <message>
         <source>Darkpay Core</source>
-        <translation>darkpay core</translation>
+        <translation>bitcoin core</translation>
     </message>
     <message>
         <source>The %s developers</source>

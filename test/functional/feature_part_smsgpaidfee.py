@@ -49,8 +49,7 @@ class SmsgPaidFeeTest(DarkpayTestFramework):
 
         self.sync_all()
 
-    def run_test (self):
-        tmpdir = self.options.tmpdir
+    def run_test(self):
         nodes = self.nodes
 
         nodes[0].extkeyimportmaster('abandon baby cabbage dad eager fabric gadget habit ice kangaroo lab absorb')
@@ -189,7 +188,8 @@ class SmsgPaidFeeTest(DarkpayTestFramework):
         assert(int(nodes[1].smsgoutbox()['result']) == 0)
         assert(int(nodes[0].smsginbox()['result']) == 0)
 
-        ro = nodes[1].smsgsend(address1, address0, text, False, 10, False, False, False, False, False)
+        sendoptions = {'submitmsg': False, 'savemsg': False}
+        ro = nodes[1].smsgsend(address1, address0, text, False, 10, False, sendoptions)
         assert('msg' in ro)
         msg = ro['msg']
         msg_id = ro['msgid']
@@ -203,6 +203,19 @@ class SmsgPaidFeeTest(DarkpayTestFramework):
         ro = nodes[0].smsginbox()
         assert(ro['messages'][0]['msgid'] == msg_id)
         assert(ro['messages'][0]['text'] == text)
+
+        self.log.info('Test export')
+        ro = nodes[0].smsg(msg_id, {'export': True})
+        msg_exported = ro['raw']
+        assert(nodes[0].smsgimport(msg_exported)['msgid'] == msg_id)
+
+        self.log.info('Test smsggetfeerate targetrate')
+        ro = nodes[0].smsggetfeerate(-1)
+        assert(ro['currentrate'] == 50000)
+        assert(ro['currentrateblockheight'] == 0)
+        assert(ro['targetrate'] == 50000)
+        assert(ro['targetblockheight'] == 1)
+        assert(ro['nextratechangeheight'] == 50)
 
         assert(nodes[0].smsggetdifficulty() > 0.06)
 

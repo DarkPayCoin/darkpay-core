@@ -408,7 +408,6 @@ public:
     mutable CCriticalSection cs_vNodes;
     std::atomic<NodeId> nLastNodeId{0};
     unsigned int nPrevNodeCount{0};
-    CMedianFilter<int> cPeerBlockCounts;
 
     /** Services this instance offers */
     ServiceFlags nLocalServices;
@@ -530,7 +529,7 @@ CAddress GetLocalAddress(const CNetAddr *paddrPeer, ServiceFlags nLocalServices)
 
 extern bool fDiscover;
 extern bool fListen;
-extern bool fRelayTxes;
+extern bool g_relay_txes;
 
 extern limitedmap<uint256, int64_t> mapAlreadyAskedFor;
 
@@ -696,7 +695,7 @@ public:
     std::atomic_bool fPauseRecv{false};
     std::atomic_bool fPauseSend{false};
 
-protected:
+//protected:
     mapMsgCmdSize mapSendBytesPerMsgCmd;
     mapMsgCmdSize mapRecvBytesPerMsgCmd GUARDED_BY(cs_vRecv);
 

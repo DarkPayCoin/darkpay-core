@@ -215,13 +215,14 @@ const std::pair<const char*, CAmount> genesisOutputsTestnet[] = {
      std::make_pair("d7d77137062d21f5a1b8016e93ad5d86843867a1",1000 * COIN),// seed5 
      std::make_pair("e1dc40bc23d14db83845122c626c0ac4000536ae",1000 * COIN),// seed6 
 
-     std::make_pair("c94c1910f05a30810066408e165a67200322eea8",100000 * COIN),// 
+     std::make_pair("c94c1910f05a30810066408e165a67200322eea8",100000 * COIN),// cht-altb fund
      std::make_pair("366f9145136da38d9a72a58bf6721ab9ea001e95",10000 * COIN),// seed7 
 
 
 
 };
 const size_t nGenesisOutputsTestnet = sizeof(genesisOutputsTestnet) / sizeof(genesisOutputsTestnet[0]);
+
 
 
 static CBlock CreateGenesisBlockRegTest(uint32_t nTime, uint32_t nNonce, uint32_t nBits)
@@ -276,7 +277,7 @@ static CBlock CreateGenesisBlockTestNet(uint32_t nTime, uint32_t nNonce, uint32_
         txNew.vpout[k] = out;
     }
 
-
+   
     CBlock genesis;
     genesis.nTime    = nTime;
     genesis.nBits    = nBits;
@@ -335,7 +336,7 @@ public:
     CMainParams() {
         strNetworkID = "main";
 
-        consensus.nSubsidyHalvingInterval = 210000;
+consensus.nSubsidyHalvingInterval = 210000;
         consensus.BIP34Height = 0;
         consensus.BIP65Height = 0;
         consensus.BIP66Height = 0;
@@ -356,6 +357,7 @@ public:
         consensus.smsg_difficulty_max_delta = 0xffff;
 
         consensus.powLimit = uint256S("000000000005ffffffffffffffffffffffffffffffffffffffffffffffffffff"); //uint256S("00000ffff0000000000000000000000000000000000000000000000000000000");
+
 
         consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // two weeks
         consensus.nPowTargetSpacing = 10 * 60;
@@ -378,7 +380,7 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_SEGWIT].nTimeout = 1510704000; // November 15th, 2017.
 
         // The best chain should have at least this much work.
-        consensus.nMinimumChainWork = uint256S("0x0000000000000000000000000000000000000000000000171b2f421688723120"); // 190170
+        consensus.nMinimumChainWork = uint256S("0x000000000000000000000000000000000000000000000019d71b84676be4450e"); // 214715
 
         // By default assume that the signatures in ancestors of this block are valid.
         consensus.defaultAssumeValid = uint256S("0xcb306593246f3ba07c506bc2353ebff48ec0a6b9d72dbcaa92b36ca37a1003d2"); // 190170
@@ -412,19 +414,22 @@ public:
         genesis = CreateGenesisBlockMainNet(1558289166, 78502, 0x1f00ffff); // LAUNCHED 
         consensus.hashGenesisBlock = genesis.GetHash();
 
+        assert(consensus.hashGenesisBlock == uint256S("0x0000907a178385c9eef184e3208d4d0cd470440aed2ae5571c9b1ff11dbfb475"));
+        assert(genesis.hashMerkleRoot == uint256S("0x5e3576af3d8792f596e99decf47650ff427ab5bfeab2da9d315dddff5a7a5db7"));
+        assert(genesis.hashWitnessMerkleRoot == uint256S("0x8a51839cb95053010cd3d3aa9bceae27d4006959bd860117a92b38652a45e8f7"));
 
-         assert(consensus.hashGenesisBlock == uint256S("0x0000907a178385c9eef184e3208d4d0cd470440aed2ae5571c9b1ff11dbfb475"));
-         assert(genesis.hashMerkleRoot == uint256S("0x5e3576af3d8792f596e99decf47650ff427ab5bfeab2da9d315dddff5a7a5db7"));
-         assert(genesis.hashWitnessMerkleRoot == uint256S("0xee4d2cba0ad2feda59cd86bbf0b9eb105b71a729f85526909005559581efb391"));
 
-
+        // Note that of those which support the service bits prefix, most only support a subset of
+        // possible options.
+        // This is fine at runtime as we'll fall back to using them as a oneshot if they don't support the
+        // service bits we want, but we should get them updated to support all service bits wanted by any
+        // release ASAP to avoid it where possible.
         vSeeds.emplace_back("explorer.darkpay.market");
         vSeeds.emplace_back("pool.darkpay.market");
         vSeeds.emplace_back("bws.darkpay.market");
         vSeeds.emplace_back("104.248.247.44 "); //DNS
         vSeeds.emplace_back("46.101.231.40"); // DK
         vSeeds.emplace_back("178.62.213.14"); // SW
-
 
 
         vDevFundSettings.emplace_back(0,
@@ -446,19 +451,19 @@ public:
         base58Prefixes[EXT_PUBLIC_KEY_BTC] = {0x04, 0x88, 0xB2, 0x1E}; // xpub
         base58Prefixes[EXT_SECRET_KEY_BTC] = {0x04, 0x88, 0xAD, 0xE4}; // xprv
 
-        bech32Prefixes[PUBKEY_ADDRESS].assign       ("dh",(const char*)"dh"+2);
-        bech32Prefixes[SCRIPT_ADDRESS].assign       ("dr",(const char*)"dr"+2);
-        bech32Prefixes[PUBKEY_ADDRESS_256].assign   ("dl",(const char*)"dl"+2);
-        bech32Prefixes[SCRIPT_ADDRESS_256].assign   ("dj",(const char*)"dj"+2);
-        bech32Prefixes[SECRET_KEY].assign           ("dx",(const char*)"dx"+2);
-        bech32Prefixes[EXT_PUBLIC_KEY].assign       ("dep",(const char*)"dep"+3);
-        bech32Prefixes[EXT_SECRET_KEY].assign       ("dex",(const char*)"dex"+3);
-        bech32Prefixes[STEALTH_ADDRESS].assign      ("ds",(const char*)"ds"+2);
-        bech32Prefixes[EXT_KEY_HASH].assign         ("dek",(const char*)"dek"+3);
-        bech32Prefixes[EXT_ACC_HASH].assign         ("dea",(const char*)"dea"+3);
-        bech32Prefixes[STAKE_ONLY_PKADDR].assign    ("dcs",(const char*)"dcs"+3);
+        bech32Prefixes[PUBKEY_ADDRESS].assign       ("dh","dh"+2);
+        bech32Prefixes[SCRIPT_ADDRESS].assign       ("dr","dr"+2);
+        bech32Prefixes[PUBKEY_ADDRESS_256].assign   ("dl","dl"+2);
+        bech32Prefixes[SCRIPT_ADDRESS_256].assign   ("dj","dj"+2);
+        bech32Prefixes[SECRET_KEY].assign           ("dx","dx"+2);
+        bech32Prefixes[EXT_PUBLIC_KEY].assign       ("ded","ded"+3);
+        bech32Prefixes[EXT_SECRET_KEY].assign       ("dex","dex"+3);
+        bech32Prefixes[STEALTH_ADDRESS].assign      ("ds","ds"+2);
+        bech32Prefixes[EXT_KEY_HASH].assign         ("dek","dek"+3);
+        bech32Prefixes[EXT_ACC_HASH].assign         ("dea","dea"+3);
+        bech32Prefixes[STAKE_ONLY_PKADDR].assign    ("dcs","dcs"+3);
 
-        bech32_hrp = "bc";
+        bech32_hrp = "dw";
 
         vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_main, pnSeed6_main + ARRAYLEN(pnSeed6_main));
 
@@ -482,25 +487,29 @@ public:
                { 120000,    uint256S("0x97ce323136dfca797618e1bc5bb80339bcf1c94d10dd41cb2e654b3bcfe43374")},
                { 126022,    uint256S("0x3fc364ef5deedc6dbee55d6705a44ec8208815a6be7659626eed2f67678afa7e")},
                { 130525,    uint256S("0x1568355d3478727fe054c6cbdc7b225219a97ea9a331c1a748f70d7a53c272c1")},
+               { 131279,    uint256S("0x9eb81bfce728ff1f67f9960aa4037ff107dc4032e5e4ca03cfcba9f889dbcca3")}, // v0.18.7 mark inv
+               { 136143,    uint256S("0x2759e7f728c3d2c02ce9efcd5c166629ec2bb8d15b67ffacc5d7e989ca0d99b9")},
                { 145000,    uint256S("0x5bcb914622a3b881848955db533b19250b465e7fdb585a30b6da903869f9b4ba")},
                { 147455,    uint256S("0x4451297f5855b344683a2cdb5d9c6e6dc9f41d20512098c3a4a8cb136d9cbea1")},
+               { 148356,    uint256S("0x106aec3da66c0ed5b5ca2387faf9d437c4fd6b629e6e30c2d1b5dde7adcdbaa1")},
                { 150269,    uint256S("0x5149b839167daf0048dc2ad3c6ada2c93aaf4f733236a7e43f7b9b821249759d")},
-               { 151531,    uint256S("0xc72d9beca39663b4412f959419fe1b5b5b1a9757383d846a5eb19c8e15c9d615")},
+               { 151531,    uint256S("0x5149b839167daf0048dc2ad3c6ada2c93aaf4f733236a7e43f7b9b821249759d")},
                { 152522,    uint256S("0xff0dd761eabef937bb3366b2472f1166e1f3d20cc11fe209d2181938534d0d20")},
                { 156166,    uint256S("0xc16483795c1cad245d09c3d1d3dbeb73f4970562f41497f947b77d179897490e")},
                { 160000,    uint256S("0x3076718b303f3d5158b8d8fc2e204190d04210bce669fffd6b7f646eb3e0dd49")},
                { 170000,    uint256S("0x4ccbdcdf95779cbdd260fc787a7743f065789c5e940880ac0ae9a729431f4bb3")},
                { 180000,    uint256S("0x493c1bdfa37231633d7fc2b6980577321e5f4fc7d7a7a14afe32f7a45db20ab6")},
-               { 190170,    uint256S("0xcb306593246f3ba07c506bc2353ebff48ec0a6b9d72dbcaa92b36ca37a1003d2")} 
+               { 190170,    uint256S("0xcb306593246f3ba07c506bc2353ebff48ec0a6b9d72dbcaa92b36ca37a1003d2")},
+               { 214715,    uint256S("0x8a51839cb95053010cd3d3aa9bceae27d4006959bd860117a92b38652a45e8f7")}         
+               
             }
         };
 
         chainTxData = ChainTxData {
-            // Data from rpc: getchaintxstats 4096 1568355d3478727fe054c6cbdc7b225219a97ea9a331c1a748f70d7a53c272c1
-            /* nTime    */ 1582878448,
-            /* nTxCount */ 197163,
+            // Data from rpc: getchaintxstats 4096 2759e7f728c3d2c02ce9efcd5c166629ec2bb8d15b67ffacc5d7e989ca0d99b9
+            /* nTime    */ 1586042368,
+            /* nTxCount */ 223000,
             /* dTxRate  */ 0.008
-
         };
 
         /* disable fallback fee on mainnet */
@@ -524,6 +533,8 @@ public:
         base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,128);
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x88, 0xB2, 0x1E};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x88, 0xAD, 0xE4};
+
+        bech32_hrp = "bc";
     }
 };
 
@@ -606,7 +617,6 @@ public:
         genesis = CreateGenesisBlockTestNet(1550297166, 23877, 0x1f00ffff);
         consensus.hashGenesisBlock = genesis.GetHash();
 
-
          assert(consensus.hashGenesisBlock == uint256S("0x0000212ef900921742874395299701bf68413a63467e774a96e7391bb757c07e"));
          assert(genesis.hashMerkleRoot == uint256S("0x49395b97760d8069666e699c8efd09e21554655c4139d0c1ddeffdb52851a179"));
          assert(genesis.hashWitnessMerkleRoot == uint256S("0xce6808bbf9984c4e25926e05af737eef0af13b4fa2dd5ba66f8c89f1fdfbc066"));
@@ -614,9 +624,9 @@ public:
         vFixedSeeds.clear();
         vSeeds.clear();
         // nodes with support for servicebits filtering should be at the top
-        vSeeds.emplace_back("explorer-testnet.darkpay.market");
-        vSeeds.emplace_back("testnet-seed.darkpay.market");
-        vSeeds.emplace_back("testnet.darkpay.market");
+        vSeeds.emplace_back("192.168.0.3");
+        vSeeds.emplace_back("192.168.0.174");
+
 
         vDevFundSettings.push_back(std::make_pair(0, DevFundSettings("dpPEidKSFRXj6jRj3cM2K2Ntw2TzusSDbi", 10, 60)));
 
@@ -626,27 +636,26 @@ public:
         base58Prefixes[SCRIPT_ADDRESS_256] = {0x7b};
         base58Prefixes[SECRET_KEY]         = {0x2e};
         base58Prefixes[EXT_PUBLIC_KEY]     = {0x02, 0xfe, 0x52, 0xcc}; // 02fe52cc drkp
-        base58Prefixes[EXT_SECRET_KEY]     = {0x3a, 0x80, 0x61, 0xa0}; // 3a8061a0 drkv
+        base58Prefixes[EXT_SECRET_KEY]     = {0x02, 0xfe, 0x52, 0xf8}; // 0x02fe52f8 drkv
         base58Prefixes[STEALTH_ADDRESS]    = {0x15}; // T
         base58Prefixes[EXT_KEY_HASH]       = {0x89}; // x
         base58Prefixes[EXT_ACC_HASH]       = {0x53}; // a
         base58Prefixes[EXT_PUBLIC_KEY_BTC] = {0x04, 0x35, 0x87, 0xCF}; // tpub
         base58Prefixes[EXT_SECRET_KEY_BTC] = {0x04, 0x35, 0x83, 0x94}; // tprv
 
-        bech32Prefixes[PUBKEY_ADDRESS].assign       ("tdh",(const char*)"tdh"+3);
-        bech32Prefixes[SCRIPT_ADDRESS].assign       ("tdr",(const char*)"tdr"+3);
-        bech32Prefixes[PUBKEY_ADDRESS_256].assign   ("tdl",(const char*)"tdl"+3);
-        bech32Prefixes[SCRIPT_ADDRESS_256].assign   ("tdj",(const char*)"tdj"+3);
-        bech32Prefixes[SECRET_KEY].assign           ("tdx",(const char*)"tdx"+3);
-        bech32Prefixes[EXT_PUBLIC_KEY].assign       ("tdep",(const char*)"tdep"+4);
-        bech32Prefixes[EXT_SECRET_KEY].assign       ("tdex",(const char*)"tdex"+4);
-        bech32Prefixes[STEALTH_ADDRESS].assign      ("tds",(const char*)"tds"+3);
-        bech32Prefixes[EXT_KEY_HASH].assign         ("tdek",(const char*)"tdek"+4);
-        bech32Prefixes[EXT_ACC_HASH].assign         ("tdea",(const char*)"tdea"+4);
-        bech32Prefixes[STAKE_ONLY_PKADDR].assign    ("tdcs",(const char*)"tdcs"+4);
+        bech32Prefixes[PUBKEY_ADDRESS].assign       ("tdh","tdh"+3);
+        bech32Prefixes[SCRIPT_ADDRESS].assign       ("tdr","tdr"+3);
+        bech32Prefixes[PUBKEY_ADDRESS_256].assign   ("tdl","tdl"+3);
+        bech32Prefixes[SCRIPT_ADDRESS_256].assign   ("tdj","tdj"+3);
+        bech32Prefixes[SECRET_KEY].assign           ("tdx","tdx"+3);
+        bech32Prefixes[EXT_PUBLIC_KEY].assign       ("tded","tded"+4);
+        bech32Prefixes[EXT_SECRET_KEY].assign       ("tdex","tdex"+4);
+        bech32Prefixes[STEALTH_ADDRESS].assign      ("tds","tds"+3);
+        bech32Prefixes[EXT_KEY_HASH].assign         ("tdek","tdek"+4);
+        bech32Prefixes[EXT_ACC_HASH].assign         ("tdea","tdea"+4);
+        bech32Prefixes[STAKE_ONLY_PKADDR].assign    ("tdcs","tdcs"+4);
 
-
-        bech32_hrp = "tb";
+        bech32_hrp = "tdw";
 
         vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_test, pnSeed6_test + ARRAYLEN(pnSeed6_test));
 
@@ -661,7 +670,6 @@ public:
         };
 
         chainTxData = ChainTxData{
-            // Data from rpc: getchaintxstats 4096 
 
         };
 
@@ -722,7 +730,7 @@ public:
         // By default assume that the signatures in ancestors of this block are valid.
         consensus.defaultAssumeValid = uint256S("0x00");
 
-        consensus.nMinRCTOutputDepth = 1;
+        consensus.nMinRCTOutputDepth = 2;
 
         pchMessageStart[0] = 0x09;
         pchMessageStart[1] = 0x12;
@@ -749,9 +757,9 @@ public:
         genesis = CreateGenesisBlockRegTest(1487714923, 0, 0x207fffff);
 
         consensus.hashGenesisBlock = genesis.GetHash();
-        // assert(consensus.hashGenesisBlock == uint256S("0x6cd174536c0ada5bfa3b8fde16b98ae508fff6586f2ee24cf866867098f25907"));
-        // assert(genesis.hashMerkleRoot == uint256S("0xf89653c7208af2c76a3070d436229fb782acbd065bd5810307995b9982423ce7"));
-        // assert(genesis.hashWitnessMerkleRoot == uint256S("0x36b66a1aff91f34ab794da710d007777ef5e612a320e1979ac96e5f292399639"));
+        //assert(consensus.hashGenesisBlock == uint256S("0x6cd174536c0ada5bfa3b8fde16b98ae508fff6586f2ee24cf866867098f25907"));
+        //assert(genesis.hashMerkleRoot == uint256S("0xf89653c7208af2c76a3070d436229fb782acbd065bd5810307995b9982423ce7"));
+        //assert(genesis.hashWitnessMerkleRoot == uint256S("0x36b66a1aff91f34ab794da710d007777ef5e612a320e1979ac96e5f292399639"));
 
 
         vFixedSeeds.clear(); //!< Regtest mode doesn't have any fixed seeds.
@@ -763,37 +771,36 @@ public:
 
         checkpointData = {
             {
-           //     {0, uint256S("0f9188f13cb7b2c71f2a335e3a4fc328bf5beb436012afca590b1a11466e2206")},
+              //  {0, uint256S("0f9188f13cb7b2c71f2a335e3a4fc328bf5beb436012afca590b1a11466e2206")},
             }
         };
 
-
-         base58Prefixes[PUBKEY_ADDRESS]     = {0x5b}; // d
+        base58Prefixes[PUBKEY_ADDRESS]     = {0x76}; // d
         base58Prefixes[SCRIPT_ADDRESS]     = {0x7a};
         base58Prefixes[PUBKEY_ADDRESS_256] = {0x77};
         base58Prefixes[SCRIPT_ADDRESS_256] = {0x7b};
         base58Prefixes[SECRET_KEY]         = {0x2e};
-        base58Prefixes[EXT_PUBLIC_KEY]     = {0x02, 0xfe, 0x52, 0xcc}; // 02fe52cc drkp
-        base58Prefixes[EXT_SECRET_KEY]     = {0x3a, 0x80, 0x61, 0xa0}; // 3a8061a0 drkpv
+        base58Prefixes[EXT_PUBLIC_KEY]     = {0xe1, 0x42, 0x78, 0x00}; // drkp
+        base58Prefixes[EXT_SECRET_KEY]     = {0x04, 0x88, 0x94, 0x78}; // drkv
         base58Prefixes[STEALTH_ADDRESS]    = {0x15}; // T
         base58Prefixes[EXT_KEY_HASH]       = {0x89}; // x
         base58Prefixes[EXT_ACC_HASH]       = {0x53}; // a
         base58Prefixes[EXT_PUBLIC_KEY_BTC] = {0x04, 0x35, 0x87, 0xCF}; // tpub
         base58Prefixes[EXT_SECRET_KEY_BTC] = {0x04, 0x35, 0x83, 0x94}; // tprv
 
-        bech32Prefixes[PUBKEY_ADDRESS].assign       ("tdh","tdh"+3);
-        bech32Prefixes[SCRIPT_ADDRESS].assign       ("tdr","tdr"+3);
-        bech32Prefixes[PUBKEY_ADDRESS_256].assign   ("tdl","tdl"+3);
-        bech32Prefixes[SCRIPT_ADDRESS_256].assign   ("tdj","tdj"+3);
-        bech32Prefixes[SECRET_KEY].assign           ("tdx","tdx"+3);
-        bech32Prefixes[EXT_PUBLIC_KEY].assign       ("tdep","tdep"+4);
-        bech32Prefixes[EXT_SECRET_KEY].assign       ("tdex","tdex"+4);
-        bech32Prefixes[STEALTH_ADDRESS].assign      ("tds","tds"+3);
-        bech32Prefixes[EXT_KEY_HASH].assign         ("tdek","tdek"+4);
-        bech32Prefixes[EXT_ACC_HASH].assign         ("tdea","tdea"+4);
-        bech32Prefixes[STAKE_ONLY_PKADDR].assign    ("tdcs","tdcs"+4);
+        bech32Prefixes[PUBKEY_ADDRESS].assign       ("tph","tph"+3);
+        bech32Prefixes[SCRIPT_ADDRESS].assign       ("tpr","tpr"+3);
+        bech32Prefixes[PUBKEY_ADDRESS_256].assign   ("tpl","tpl"+3);
+        bech32Prefixes[SCRIPT_ADDRESS_256].assign   ("tpj","tpj"+3);
+        bech32Prefixes[SECRET_KEY].assign           ("tpx","tpx"+3);
+        bech32Prefixes[EXT_PUBLIC_KEY].assign       ("tpep","tpep"+4);
+        bech32Prefixes[EXT_SECRET_KEY].assign       ("tpex","tpex"+4);
+        bech32Prefixes[STEALTH_ADDRESS].assign      ("tps","tps"+3);
+        bech32Prefixes[EXT_KEY_HASH].assign         ("tpek","tpek"+4);
+        bech32Prefixes[EXT_ACC_HASH].assign         ("tpea","tpea"+4);
+        bech32Prefixes[STAKE_ONLY_PKADDR].assign    ("tpcs","tpcs"+4);
 
-        bech32_hrp = "bcrt";
+        bech32_hrp = "rtpw";
 
         chainTxData = ChainTxData{
             0,
@@ -821,6 +828,8 @@ public:
         base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,239);
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x35, 0x87, 0xCF};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x35, 0x83, 0x94};
+
+        bech32_hrp = "bcrt";
     }
 
     /**
