@@ -500,7 +500,7 @@ consensus.nSubsidyHalvingInterval = 210000;
                { 170000,    uint256S("0x4ccbdcdf95779cbdd260fc787a7743f065789c5e940880ac0ae9a729431f4bb3")},
                { 180000,    uint256S("0x493c1bdfa37231633d7fc2b6980577321e5f4fc7d7a7a14afe32f7a45db20ab6")},
                { 190170,    uint256S("0xcb306593246f3ba07c506bc2353ebff48ec0a6b9d72dbcaa92b36ca37a1003d2")},
-               { 214715,    uint256S("0x8a51839cb95053010cd3d3aa9bceae27d4006959bd860117a92b38652a45e8f7")}         
+               { 214715,    uint256S("0x8a51839cb95053010cd3d3aa9bceae27d4006959bd860117a92b38652a45e8f7")},          
                
             }
         };
