@@ -416,7 +416,7 @@ consensus.nSubsidyHalvingInterval = 210000;
 
         assert(consensus.hashGenesisBlock == uint256S("0x0000907a178385c9eef184e3208d4d0cd470440aed2ae5571c9b1ff11dbfb475"));
         assert(genesis.hashMerkleRoot == uint256S("0x5e3576af3d8792f596e99decf47650ff427ab5bfeab2da9d315dddff5a7a5db7"));
-        assert(genesis.hashWitnessMerkleRoot == uint256S("0x8a51839cb95053010cd3d3aa9bceae27d4006959bd860117a92b38652a45e8f7"));
+        assert(genesis.hashWitnessMerkleRoot == uint256S("0xee4d2cba0ad2feda59cd86bbf0b9eb105b71a729f85526909005559581efb391"));
 
 
         // Note that of those which support the service bits prefix, most only support a subset of
