@@ -25,10 +25,11 @@
 namespace usb_device {
 
 const DeviceType usbDeviceTypes[] = {
-    DeviceType(0xffff, 0x0001, "Debug", "Device", USBDEVICE_DEBUG),
-    DeviceType(0x2c97, 0x0000, "Ledger", "Blue", USBDEVICE_LEDGER_BLUE),
-    DeviceType(0x2c97, 0x0001, "Ledger", "Nano S", USBDEVICE_LEDGER_NANO_S),
-    DeviceType(0x2c97, 0x0004, "Ledger", "Nano X", USBDEVICE_LEDGER_NANO_X),
+    DeviceType(0xffff, 0x0001, "Debug",     "Device",       USBDEVICE_DEBUG),
+    DeviceType(0x2c97, 0x0000, "Ledger",    "Blue",         USBDEVICE_LEDGER_BLUE),
+    DeviceType(0x2c97, 0x0001, "Ledger",    "Nano S",       USBDEVICE_LEDGER_NANO_S),
+    DeviceType(0x2c97, 0x1015, "Ledger",    "Nano S 1.6",   USBDEVICE_LEDGER_NANO_S),
+    DeviceType(0x2c97, 0x0004, "Ledger",    "Nano X",       USBDEVICE_LEDGER_NANO_X),
     //DeviceType(0x534c, 0x0001, "Trezor", "One", USBDEVICE_TREZOR_ONE),
 };
 
@@ -92,6 +93,7 @@ void ListHIDDevices(std::vector<std::unique_ptr<CUSBDevice> > &vDevices)
     devs = hid_enumerate(0x0, 0x0);
     cur_dev = devs;
     while (cur_dev) {
+        if (cur_dev->serial_number) // Possibly no access permission, check udev rules.
         for (const auto &type : usbDeviceTypes) {
             if (cur_dev->vendor_id != type.nVendorId
                 || cur_dev->product_id != type.nProductId) {
@@ -132,6 +134,7 @@ void ListWebUSBDevices(std::vector<std::unique_ptr<CUSBDevice> > &vDevices)
     devs = webusb_enumerate(0x0, 0x0);
     cur_dev = devs;
     while (cur_dev) {
+        if (cur_dev->serial_number) // Possibly no access permission, check udev rules.
         for (const auto &type : webusbDeviceTypes) {
             if (cur_dev->vendor_id != type.nVendorId
                 || cur_dev->product_id != type.nProductId) {

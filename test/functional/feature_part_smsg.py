@@ -26,8 +26,7 @@ class SmsgTest(DarkpayTestFramework):
         connect_nodes_bi(self.nodes, 0, 1)
         connect_nodes_bi(self.nodes, 0, 2)
 
-    def run_test (self):
-        tmpdir = self.options.tmpdir
+    def run_test(self):
         nodes = self.nodes
 
         nodes[0].extkeyimportmaster(nodes[0].mnemonic('new')['master'])
@@ -118,7 +117,8 @@ class SmsgTest(DarkpayTestFramework):
         assert('Completed' in ro['result'])
 
         self.log.info('Test smsgsend without submitmsg')
-        ro = nodes[1].smsgsend(address1, address0, 'Test 1->0 no network', False, 0, False, False, False, False)
+        sendoptions = {'submitmsg': False}
+        ro = nodes[1].smsgsend(address1, address0, 'Test 1->0 no network', False, 1, False, sendoptions)
         assert('Not Sent' in ro['result'])
         msg0_from1 = ro['msg']
         msg0_id = ro['msgid']
@@ -130,11 +130,18 @@ class SmsgTest(DarkpayTestFramework):
         assert(len(ro['messages']) == 1)
         assert(ro['messages'][0]['text'] == 'Test 1->0 no network')
 
-        ro = nodes[1].smsgsend(address1, address0, 'Test 1->0 no network, no outbox', False, 0, False, False, False, False, False)
+        sendoptions = {'submitmsg': False, 'savemsg': False}
+        ro = nodes[1].smsgsend(address1, address0, 'Test 1->0 no network, no outbox', False, 1, False, sendoptions)
         assert(len(nodes[1].smsgoutbox()['messages']) == 4)  # No change
 
         self.log.info('Test nosmsg')
         assert('SMSG' not in nodes[2].getnetworkinfo()['localservices_str'])
+
+        self.log.info('Test smsgdebug')
+        nodes[0].smsgdebug('clearbanned')
+
+        self.log.info('Test smsgpeers')
+        assert(len(nodes[0].smsgpeers()) == 2)
 
 
 if __name__ == '__main__':

@@ -52,6 +52,7 @@ bool AddWallet(const std::shared_ptr<CWallet>& wallet)
     std::vector<std::shared_ptr<CWallet>>::const_iterator i = std::find(vpwallets.begin(), vpwallets.end(), wallet);
     if (i != vpwallets.end()) return false;
     vpwallets.push_back(wallet);
+    NotifyWalletAdded(wallet);
     return true;
 }
 
@@ -146,14 +147,15 @@ std::shared_ptr<CWallet> LoadWallet(interfaces::Chain& chain, const WalletLocati
         error = "Wallet loading failed.";
         return nullptr;
     }
+    if (fDarkpayMode && !((CHDWallet*)wallet.get())->Initialise()) {
+        error = "Darkpay wallet initialise failed.";
+        return nullptr;
+    }
+
     AddWallet(wallet);
     wallet->postInitProcess();
 
     if (fDarkpayMode) {
-        if (!((CHDWallet*)wallet.get())->Initialise()) {
-            error = "Darkpay wallet initialise failed.";
-            return nullptr;
-        }
         RestartStakingThreads();
     }
     return wallet;
@@ -1996,6 +1998,10 @@ CWallet::ScanResult CWallet::ScanForWalletTransactions(const uint256& start_bloc
 
 void CWallet::ReacceptWalletTransactions(interfaces::Chain::Lock& locked_chain)
 {
+    // During reindex and importing old wallet transactions become
+    // unconfirmed. Don't resend them as that would spam other nodes.
+    if (::fImporting || ::fReindex) return;
+
     // If transactions aren't being broadcasted, don't let them into local mempool either
     if (!fBroadcastTransactions)
         return;
@@ -3274,6 +3280,11 @@ bool CWallet::CreateTransaction(interfaces::Chain::Lock& locked_chain, const std
         }
     }
 
+    if (nFeeRet > maxTxFee) {
+        strFailReason = _("Fee exceeds maximum configured by -maxtxfee");
+        return false;
+    }
+
     if (gArgs.GetBoolArg("-walletrejectlongchains", DEFAULT_WALLET_REJECT_LONG_CHAINS)) {
         // Lastly, ensure this tx will pass the mempool's chain limits
         LockPoints lp;
@@ -4304,12 +4315,12 @@ std::shared_ptr<CWallet> CWallet::CreateWalletFromFile(interfaces::Chain& chain,
                 walletFile));
         }
         else if (nLoadWalletRet == DBErrors::TOO_NEW) {
-            InitError(strprintf(_("Error loading %s: Wallet requires newer version of %s"), walletFile, _(PACKAGE_NAME)));
+            InitError(strprintf(_("Error loading %s: Wallet requires newer version of %s"), walletFile, PACKAGE_NAME));
             return nullptr;
         }
         else if (nLoadWalletRet == DBErrors::NEED_REWRITE)
         {
-            InitError(strprintf(_("Wallet needed to be rewritten: restart %s to complete"), _(PACKAGE_NAME)));
+            InitError(strprintf(_("Wallet needed to be rewritten: restart %s to complete"), PACKAGE_NAME));
             return nullptr;
         }
         else {
@@ -4711,8 +4722,6 @@ bool CWalletTx::AcceptToMemoryPool(interfaces::Chain::Lock& locked_chain, const 
 
 void CWallet::LearnRelatedScripts(const CPubKey& key, OutputType type)
 {
-    if (fDarkpayMode)
-        return;
     if (key.IsCompressed() && (type == OutputType::P2SH_SEGWIT || type == OutputType::BECH32)) {
         CTxDestination witdest = WitnessV0KeyHash(key.GetID());
         CScript witprog = GetScriptForDestination(witdest);
@@ -4788,3 +4797,5 @@ bool CWallet::AddKeyOrigin(const CPubKey& pubkey, const KeyOriginInfo& info)
     mapKeyMetadata[pubkey.GetID()].hdKeypath = WriteHDKeypath(info.path);
     return WriteKeyMetadata(mapKeyMetadata[pubkey.GetID()], pubkey, true);
 }
+
+boost::signals2::signal<void (const std::shared_ptr<CWallet>& wallet)> NotifyWalletAdded;

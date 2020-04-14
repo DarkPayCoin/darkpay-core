@@ -3,8 +3,6 @@
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-import json
-
 from test_framework.test_darkpay import DarkpayTestFramework
 from test_framework.util import assert_raises_rpc_error, connect_nodes_bi
 
@@ -59,7 +57,7 @@ class AnonTest(DarkpayTestFramework):
         txnHash = nodes[0].sendblindtoanon(sxAddrTo1_1, 10, '', '', False, 'node0 -> node1 b->a 4')
         txnHashes.append(txnHash)
 
-        for k in range(4):
+        for k in range(5):
             txnHash = nodes[0].sendparttoanon(sxAddrTo1_1, 10, '', '', False, 'node0 -> node1 p->a')
             txnHashes.append(txnHash)
         for k in range(10):
@@ -67,13 +65,12 @@ class AnonTest(DarkpayTestFramework):
             txnHashes.append(txnHash)
 
         for h in txnHashes:
-            self.log.info(h) # debug
             assert(self.wait_for_mempool(nodes[1], h))
 
-        assert('node0 -> node1 b->a 4' in json.dumps(nodes[1].listtransactions('*', 100), default=self.jsonDecimal))
-        assert('node0 -> node1 b->a 4' in json.dumps(nodes[0].listtransactions('*', 100), default=self.jsonDecimal))
+        assert('node0 -> node1 b->a 4' in self.dumpj(nodes[1].listtransactions('*', 100)))
+        assert('node0 -> node1 b->a 4' in self.dumpj(nodes[0].listtransactions('*', 100)))
 
-        self.stakeBlocks(1)
+        self.stakeBlocks(2)
 
         block1_hash = nodes[1].getblockhash(1)
         ro = nodes[1].getblock(block1_hash)
@@ -91,13 +88,11 @@ class AnonTest(DarkpayTestFramework):
 
         self.stakeBlocks(1)
 
-        block1_hash = nodes[1].getblockhash(2)
-        ro = nodes[1].getblock(block1_hash)
+        ro = nodes[1].getblock(nodes[1].getblockhash(3))
         for txnHash in txnHashes:
             assert(txnHash in ro['tx'])
 
-        ro = nodes[1].anonoutput()
-        assert(ro['lastindex'] == 26)
+        assert(nodes[1].anonoutput()['lastindex'] == 28)
 
         txnHash = nodes[1].sendanontoanon(sxAddrTo0_1, 101, '', '', False, 'node1 -> node0 a->a', 5, 1)
         txnHashes = [txnHash,]
@@ -141,6 +136,7 @@ class AnonTest(DarkpayTestFramework):
         assert(nodes[1].lockunspent(False, [unspent[1]], True) == True)
         assert(len(nodes[1].listlockunspent()) == 2)
         # Restart node
+        self.sync_all()
         self.stop_node(1)
         self.start_node(1, self.extra_args[1])
         assert(len(nodes[1].listlockunspent()) == 2)
@@ -151,7 +147,6 @@ class AnonTest(DarkpayTestFramework):
         assert(nodes[1].lockunspent(True) == True)
         assert(len(nodes[1].listunspentanon()) == len(unspent))
         assert(nodes[1].lockunspent(True) == True)
-
 
 
 if __name__ == '__main__':

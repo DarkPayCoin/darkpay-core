@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (c) 2017-2018 The Darkpay Core developers
+# Copyright (c) 2017-2019 The Darkpay Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -12,7 +12,7 @@ from test_framework.test_darkpay import (
     isclose,
     getIndexAtProperty,
 )
-from test_framework.util import assert_raises_rpc_error, connect_nodes
+from test_framework.util import assert_raises_rpc_error, connect_nodes, sync_mempools
 from test_framework.authproxy import JSONRPCException
 
 
@@ -45,6 +45,9 @@ class SmsgPaidTest(DarkpayTestFramework):
         address1 = nodes[1].getnewaddress()
         assert(address1 == 'pX9N6S76ZtA5BfsiJmqBbjaEgLMHpt58it')
 
+        sx_addr0 = nodes[0].getnewstealthaddress()
+        nodes[1].sendtypeto('part', 'part', [{'address':sx_addr0, 'amount':20},])
+
         ro = nodes[0].smsglocalkeys()
         assert(len(ro['wallet_keys']) == 0)
 
@@ -61,23 +64,27 @@ class SmsgPaidTest(DarkpayTestFramework):
         text_1 = "['data':'test','value':1]"
         ro = nodes[1].smsgsend(address1, address0, text_1, True, 4, True)
         assert(ro['result'] == 'Not Sent.')
-        assert(isclose(ro['fee'], 0.00085800))
+        assert(isclose(ro['fee'], 0.00086600))
 
 
         ro = nodes[1].smsgsend(address1, address0, text_1, True, 4)
         assert(ro['result'] == 'Sent.')
 
         self.stakeBlocks(1, nStakeNode=1)
+        for i in range(20):
+            nodes[0].sendtypeto('part', 'anon', [{'address':sx_addr0, 'amount':0.5},])
         self.waitForSmsgExchange(1, 1, 0)
 
         ro = nodes[0].smsginbox()
         assert(len(ro['messages']) == 1)
         assert(ro['messages'][0]['text'] == text_1)
 
-
-        ro = nodes[0].smsgimportprivkey('7pHSJFY1tNwi6d68UttGzB8YnXq2wFWrBVoadLv4Y6ekJD3L1iKs', 'smsg test key')
-
+        self.log.info('Test smsgimportprivkey and smsgdumpprivkey')
+        test_privkey = '7pHSJFY1tNwi6d68UttGzB8YnXq2wFWrBVoadLv4Y6ekJD3L1iKs'
         address0_1 = 'pasdoMwEn35xQUXFvsChWAQjuG8rEKJQW9'
+        nodes[0].smsgimportprivkey(test_privkey, 'smsg test key')
+        assert(nodes[0].smsgdumpprivkey(address0_1) == test_privkey)
+
         text_2 = "['data':'test','value':2]"
         ro = nodes[0].smsglocalkeys()
         assert(len(ro['smsg_keys']) == 1)
@@ -139,7 +146,7 @@ class SmsgPaidTest(DarkpayTestFramework):
         ro = nodes[0].walletpassphrase("qwerty234", 300)
         ro = nodes[0].smsginbox()
         assert(len(ro['messages']) == 2)
-        flat = json.dumps(ro, default=self.jsonDecimal)
+        flat = self.dumpj(ro)
         assert('Non paid msg' in flat)
         assert(text_3 in flat)
 
@@ -147,7 +154,7 @@ class SmsgPaidTest(DarkpayTestFramework):
 
         ro = nodes[0].smsginbox("all")
         assert(len(ro['messages']) == 4)
-        flat = json.dumps(ro, default=self.jsonDecimal)
+        flat = self.dumpj(ro)
         assert(flat.count('Wallet is locked') == 2)
 
 
@@ -175,11 +182,13 @@ class SmsgPaidTest(DarkpayTestFramework):
         with open(filepath, 'wb', encoding=None) as fp:
             fp.write(msg)
 
-        ro = nodes[1].smsgsend(address1, address0_1, filepath, True, 4, False, True)
+        sendoptions = {'fromfile': True}
+        ro = nodes[1].smsgsend(address1, address0_1, filepath, True, 4, False, sendoptions)
         assert(ro['result'] == 'Sent.')
         msgid = ro['msgid']
 
-        ro = nodes[1].smsgsend(address1, address0_1, binascii.hexlify(msg).decode("utf-8"), True, 4, False, False, True)
+        sendoptions = {'decodehex': True}
+        ro = nodes[1].smsgsend(address1, address0_1, binascii.hexlify(msg).decode("utf-8"), True, 4, False, sendoptions)
         msgid2 = ro['msgid']
         self.stakeBlocks(1, nStakeNode=1)
 
@@ -286,7 +295,13 @@ class SmsgPaidTest(DarkpayTestFramework):
 
         ro = nodes[0].smsgbuckets()
         assert(int(ro['total']['numpurged']) == 1)
-        assert(int(ro['buckets'][0]['no. messages']) == int(ro['buckets'][0]['active messages']) + 1)
+        # Sum all buckets
+        num_messages = 0
+        num_active = 0
+        for b in ro['buckets']:
+            num_messages += int(b['no. messages'])
+            num_active += int(b['active messages'])
+        assert(num_messages == num_active + 1)
 
 
         self.log.info('Test listunspent include_immature')
@@ -327,24 +342,53 @@ class SmsgPaidTest(DarkpayTestFramework):
         self.log.info('Test smsggetinfo and smsgsetwallet')
         ro = nodes[0].smsggetinfo()
         assert(ro['enabled'] is True)
-        assert(ro['wallet'] == '')
+        assert(ro['active_wallet'] == '')
         assert_raises_rpc_error(-1, 'Wallet not found: "abc"', nodes[0].smsgsetwallet, 'abc')
         nodes[0].smsgsetwallet()
         ro = nodes[0].smsggetinfo()
         assert(ro['enabled'] is True)
-        assert(ro['wallet'] == 'Not set.')
+        assert(ro['active_wallet'] == 'Not set.')
         nodes[0].createwallet('new_wallet')
         assert(len(nodes[0].listwallets()) == 2)
         nodes[0].smsgsetwallet('new_wallet')
         ro = nodes[0].smsggetinfo()
         assert(ro['enabled'] is True)
-        assert(ro['wallet'] == 'new_wallet')
+        assert(ro['active_wallet'] == 'new_wallet')
         nodes[0].smsgdisable()
         ro = nodes[0].smsggetinfo()
         assert(ro['enabled'] is False)
         nodes[0].smsgenable()
         ro = nodes[0].smsggetinfo()
         assert(ro['enabled'] is True)
+
+        self.log.info('Test funding from RCT balance')
+        nodes[1].smsginbox()  # Clear inbox
+        ro = nodes[1].smsgaddlocaladdress(address1)
+        assert('Receiving messages enabled for address' in ro['result'])
+
+        msg = 'Test funding from RCT balance'
+        sendoptions = {'fund_from_rct': True, 'rct_ring_size': 6}
+        sent_msg = nodes[0].smsgsend(address0, address1, msg, True, 4, False, sendoptions)
+        assert(sent_msg['result'] == 'Sent.')
+        fund_tx = nodes[0].getrawtransaction(sent_msg['txid'], True)
+        assert(fund_tx['vin'][0]['type'] == 'anon')
+
+        ro = nodes[0].smsgoutbox('all', '', {'sending': True})
+        assert(ro['messages'][0]['msgid'] == sent_msg['msgid'])
+
+        sync_mempools([nodes[0], nodes[1]])
+        self.stakeBlocks(1, nStakeNode=1)
+        i = 0
+        for i in range(20):
+            ro = nodes[1].smsginbox()
+            if len(ro['messages']) > 0:
+                break
+            time.sleep(1)
+        assert(i < 19)
+        assert(msg == ro['messages'][0]['text'])
+
+        ro = nodes[0].smsgoutbox('all', '', {'sending': True})
+        assert(len(ro['messages']) == 0)
 
 
 if __name__ == '__main__':

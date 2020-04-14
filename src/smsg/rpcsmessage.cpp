@@ -16,11 +16,17 @@
 #include <base58.h>
 #include <rpc/util.h>
 #include <validation.h>
+#include <timedata.h>
+#include <anon.h>
+#include <validationinterface.h>
 
 #include <leveldb/db.h>
 
 #ifdef ENABLE_WALLET
-#include <wallet/wallet.h>
+#include <wallet/hdwallet.h>
+#include <wallet/coincontrol.h>
+extern void EnsureWalletIsUnlocked(CHDWallet *pwallet);
+extern void ReadCoinControlOptions(const UniValue &obj, CHDWallet *pwallet, CCoinControl &coin_control);
 #endif
 
 #include <univalue.h>
@@ -36,11 +42,10 @@ static UniValue smsgenable(const JSONRPCRequest &request)
     if (request.fHelp || request.params.size() > 1)
         throw std::runtime_error(
             RPCHelpMan{"smsgenable",
-                "Enable secure messaging on the specified wallet.\n"
-                "Uses the first available wallet if none specified.\n"
-                "SMSG can only be enabled on one wallet.\n",
+                "Enable secure messaging with the specified wallet as the active wallet.\n"
+                "Uses the first smsg-enabled wallet as the active wallet if none specified.\n",
                 {
-                    {"walletname", RPCArg::Type::STR, /* default */ "wallet.dat", "Enable smsg on a specific wallet."},
+                    {"walletname", RPCArg::Type::STR, /* default */ "wallet.dat", "Active smsg wallet."},
                 },
                 RPCResults{},
                 RPCExamples{
@@ -57,34 +62,39 @@ static UniValue smsgenable(const JSONRPCRequest &request)
     UniValue result(UniValue::VOBJ);
 
     std::shared_ptr<CWallet> pwallet;
-    std::string wallet_name = "Not set.";
+    std::string sFindWallet, wallet_name = "Not set.";
 #ifdef ENABLE_WALLET
     auto vpwallets = GetWallets();
 
     if (!request.params[0].isNull()) {
-        std::string sFindWallet = request.params[0].get_str();
-
-        for (auto pw : vpwallets) {
-            if (pw->GetName() != sFindWallet) {
-                continue;
-            }
+        sFindWallet = request.params[0].get_str();
+    }
+    for (const auto &pw : vpwallets) {
+        CHDWallet *const ppartw = GetDarkpayWallet(pw.get());
+        if (!ppartw) {
+            continue;
+        }
+        if (!request.params[0].isNull() && ppartw->GetName() == sFindWallet) {
             pwallet = pw;
             break;
         }
-        if (!pwallet) {
-            throw JSONRPCError(RPC_MISC_ERROR, "Wallet not found: \"" + sFindWallet + "\"");
+        if (ppartw->m_smsg_enabled) {
+            pwallet = pw;
+            break;
         }
-    } else {
-        if (vpwallets.size() > 0) {
-            pwallet = vpwallets[0];
-        }
+    }
+    if (!request.params[0].isNull() && !pwallet) {
+        throw JSONRPCError(RPC_MISC_ERROR, "Wallet not found: \"" + sFindWallet + "\"");
     }
     if (pwallet) {
         wallet_name = pwallet->GetName();
     }
+    result.pushKV("result", (smsgModule.Enable(pwallet, vpwallets) ? "Enabled secure messaging." : "Failed."));
+#else
+    std::vector<std::shared_ptr<CWallet>> empty;
+    result.pushKV("result", (smsgModule.Enable(pwallet, empty) ? "Enabled secure messaging." : "Failed."));
 #endif
 
-    result.pushKV("result", (smsgModule.Enable(pwallet) ? "Enabled secure messaging." : "Failed."));
     result.pushKV("wallet", wallet_name);
 
     return result;
@@ -151,7 +161,7 @@ static UniValue smsgsetwallet(const JSONRPCRequest &request)
     if (!request.params[0].isNull()) {
         std::string sFindWallet = request.params[0].get_str();
 
-        for (auto pw : vpwallets) {
+        for (const auto &pw : vpwallets) {
             if (pw->GetName() != sFindWallet) {
                 continue;
             }
@@ -181,6 +191,8 @@ static UniValue smsgoptions(const JSONRPCRequest &request)
                 "\nList and manage options.\n",
                 {
                     {"list with_description|set \"optname\" \"value\"", RPCArg::Type::STR, /* default */ "list", "Command input."},
+                    {"optname", RPCArg::Type::STR, /* default */ "", "Option name."},
+                    {"value", RPCArg::Type::STR, /* default */ "", "New option value."},
                 },
                 RPCResults{},
                 RPCExamples{
@@ -273,6 +285,8 @@ static UniValue smsglocalkeys(const JSONRPCRequest &request)
                 "\nList and manage keys.\n",
                 {
                     {"whitelist|all|wallet|recv +/- \"address\"|anon +/- \"address\"", RPCArg::Type::STR, /* default */ "whitelist", "Command input."},
+                    {"optype", RPCArg::Type::STR, /* default */ "", "Add or remove +/-."},
+                    {"address", RPCArg::Type::STR, /* default */ "", "Address to affect."},
                 },
                 RPCResults{},
                 RPCExamples{""},
@@ -291,54 +305,42 @@ static UniValue smsglocalkeys(const JSONRPCRequest &request)
         || mode == "all") {
         LOCK(smsgModule.cs_smsg);
         uint32_t nKeys = 0;
-        int all = mode == "all" ? 1 : 0;
 
         UniValue keys(UniValue::VARR);
 #ifdef ENABLE_WALLET
-        if (smsgModule.pwallet) {
-            for (auto it = smsgModule.addresses.begin(); it != smsgModule.addresses.end(); ++it) {
-                if (!all
-                    && !it->fReceiveEnabled) {
-                    continue;
-                }
-
-                CKeyID &keyID = it->address;
-                std::string sPublicKey;
-                CPubKey pubKey;
-
-                if (smsgModule.pwallet) {
-                    if (!smsgModule.pwallet->GetPubKey(keyID, pubKey)) {
-                        continue;
-                    }
-                    if (!pubKey.IsValid()
-                        || !pubKey.IsCompressed()) {
-                        continue;
-                    }
-                    sPublicKey = EncodeBase58(pubKey.begin(), pubKey.end());
-                }
-
-                UniValue objM(UniValue::VOBJ);
-                std::string sInfo, sLabel;
-                {
-                    LOCK(smsgModule.pwallet->cs_wallet);
-                    sLabel = smsgModule.pwallet->mapAddressBook[keyID].name;
-                }
-                if (all) {
-                    sInfo = std::string("Receive ") + (it->fReceiveEnabled ? "on,  " : "off, ");
-                }
-                sInfo += std::string("Anon ") + (it->fReceiveAnon ? "on" : "off");
-                //result.pushKV("key", it->sAddress + " - " + sPublicKey + " " + sInfo + " - " + sLabel);
-                objM.pushKV("address", EncodeDestination(keyID));
-                objM.pushKV("public_key", sPublicKey);
-                objM.pushKV("receive", (it->fReceiveEnabled ? "1" : "0"));
-                objM.pushKV("anon", (it->fReceiveAnon ? "1" : "0"));
-                objM.pushKV("label", sLabel);
-                keys.push_back(objM);
-
-                nKeys++;
+        int all = mode == "all" ? 1 : 0;
+        for (auto it = smsgModule.addresses.begin(); it != smsgModule.addresses.end(); ++it) {
+            if (!all
+                && !it->fReceiveEnabled) {
+                continue;
             }
-            result.pushKV("wallet_keys", keys);
+
+            CKeyID &keyID = it->address;
+            std::string sPublicKey;
+            CPubKey pubKey;
+
+            if (0 == smsgModule.GetLocalKey(keyID, pubKey)) {
+                sPublicKey = EncodeBase58(pubKey.begin(), pubKey.end());
+            }
+
+            UniValue objM(UniValue::VOBJ);
+            std::string sInfo, sLabel;
+            sLabel = smsgModule.LookupLabel(keyID);
+            if (all) {
+                sInfo = std::string("Receive ") + (it->fReceiveEnabled ? "on,  " : "off, ");
+            }
+            sInfo += std::string("Anon ") + (it->fReceiveAnon ? "on" : "off");
+            //result.pushKV("key", it->sAddress + " - " + sPublicKey + " " + sInfo + " - " + sLabel);
+            objM.pushKV("address", EncodeDestination(keyID));
+            objM.pushKV("public_key", sPublicKey);
+            objM.pushKV("receive", (it->fReceiveEnabled ? "1" : "0"));
+            objM.pushKV("anon", (it->fReceiveAnon ? "1" : "0"));
+            objM.pushKV("label", sLabel);
+            keys.push_back(objM);
+
+            nKeys++;
         }
+        result.pushKV("wallet_keys", keys);
 #endif
 
         keys = UniValue(UniValue::VARR);
@@ -424,49 +426,48 @@ static UniValue smsglocalkeys(const JSONRPCRequest &request)
     } else
     if (mode == "wallet") {
 #ifdef ENABLE_WALLET
-        if (!smsgModule.pwallet) {
-            throw JSONRPCError(RPC_MISC_ERROR, "No wallet.");
-        }
-        LOCK(smsgModule.pwallet->cs_wallet);
         uint32_t nKeys = 0;
         UniValue keys(UniValue::VOBJ);
+        for (const auto &pw : smsgModule.m_vpwallets) {
+            LOCK(pw->cs_wallet);
 
-        for (const auto &entry : smsgModule.pwallet->mapAddressBook) {
-            if (!IsMine(*smsgModule.pwallet, entry.first)) {
-                continue;
+            for (const auto &entry : pw->mapAddressBook) {
+                if (!IsMine(*pw, entry.first)) {
+                    continue;
+                }
+
+                CBitcoinAddress coinAddress(entry.first);
+                if (!coinAddress.IsValid()) {
+                    continue;
+                }
+
+                std::string address = coinAddress.ToString();
+                std::string sPublicKey;
+
+                CKeyID keyID;
+                if (!coinAddress.GetKeyID(keyID)) {
+                    continue;
+                }
+
+                CPubKey pubKey;
+                if (!pw->GetPubKey(keyID, pubKey)) {
+                    continue;
+                }
+                if (!pubKey.IsValid()
+                    || !pubKey.IsCompressed()) {
+                    continue;
+                }
+
+                sPublicKey = EncodeBase58(pubKey.begin(), pubKey.end());
+                UniValue objM(UniValue::VOBJ);
+
+                objM.pushKV("key", address);
+                objM.pushKV("publickey", sPublicKey);
+                objM.pushKV("label", entry.second.name);
+
+                keys.push_back(objM);
+                nKeys++;
             }
-
-            CBitcoinAddress coinAddress(entry.first);
-            if (!coinAddress.IsValid()) {
-                continue;
-            }
-
-            std::string address = coinAddress.ToString();
-            std::string sPublicKey;
-
-            CKeyID keyID;
-            if (!coinAddress.GetKeyID(keyID)) {
-                continue;
-            }
-
-            CPubKey pubKey;
-            if (!smsgModule.pwallet->GetPubKey(keyID, pubKey)) {
-                continue;
-            }
-            if (!pubKey.IsValid()
-                || !pubKey.IsCompressed()) {
-                continue;
-            }
-
-            sPublicKey = EncodeBase58(pubKey.begin(), pubKey.end());
-            UniValue objM(UniValue::VOBJ);
-
-            objM.pushKV("key", address);
-            objM.pushKV("publickey", sPublicKey);
-            objM.pushKV("label", entry.second.name);
-
-            keys.push_back(objM);
-            nKeys++;
         }
         result.pushKV("keys", keys);
         result.pushKV("result", strprintf("%u", nKeys));
@@ -511,22 +512,33 @@ static UniValue smsgscanbuckets(const JSONRPCRequest &request)
             RPCHelpMan{"smsgscanbuckets",
                 "\nForce rescan of all messages in the bucket store.\n"
                 "Wallet must be unlocked if any receiving keys are stored in the wallet.\n",
-                {},
+                {
+                    {"options", RPCArg::Type::OBJ, /* default */ "", "",
+                        {
+                            {"scanexpired", RPCArg::Type::BOOL, /* default */ "false", "Scan all messages."},
+                        },
+                        "options"},
+                },
                 RPCResults{},
                 RPCExamples{""},
             }.ToString());
 
     EnsureSMSGIsEnabled();
 
-#ifdef ENABLE_WALLET
-    if (smsgModule.pwallet && smsgModule.pwallet->IsLocked()
-        && smsgModule.addresses.size() > 0) {
-        throw JSONRPCError(RPC_MISC_ERROR, "Wallet is locked.");
+    bool scan_all = false;
+    if (request.params[0].isObject()) {
+        UniValue options = request.params[0].get_obj();
+        RPCTypeCheckObj(options,
+        {
+            {"scanexpired",          UniValueType(UniValue::VBOOL)},
+        }, true, true);
+        if (options["scanexpired"].isBool()) {
+            scan_all = options["scanexpired"].get_bool();
+        }
     }
-#endif
 
     UniValue result(UniValue::VOBJ);
-    if (!smsgModule.ScanBuckets()) {
+    if (!smsgModule.ScanBuckets(scan_all)) {
         result.pushKV("result", "Scan Buckets Failed.");
     } else {
         result.pushKV("result", "Scan Buckets Completed.");
@@ -601,8 +613,8 @@ static UniValue smsgimportprivkey(const JSONRPCRequest &request)
     if (request.fHelp || request.params.size() < 1 || request.params.size() > 2)
         throw std::runtime_error(
             RPCHelpMan{"smsgimportprivkey",
-                "\nAdds a private key (as returned by dumpprivkey) to the smsg database.\n"
-                "The imported key can receive messages even if the wallet is locked.\n",
+                "\nAdds a private key (as returned by dumpprivkey) to the SMSG database.\n"
+                "Keys imported into SMSG will be stored unencrypted and can receive messages even if the wallet is locked.\n",
                 {
                     {"privkey", RPCArg::Type::STR, RPCArg::Optional::NO, "The private key to import (see dumpprivkey)."},
                     {"label", RPCArg::Type::STR, /* default */ "", "An optional label."},
@@ -637,6 +649,45 @@ static UniValue smsgimportprivkey(const JSONRPCRequest &request)
     }
 
     return NullUniValue;
+}
+
+static UniValue smsgdumpprivkey(const JSONRPCRequest &request)
+{
+    if (request.fHelp || request.params.size() != 1)
+        throw std::runtime_error(
+            RPCHelpMan{"smsgdumpprivkey",
+                "\nReveals the private key corresponding to 'address'.\n",
+                {
+                    {"address", RPCArg::Type::STR, RPCArg::Optional::NO, "The darkpay address for the private key"},
+                },
+                RPCResult{
+            "\"key\"                (string) The private key\n"
+                },
+                RPCExamples{
+                    HelpExampleCli("dumpprivkey", "\"myaddress\"")
+            + HelpExampleCli("smsgimportprivkey", "\"mykey\"")
+            + HelpExampleRpc("smsgdumpprivkey", "\"myaddress\"")
+                },
+            }.ToString());
+
+    std::string strAddress = request.params[0].get_str();
+    CTxDestination dest = DecodeDestination(strAddress);
+    if (!IsValidDestination(dest)) {
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Darkpay address");
+    }
+
+    if (dest.type() != typeid(CKeyID)) {
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Address not a key id");
+    }
+    const CKeyID &idk = boost::get<CKeyID>(dest);
+
+    CKey key_out;
+    int rv = smsgModule.DumpPrivkey(idk, key_out);
+    if (0 != rv) {
+        throw JSONRPCError(RPC_INTERNAL_ERROR, "Private key for address " + strAddress + " is not known");
+    }
+
+    return EncodeSecret(key_out);
 }
 
 static UniValue smsggetpubkey(const JSONRPCRequest &request)
@@ -712,7 +763,7 @@ static UniValue smsggetpubkey(const JSONRPCRequest &request)
 
 static UniValue smsgsend(const JSONRPCRequest &request)
 {
-    if (request.fHelp || request.params.size() < 3 || request.params.size() > 10)
+    if (request.fHelp || request.params.size() < 3 || request.params.size() > 8)
         throw std::runtime_error(
             RPCHelpMan{"smsgsend",
                 "\nSend an encrypted message from \"address_from\" to \"address_to\".\n",
@@ -721,12 +772,44 @@ static UniValue smsgsend(const JSONRPCRequest &request)
                     {"address_to", RPCArg::Type::STR, RPCArg::Optional::NO, "The address of the recipient."},
                     {"message", RPCArg::Type::STR, RPCArg::Optional::NO, "The message to send."},
                     {"paid_msg", RPCArg::Type::BOOL, /* default */ "false", "Send as paid message."},
-                    {"days_retention", RPCArg::Type::NUM, /* default */ "1", "No. of days for which paid message will be retained by network."},
+                    {"days_retention", RPCArg::Type::NUM, /* default */ "1", "No. of days for which the message will be retained by network."},
                     {"testfee", RPCArg::Type::BOOL, /* default */ "false", "Don't send the message, only estimate the fee."},
-                    {"fromfile", RPCArg::Type::BOOL, /* default */ "false", "Send file as message, path specified in \"message\"."},
-                    {"decodehex", RPCArg::Type::BOOL, /* default */ "false", "Decode \"message\" from hex before sending."},
-                    {"submitmsg", RPCArg::Type::BOOL, /* default */ "true", "Submit smsg to network, if false POW is not set and hex encoded smsg returned."},
-                    {"savemsg", RPCArg::Type::BOOL, /* default */ "true", "Save smsg to outbox."},
+                    {"options", RPCArg::Type::OBJ, /* default */ "", "",
+                        {
+                            {"fromfile", RPCArg::Type::BOOL, /* default */ "false", "Send file as message, path specified in \"message\"."},
+                            {"decodehex", RPCArg::Type::BOOL, /* default */ "false", "Decode \"message\" from hex before sending."},
+                            {"submitmsg", RPCArg::Type::BOOL, /* default */ "true", "Submit smsg to network, if false POW is not set and hex encoded smsg returned."},
+                            {"savemsg", RPCArg::Type::BOOL, /* default */ "true", "Save smsg to outbox."},
+                            {"ttl_is_seconds", RPCArg::Type::BOOL, /* default */ "false", "If true days_retention parameter is interpreted as seconds to live."},
+                            {"fund_from_rct", RPCArg::Type::BOOL, /* default */ "false", "Fund message from anon balance."},
+                            {"rct_ring_size", RPCArg::Type::NUM, /* default */ strprintf("%d", DEFAULT_RING_SIZE), "Ring size to use with fund_from_rct."},
+                        },
+                        "options"},
+                    {"coin_control", RPCArg::Type::OBJ, /* default */ "", "",
+                        {
+                            {"changeaddress", RPCArg::Type::STR, /* default */ "", "The darkpay address to receive the change"},
+                            {"inputs", RPCArg::Type::ARR, /* default */ "", "A json array of json objects",
+                                {
+                                    {"", RPCArg::Type::OBJ, /* default */ "", "",
+                                        {
+                                            {"tx", RPCArg::Type::STR_HEX, RPCArg::Optional::NO, "txn id"},
+                                            {"n", RPCArg::Type::NUM, RPCArg::Optional::NO, "txn vout"},
+                                        },
+                                    },
+                                },
+                            },
+                            {"replaceable", RPCArg::Type::BOOL, /* default */ "", "Marks this transaction as BIP125 replaceable.\n"
+                            "                              Allows this transaction to be replaced by a transaction with higher fees"},
+                            {"conf_target", RPCArg::Type::NUM, /* default */ "", "Confirmation target (in blocks)"},
+                            {"estimate_mode", RPCArg::Type::STR, /* default */ "UNSET", "The fee estimate mode, must be one of:\n"
+                            "         \"UNSET\"\n"
+                            "         \"ECONOMICAL\"\n"
+                            "         \"CONSERVATIVE\""},
+                            {"avoid_reuse", RPCArg::Type::BOOL, /* default */ "true", "(only available if avoid_reuse wallet flag is set) Avoid spending from dirty addresses; addresses are considered\n"
+                            "                             dirty if they have previously been used in a transaction."},
+                            {"feeRate", RPCArg::Type::AMOUNT, /* default */ "not set: makes wallet determine the fee", "Set a specific fee rate in " + CURRENCY_UNIT + "/kB"},
+                        },
+                    },
                 },
                 RPCResult{
             "{\n"
@@ -747,7 +830,7 @@ static UniValue smsgsend(const JSONRPCRequest &request)
 
     RPCTypeCheck(request.params,
         {UniValue::VSTR, UniValue::VSTR, UniValue::VSTR,
-         UniValue::VBOOL, UniValue::VNUM, UniValue::VBOOL}, true);
+         UniValue::VBOOL, UniValue::VNUM, UniValue::VBOOL, UniValue::VOBJ}, true);
 
     std::string addrFrom  = request.params[0].get_str();
     std::string addrTo    = request.params[1].get_str();
@@ -756,10 +839,49 @@ static UniValue smsgsend(const JSONRPCRequest &request)
     bool fPaid = request.params[3].isNull() ? false : request.params[3].get_bool();
     int nRetention = request.params[4].isNull() ? 1 : request.params[4].get_int();
     bool fTestFee = request.params[5].isNull() ? false : request.params[5].get_bool();
-    bool fFromFile = request.params[6].isNull() ? false : request.params[6].get_bool();
-    bool fDecodeHex = request.params[7].isNull() ? false : request.params[7].get_bool();
-    bool submit_msg = request.params[8].isNull() ? true : request.params[8].get_bool();
-    bool save_msg = request.params[9].isNull() ? true : request.params[9].get_bool();
+
+    bool fFromFile = false;
+    bool fDecodeHex = false;
+    bool submit_msg = true;
+    bool save_msg = true;
+    bool ttl_in_seconds = false;
+    bool fund_from_rct = false;
+    size_t rct_ring_size = DEFAULT_RING_SIZE;
+
+    UniValue options = request.params[6];
+    if (options.isObject()) {
+        RPCTypeCheckObj(options,
+        {
+            {"fromfile",          UniValueType(UniValue::VBOOL)},
+            {"decodehex",         UniValueType(UniValue::VBOOL)},
+            {"submitmsg",         UniValueType(UniValue::VBOOL)},
+            {"savemsg",           UniValueType(UniValue::VBOOL)},
+            {"ttl_is_seconds",    UniValueType(UniValue::VBOOL)},
+            {"fund_from_rct",     UniValueType(UniValue::VBOOL)},
+            {"rct_ring_size",     UniValueType(UniValue::VNUM)},
+        }, true, false);
+        if (!options["fromfile"].isNull()) {
+            fFromFile = options["fromfile"].get_bool();
+        }
+        if (!options["decodehex"].isNull()) {
+            fDecodeHex = options["decodehex"].get_bool();
+        }
+        if (!options["submitmsg"].isNull()) {
+            submit_msg = options["submitmsg"].get_bool();
+        }
+        if (!options["savemsg"].isNull()) {
+            save_msg = options["savemsg"].get_bool();
+        }
+        if (!options["ttl_is_seconds"].isNull()) {
+            ttl_in_seconds = options["ttl_is_seconds"].get_bool();
+        }
+        if (!options["fund_from_rct"].isNull()) {
+            fund_from_rct = options["fund_from_rct"].get_bool();
+        }
+        if (!options["rct_ring_size"].isNull()) {
+            rct_ring_size = options["rct_ring_size"].get_int();
+        }
+    }
 
     if (fFromFile && fDecodeHex) {
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Can't use decodehex with fromfile.");
@@ -773,7 +895,8 @@ static UniValue smsgsend(const JSONRPCRequest &request)
         msg = std::string(vData.begin(), vData.end());
     }
 
-    CAmount nFee;
+    CAmount nFee = 0;
+    size_t nTxBytes = 0;
 
     if (fPaid && Params().GetConsensus().nPaidSmsgTime > GetTime()) {
         throw std::runtime_error("Paid SMSG not yet active on mainnet.");
@@ -789,11 +912,35 @@ static UniValue smsgsend(const JSONRPCRequest &request)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid to address.");
     }
 
+    if (!ttl_in_seconds) {
+        nRetention *= smsg::SMSG_SECONDS_IN_DAY;
+    }
 
     UniValue result(UniValue::VOBJ);
     std::string sError;
     smsg::SecureMessage smsgOut;
-    if (smsgModule.Send(kiFrom, kiTo, msg, smsgOut, sError, fPaid, nRetention, fTestFee, &nFee, fFromFile, submit_msg, save_msg) != 0) {
+
+#ifdef ENABLE_WALLET
+    CCoinControl cctl;
+    if (fPaid) {
+        if (!smsgModule.pactive_wallet) {
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Active wallet must be set to send a paid smsg.");
+        }
+        CHDWallet *const pw = GetDarkpayWallet(smsgModule.pactive_wallet.get());
+        if (!fTestFee) {
+            EnsureWalletIsUnlocked(pw);
+        }
+        UniValue uv_cctl = request.params[7];
+        if (uv_cctl.isObject()) {
+            ReadCoinControlOptions(uv_cctl, pw, cctl);
+        }
+    }
+    if (smsgModule.Send(kiFrom, kiTo, msg, smsgOut, sError, fPaid, nRetention, fTestFee, &nFee, &nTxBytes,
+                        fFromFile, submit_msg, save_msg, fund_from_rct, rct_ring_size, &cctl) != 0) {
+#else
+    if (smsgModule.Send(kiFrom, kiTo, msg, smsgOut, sError, fPaid, nRetention, fTestFee, &nFee, &nTxBytes,
+                        fFromFile, submit_msg, save_msg) != 0) {
+#endif
         result.pushKV("result", "Send failed.");
         result.pushKV("error", sError);
     } else {
@@ -815,6 +962,7 @@ static UniValue smsgsend(const JSONRPCRequest &request)
                 result.pushKV("txid", txid.ToString());
             }
             result.pushKV("fee", ValueFromAmount(nFee));
+            result.pushKV("tx_bytes", (int)nTxBytes);
         }
     }
 
@@ -846,10 +994,11 @@ static UniValue smsgsendanon(const JSONRPCRequest &request)
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid to address.");
     }
 
+    uint32_t ttl = smsg::SMSG_FREE_MSG_DAYS * smsg::SMSG_SECONDS_IN_DAY;
     UniValue result(UniValue::VOBJ);
     std::string sError;
     smsg::SecureMessage smsgOut;
-    if (smsgModule.Send(kiFrom, kiTo, msg, smsgOut, sError) != 0) {
+    if (smsgModule.Send(kiFrom, kiTo, msg, smsgOut, sError, false, ttl) != 0) {
         result.pushKV("result", "Send failed.");
         result.pushKV("error", sError);
     } else {
@@ -883,7 +1032,8 @@ static UniValue smsginbox(const JSONRPCRequest &request)
             "  \"version\": \"str\"                  (string) The message version\n"
             "  \"received\": \"time\"                (string) Time the message was received\n"
             "  \"sent\": \"time\"                    (string) Time the message was sent\n"
-            "  \"daysretention\": int              (int) Number of days message will stay in the network for\n"
+            "  \"daysretention\": int              (int) DEPRECATED Number of days message will stay in the network for\n"
+            "  \"ttl\": int                        (int) Seconds message will stay in the network for\n"
             "  \"from\": \"str\"                     (string) Address the message was sent from\n"
             "  \"to\": \"str\"                       (string) Address the message was sent to\n"
             "  \"text\": \"str\"                     (string) Message text\n"
@@ -922,14 +1072,13 @@ static UniValue smsginbox(const JSONRPCRequest &request)
         }
 
         uint32_t nMessages = 0;
-        std::string sPrefix("im");
         uint8_t chKey[30];
 
         if (mode == "clear") {
             dbInbox.TxnBegin();
 
             leveldb::Iterator *it = dbInbox.pdb->NewIterator(leveldb::ReadOptions());
-            while (dbInbox.NextSmesgKey(it, sPrefix, chKey)) {
+            while (dbInbox.NextSmesgKey(it, smsg::DBK_INBOX, chKey)) {
                 dbInbox.EraseSmesg(chKey);
                 nMessages++;
             }
@@ -950,7 +1099,7 @@ static UniValue smsginbox(const JSONRPCRequest &request)
             leveldb::Iterator *it = dbInbox.pdb->NewIterator(leveldb::ReadOptions());
             UniValue messageList(UniValue::VARR);
 
-            while (dbInbox.NextSmesg(it, sPrefix, chKey, smsgStored)) {
+            while (dbInbox.NextSmesg(it, smsg::DBK_INBOX, chKey, smsgStored)) {
                 if (fCheckReadStatus
                     && !(smsgStored.status & SMSG_MASK_UNREAD)) {
                     continue;
@@ -978,9 +1127,10 @@ static UniValue smsginbox(const JSONRPCRequest &request)
                     PushTime(objM, "sent", msg.timestamp);
                     objM.pushKV("paid", UniValue(psmsg->IsPaidVersion()));
 
-                    uint32_t nDaysRetention = psmsg->IsPaidVersion() ? psmsg->nonce[0] : 2;
-                    int64_t ttl = smsg::SMSGGetSecondsInDay() * nDaysRetention;
-                    objM.pushKV("daysretention", (int)nDaysRetention);
+                    int64_t ttl = psmsg->m_ttl;
+                    objM.pushKV("ttl", ttl);
+                    int nDaysRetention = ttl / smsg::SMSG_SECONDS_IN_DAY;
+                    objM.pushKV("daysretention", nDaysRetention);
                     PushTime(objM, "expiration", psmsg->timestamp + ttl);
 
                     uint32_t nPayload = smsgStored.vchMessage.size() - smsg::SMSG_HDR_LEN;
@@ -1043,6 +1193,7 @@ static UniValue smsgoutbox(const JSONRPCRequest &request)
                     {"options", RPCArg::Type::OBJ, /* default */ "", "",
                         {
                             {"encoding", RPCArg::Type::STR, /* default */ "text", "Display message data in encoding, values: \"text\", \"hex\", \"none\"."},
+                            {"sending", RPCArg::Type::BOOL, /* default */ "false", "Display messages in sending queue."},
                         },
                         "options"},
                 },
@@ -1066,17 +1217,20 @@ static UniValue smsgoutbox(const JSONRPCRequest &request)
     std::string mode = request.params[0].isStr() ? request.params[0].get_str() : "all";
     std::string filter = request.params[1].isStr() ? request.params[1].get_str() : "";
 
+    bool show_sending = false;
     std::string sEnc = "text";
     if (request.params[2].isObject()) {
         UniValue options = request.params[2].get_obj();
         if (options["encoding"].isStr()) {
             sEnc = options["encoding"].get_str();
         }
+        if (options["sending"].isBool()) {
+            show_sending = options["sending"].get_bool();
+        }
     }
 
     UniValue result(UniValue::VOBJ);
 
-    std::string sPrefix("sm");
     uint8_t chKey[30];
     memset(&chKey[0], 0, sizeof(chKey));
 
@@ -1090,11 +1244,12 @@ static UniValue smsgoutbox(const JSONRPCRequest &request)
 
         uint32_t nMessages = 0;
 
+        std::string db_prefix = show_sending ? smsg::DBK_QUEUED : smsg::DBK_OUTBOX;
         if (mode == "clear") {
             dbOutbox.TxnBegin();
 
             leveldb::Iterator *it = dbOutbox.pdb->NewIterator(leveldb::ReadOptions());
-            while (dbOutbox.NextSmesgKey(it, sPrefix, chKey)) {
+            while (dbOutbox.NextSmesgKey(it, db_prefix, chKey)) {
                 dbOutbox.EraseSmesg(chKey);
                 nMessages++;
             }
@@ -1110,7 +1265,7 @@ static UniValue smsgoutbox(const JSONRPCRequest &request)
 
             UniValue messageList(UniValue::VARR);
 
-            while (dbOutbox.NextSmesg(it, sPrefix, chKey, smsgStored)) {
+            while (dbOutbox.NextSmesg(it, db_prefix, chKey, smsgStored)) {
                 uint8_t *pHeader = &smsgStored.vchMessage[0];
                 const smsg::SecureMessage *psmsg = (smsg::SecureMessage*) pHeader;
 
@@ -1133,9 +1288,10 @@ static UniValue smsgoutbox(const JSONRPCRequest &request)
                     PushTime(objM, "sent", msg.timestamp);
                     objM.pushKV("paid", UniValue(psmsg->IsPaidVersion()));
 
-                    uint32_t nDaysRetention = psmsg->IsPaidVersion() ? psmsg->nonce[0] : 2;
-                    int64_t ttl = smsg::SMSGGetSecondsInDay() * nDaysRetention;
-                    objM.pushKV("daysretention", (int)nDaysRetention);
+                    int64_t ttl = psmsg->m_ttl;
+                    objM.pushKV("ttl", ttl);
+                    int nDaysRetention = ttl / smsg::SMSG_SECONDS_IN_DAY;
+                    objM.pushKV("daysretention", nDaysRetention);
                     PushTime(objM, "expiration", psmsg->timestamp + ttl);
 
                     uint32_t nPayload = smsgStored.vchMessage.size() - smsg::SMSG_HDR_LEN;
@@ -1177,7 +1333,6 @@ static UniValue smsgoutbox(const JSONRPCRequest &request)
     return result;
 };
 
-
 static UniValue smsgbuckets(const JSONRPCRequest &request)
 {
     if (request.fHelp || request.params.size() > 1)
@@ -1210,8 +1365,6 @@ static UniValue smsgbuckets(const JSONRPCRequest &request)
         {
             LOCK(smsgModule.cs_smsg);
             std::map<int64_t, smsg::SecMsgBucket>::const_iterator it;
-            it = smsgModule.buckets.begin();
-
             for (it = smsgModule.buckets.begin(); it != smsgModule.buckets.end(); ++it) {
                 const std::set<smsg::SecMsgToken> &tokenSet = it->second.setTokens;
 
@@ -1234,7 +1387,7 @@ static UniValue smsgbuckets(const JSONRPCRequest &request)
                     objM.pushKV("last changed", part::GetTimeString(it->second.timeChanged, cbuf, sizeof(cbuf)));
                 }
 
-                fs::path fullPath = GetDataDir() / "smsgstore" / sFile;
+                fs::path fullPath = GetDataDir() / smsg::STORE_DIR / sFile;
                 if (!fs::exists(fullPath)) {
                     if (tokenSet.size() == 0) {
                         objM.pushKV("file size", "Empty bucket.");
@@ -1273,13 +1426,11 @@ static UniValue smsgbuckets(const JSONRPCRequest &request)
         {
             LOCK(smsgModule.cs_smsg);
             std::map<int64_t, smsg::SecMsgBucket>::iterator it;
-            it = smsgModule.buckets.begin();
-
             for (it = smsgModule.buckets.begin(); it != smsgModule.buckets.end(); ++it) {
                 std::string sFile = std::to_string(it->first) + "_01.dat";
 
                 try {
-                    fs::path fullPath = GetDataDir() / "smsgstore" / sFile;
+                    fs::path fullPath = GetDataDir() / smsg::STORE_DIR / sFile;
                     fs::remove(fullPath);
                 } catch (const fs::filesystem_error& ex) {
                     //objM.push_back(Pair("file size, error", ex.what()));
@@ -1333,9 +1484,6 @@ static UniValue smsgview(const JSONRPCRequest &request)
     EnsureSMSGIsEnabled();
 
 #ifdef ENABLE_WALLET
-    if (smsgModule.pwallet->IsLocked()) {
-        throw JSONRPCError(RPC_MISC_ERROR, "Wallet is locked.");
-    }
 
     char cbuf[256];
     bool fMatchAll = false;
@@ -1378,9 +1526,9 @@ static UniValue smsgview(const JSONRPCRequest &request)
 
                 std::map<CTxDestination, CAddressBookData>::iterator itl;
 
-                {
-                    LOCK(smsgModule.pwallet->cs_wallet);
-                    for (itl = smsgModule.pwallet->mapAddressBook.begin(); itl != smsgModule.pwallet->mapAddressBook.end(); ++itl) {
+                for (const auto &pw : smsgModule.m_vpwallets) {
+                    LOCK(pw->cs_wallet);
+                    for (itl = pw->mapAddressBook.begin(); itl != pw->mapAddressBook.end(); ++itl) {
                         if (part::stringsMatchI(itl->second.name, sTemp, matchType)) {
                             CBitcoinAddress checkValid(itl->first);
                             if (checkValid.IsValid()) {
@@ -1446,8 +1594,8 @@ static UniValue smsgview(const JSONRPCRequest &request)
     std::vector<std::pair<int64_t, UniValue> > vMessages;
 
     std::vector<std::string> vPrefixes;
-    vPrefixes.push_back("im");
-    vPrefixes.push_back("sm");
+    vPrefixes.push_back(smsg::DBK_INBOX);
+    vPrefixes.push_back(smsg::DBK_OUTBOX);
 
     uint8_t chKey[30];
     size_t nMessages = 0;
@@ -1465,7 +1613,7 @@ static UniValue smsgview(const JSONRPCRequest &request)
         std::vector<std::string>::iterator itp;
         std::vector<CKeyID>::iterator its;
         for (itp = vPrefixes.begin(); itp < vPrefixes.end(); ++itp) {
-            bool fInbox = *itp == std::string("im");
+            bool fInbox = *itp == smsg::DBK_INBOX;
 
             dbMsg.TxnBegin();
 
@@ -1517,24 +1665,14 @@ static UniValue smsgview(const JSONRPCRequest &request)
                     if ((itl = mLabelCache.find(kiFrom)) != mLabelCache.end()) {
                         lblFrom = itl->second;
                     } else {
-                        CBitcoinAddress address_parsed(kiFrom);
-                        LOCK(smsgModule.pwallet->cs_wallet);
-                        auto mi(smsgModule.pwallet->mapAddressBook.find(address_parsed.Get()));
-                        if (mi != smsgModule.pwallet->mapAddressBook.end()) {
-                            lblFrom = mi->second.name;
-                        }
+                        lblFrom = smsgModule.LookupLabel(kiFrom);
                         mLabelCache[kiFrom] = lblFrom;
                     }
 
                     if ((itl = mLabelCache.find(smsgStored.addrTo)) != mLabelCache.end()) {
                         lblTo = itl->second;
                     } else {
-                        CBitcoinAddress address_parsed(smsgStored.addrTo);
-                        LOCK(smsgModule.pwallet->cs_wallet);
-                        auto mi(smsgModule.pwallet->mapAddressBook.find(address_parsed.Get()));
-                        if (mi != smsgModule.pwallet->mapAddressBook.end()) {
-                            lblTo = mi->second.name;
-                        }
+                        lblTo = smsgModule.LookupLabel(smsgStored.addrTo);
                         mLabelCache[smsgStored.addrTo] = lblTo;
                     }
 
@@ -1606,6 +1744,7 @@ static UniValue smsgone(const JSONRPCRequest &request)
                             {"delete", RPCArg::Type::BOOL, /* default */ "false", "Delete msg if true."},
                             {"setread", RPCArg::Type::BOOL, /* default */ "false", "Set read status to value."},
                             {"encoding", RPCArg::Type::STR, /* default */ "text", "Display message data in encoding, values: \"text\", \"hex\", \"none\"."},
+                            {"export", RPCArg::Type::BOOL, /* default */ "false", "Display the full smsg as a hex encoded string."},
                         },
                         "options"},
                 },
@@ -1619,7 +1758,8 @@ static UniValue smsgone(const JSONRPCRequest &request)
             "  \"read\": bool                        (bool) Read status\n"
             "  \"sent\": int                         (int) Time the message was created\n"
             "  \"paid\": bool                        (bool) Paid or free message\n"
-            "  \"daysretention\": int                (int) Number of days message will stay in the network for\n"
+            "  \"daysretention\": int                (int) DEPRECATED Number of days message will stay in the network for\n"
+            "  \"ttl\": int                          (int) Seconds message will stay in the network for\n"
             "  \"expiration\": int                   (int) Time the message will be dropped from the network\n"
             "  \"payloadsize\": int                  (int) Size of user message\n"
             "  \"from\": \"str\"                     (string) Address the message was sent from\n"
@@ -1637,7 +1777,7 @@ static UniValue smsgone(const JSONRPCRequest &request)
     RPCTypeCheckObj(request.params,
         {
             {"msgid",             UniValueType(UniValue::VSTR)},
-            {"option",            UniValueType(UniValue::VOBJ)},
+            {"options",           UniValueType(UniValue::VOBJ)},
         }, true, false);
 
     std::string sMsgId = request.params[0].get_str();
@@ -1649,7 +1789,7 @@ static UniValue smsgone(const JSONRPCRequest &request)
     std::string sType;
 
     uint8_t chKey[30];
-    chKey[1] = 'm';
+    chKey[1] = 'M';
     memcpy(chKey+2, vMsgId.data(), 28);
     smsg::SecMsgStored smsgStored;
     UniValue result(UniValue::VOBJ);
@@ -1661,13 +1801,13 @@ static UniValue smsgone(const JSONRPCRequest &request)
         if (!dbMsg.Open("cr+"))
             throw std::runtime_error("Could not open DB.");
 
-        if ((chKey[0] = 'i') && dbMsg.ReadSmesg(chKey, smsgStored)) {
+        if ((chKey[0] = 'I') && dbMsg.ReadSmesg(chKey, smsgStored)) {
             sType = "inbox";
         } else
-        if ((chKey[0] = 's') && dbMsg.ReadSmesg(chKey, smsgStored)) {
+        if ((chKey[0] = 'S') && dbMsg.ReadSmesg(chKey, smsgStored)) {
             sType = "outbox";
         } else
-        if ((chKey[0] = 'q') && dbMsg.ReadSmesg(chKey, smsgStored)) {
+        if ((chKey[0] = 'Q') && dbMsg.ReadSmesg(chKey, smsgStored)) {
             sType = "sending";
         } else {
             throw JSONRPCError(RPC_INTERNAL_ERROR, "Unknown message id.");
@@ -1712,9 +1852,10 @@ static UniValue smsgone(const JSONRPCRequest &request)
     PushTime(result, "sent", psmsg->timestamp);
     result.pushKV("paid", UniValue(psmsg->IsPaidVersion()));
 
-    uint32_t nDaysRetention = psmsg->IsPaidVersion() ? psmsg->nonce[0] : 2;
-    int64_t ttl = smsg::SMSGGetSecondsInDay() * nDaysRetention;
-    result.pushKV("daysretention", (int)nDaysRetention);
+    int64_t ttl = psmsg->m_ttl;
+    result.pushKV("ttl", ttl);
+    int nDaysRetention = ttl / smsg::SMSG_SECONDS_IN_DAY;
+    result.pushKV("daysretention", nDaysRetention);
     PushTime(result, "expiration", psmsg->timestamp + ttl);
 
 
@@ -1726,6 +1867,11 @@ static UniValue smsgone(const JSONRPCRequest &request)
     std::string sEnc;
     if (options.isObject() && options["encoding"].isStr()) {
         sEnc = options["encoding"].get_str();
+    }
+
+    bool export_smsg = options.isObject() && options["export"].isBool() ? options["export"].get_bool() : false;
+    if (export_smsg) {
+        result.pushKV("raw", HexStr(smsgStored.vchMessage));
     }
 
     int rv;
@@ -1768,7 +1914,7 @@ static UniValue smsgimport(const JSONRPCRequest &request)
                     {"msg", RPCArg::Type::STR, RPCArg::Optional::NO, "Hex encoded smsg."},
                     {"options", RPCArg::Type::OBJ, /* default */ "", "",
                         {
-                            //{"submitmsg", RPCArg::Type::BOOL, /* default */ "false", "Submit msg to network if true."},
+                            {"submitmsg", RPCArg::Type::BOOL, /* default */ "false", "Submit msg to network if true."},
                             {"setread", RPCArg::Type::BOOL, /* default */ "false", "Set read status to value."},
                         },
                         "options"},
@@ -1790,7 +1936,7 @@ static UniValue smsgimport(const JSONRPCRequest &request)
     RPCTypeCheckObj(request.params,
         {
             {"msg",             UniValueType(UniValue::VSTR)},
-            {"option",            UniValueType(UniValue::VOBJ)},
+            {"option",          UniValueType(UniValue::VOBJ)},
         }, true, false);
 
     std::string str_msg = request.params[0].get_str();
@@ -1807,12 +1953,16 @@ static UniValue smsgimport(const JSONRPCRequest &request)
     UniValue result(UniValue::VOBJ);
     std::string str_error;
     bool setread = false;
+    bool submitmsg = false;
     UniValue options = request.params[1];
     if (options.isObject() && options["setread"].isBool()) {
         setread = options["setread"].get_bool();
     }
+    if (options.isObject() && options["submitmsg"].isBool()) {
+        submitmsg = options["submitmsg"].get_bool();
+    }
 
-    if (smsgModule.Import(&smsg, str_error, setread) != 0) {
+    if (smsgModule.Import(&smsg, str_error, setread, submitmsg) != 0) {
         smsg.pPayload = nullptr;
         throw JSONRPCError(RPC_MISC_ERROR, "Import failed: " + str_error);
     }
@@ -1868,7 +2018,7 @@ static UniValue smsggetfeerate(const JSONRPCRequest &request)
             RPCHelpMan{"smsggetfeerate",
                 "\nReturn paid SMSG fee.\n",
                 {
-                    {"height", RPCArg::Type::STR_HEX, /* default */ "", "Chain height to get fee rate for."},
+                    {"height", RPCArg::Type::NUM, /* default */ "", "Chain height to get fee rate for, pass a negative number for more detailed output."},
                 },
                 RPCResult{
             "Fee rate in satoshis."
@@ -1885,6 +2035,33 @@ static UniValue smsggetfeerate(const JSONRPCRequest &request)
     CBlockIndex *pblockindex = nullptr;
     if (!request.params[0].isNull()) {
         int nHeight = request.params[0].get_int();
+
+        if (nHeight < 0) {
+            UniValue result(UniValue::VOBJ);
+            const CBlockIndex *pTip = chainActive.Tip();
+            const Consensus::Params &consensusParams = Params().GetConsensus();
+            int chain_height = pTip->nHeight;
+
+            if (pTip->nTime < consensusParams.smsg_fee_time) {
+                result.pushKV("inactiveuntil", int64_t(consensusParams.smsg_fee_time));
+                return result;
+            }
+
+            result.pushKV("currentrate", GetSmsgFeeRate(nullptr));
+            int fee_height = (chain_height / consensusParams.smsg_fee_period) * consensusParams.smsg_fee_period;
+            result.pushKV("currentrateblockheight", fee_height);
+
+            int64_t smsg_fee_rate_target;
+            CBlock block;
+            if (!ReadBlockFromDisk(block, pTip, Params().GetConsensus())) {
+                throw JSONRPCError(RPC_MISC_ERROR, "Block not found on disk");
+            }
+            block.vtx[0]->GetSmsgFeeRate(smsg_fee_rate_target);
+            result.pushKV("targetrate", smsg_fee_rate_target);
+            result.pushKV("targetblockheight", chain_height);
+            result.pushKV("nextratechangeheight", int(fee_height + consensusParams.smsg_fee_period));
+            return result;
+        }
         if (nHeight > chainActive.Height()) {
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Block height out of range");
         }
@@ -1901,7 +2078,7 @@ static UniValue smsggetdifficulty(const JSONRPCRequest &request)
             RPCHelpMan{"smsggetdifficulty",
                 "\nReturn free SMSG difficulty.\n",
                 {
-                    {"time", RPCArg::Type::STR_HEX, /* default */ "", "Chain time to get smsg difficulty for."},
+                    {"time", RPCArg::Type::NUM, /* default */ "", "Chain time to get smsg difficulty for."},
                 },
                 RPCResult{
             "Difficulty."
@@ -1952,10 +2129,232 @@ static UniValue smsggetinfo(const JSONRPCRequest &request)
 
     obj.pushKV("enabled", smsg::fSecMsgEnabled);
     if (smsg::fSecMsgEnabled) {
-        obj.pushKV("wallet", smsgModule.GetWalletName());
+        obj.pushKV("active_wallet", smsgModule.GetWalletName());
+#ifdef ENABLE_WALLET
+        UniValue wallet_names(UniValue::VARR);
+        for (const auto &pw : smsgModule.m_vpwallets) {
+            wallet_names.push_back(pw->GetName());
+        }
+        obj.pushKV("enabled_wallets", wallet_names);
+#endif
     }
 
     return obj;
+}
+
+static UniValue smsgpeers(const JSONRPCRequest &request)
+{
+     if (request.fHelp || request.params.size() > 1)
+        throw std::runtime_error(
+            RPCHelpMan{"smsgpeers",
+                "\nReturns data about each connected SMSG node as a json array of objects.\n",
+                {
+                    {"index", RPCArg::Type::NUM, /* default */ "", "Peer index, omit for list."},
+                },
+                RPCResult{
+                    "[\n"
+                    "  {\n"
+                    "    \"id\": n,                   (numeric) Peer index\n"
+                    "    \"ignoreuntil\": n,          (numeric) Peer ignored until time\n"
+                    "    \"misbehaving\": n,          (numeric) Misbehaviour counter\n"
+                    "    \"numwantsent\": n,          (numeric) Number of smsges requested from peer\n"
+                    "    \"receivecounter\": n,       (numeric) Messages received from peer in window\n"
+                    "    \"ignoredcounter\": n,       (numeric) Number of times peer has been ignored\n"
+                    "  }\n"
+                    "  ,...\n"
+                    "]\n"
+                },
+                RPCExamples{
+            HelpExampleCli("smsgpeers", "") +
+            "\nAs a JSON-RPC call\n"
+            + HelpExampleRpc("smsgpeers", "")
+                },
+            }.ToString());
+
+    EnsureSMSGIsEnabled();
+
+    int index = request.params[0].isNull() ? -1 : request.params[0].get_int();
+
+    UniValue result(UniValue::VARR);
+
+    smsgModule.GetNodesStats(index, result);
+
+    return result;
+}
+
+static UniValue smsgzmqpush(const JSONRPCRequest &request)
+{
+    if (request.fHelp || request.params.size() > 1)
+        throw std::runtime_error(
+            RPCHelpMan{"smsgzmqpush",
+                "\nResend ZMQ notifications.\n",
+                {
+                    {"options", RPCArg::Type::OBJ, /* default */ "", "",
+                        {
+                            {"timefrom", RPCArg::Type::NUM, /* default */ "0", "Skip messages received before timestamp."},
+                            {"timeto", RPCArg::Type::NUM, /* default */ "max_int", "Skip messages received after timestamp."},
+                            {"unreadonly", RPCArg::Type::BOOL, /* default */ "true", "Resend only unread messages."},
+                        },
+                        "options"},
+                },
+                RPCResult{
+            "{\n"
+            "  \"numsent\": n,          (numeric) Number of notifications sent\n"
+            "}\n"
+                },
+                RPCExamples{
+            HelpExampleCli("smsgzmqpush", "'{ \"unreadonly\": false }'") +
+            "\nAs a JSON-RPC call\n"
+            + HelpExampleRpc("smsgzmqpush", "{ \"unreadonly\": false }")
+                },
+            }.ToString());
+
+    EnsureSMSGIsEnabled();
+
+    RPCTypeCheck(request.params, {UniValue::VOBJ}, true);
+
+    bool unreadonly = true;
+    int64_t timefrom = 0;
+    int64_t timeto = std::numeric_limits<int64_t>::max();
+    int num_sent = 0;
+
+    UniValue options = request.params[0];
+    if (options.isObject()) {
+        RPCTypeCheckObj(options,
+        {
+            {"timefrom",        UniValueType(UniValue::VNUM)},
+            {"timeto",          UniValueType(UniValue::VNUM)},
+            {"unreadonly",      UniValueType(UniValue::VBOOL)},
+        }, true, true);
+        if (options["timefrom"].isNum()) {
+            timefrom = options["timefrom"].get_int64();
+        }
+        if (options["timeto"].isNum()) {
+            timeto = options["timeto"].get_int64();
+        }
+        if (options["unreadonly"].isBool()) {
+            unreadonly = options["unreadonly"].get_bool();
+        }
+    }
+
+     {
+        LOCK(smsg::cs_smsgDB);
+
+        smsg::SecMsgDB dbInbox;
+        if (!dbInbox.Open("cr+")) {
+            throw std::runtime_error("Could not open DB.");
+        }
+
+        uint8_t chKey[30];
+        smsg::SecMsgStored smsgStored;
+        leveldb::Iterator *it = dbInbox.pdb->NewIterator(leveldb::ReadOptions());
+        while (dbInbox.NextSmesg(it, smsg::DBK_INBOX, chKey, smsgStored)) {
+            if (unreadonly
+                && !(smsgStored.status & SMSG_MASK_UNREAD)) {
+                continue;
+            }
+            if (smsgStored.timeReceived < timefrom ||
+                smsgStored.timeReceived > timeto) {
+                continue;
+            }
+
+            uint8_t *pHeader = &smsgStored.vchMessage[0];
+            const smsg::SecureMessage *psmsg = (smsg::SecureMessage*) pHeader;
+
+            std::vector<uint8_t> vchUint160;
+            vchUint160.resize(20);
+            memcpy(vchUint160.data(), &chKey[10], 20);
+            uint160 hash(vchUint160);
+
+            GetMainSignals().NewSecureMessage(psmsg, hash);
+            num_sent++;
+        }
+        delete it;
+    } // cs_smsgDB
+
+    UniValue result(UniValue::VOBJ);
+
+    result.pushKV("numsent", num_sent);
+
+    return result;
+};
+
+static UniValue smsgdebug(const JSONRPCRequest &request)
+{
+    if (request.fHelp || request.params.size() > 2)
+        throw std::runtime_error(
+            RPCHelpMan{"smsgdebug",
+                "\nCommands useful for debugging.\n",
+                {
+                    {"command", RPCArg::Type::STR, /* default */ "", "\"clearbanned\",\"dumpids\"."},
+                    {"arg1", RPCArg::Type::STR, /* default */ "", ""},
+                },
+                RPCResult{
+                    "{\n"
+                    "}\n"
+                },
+                RPCExamples{
+            HelpExampleCli("smsgdebug", "") +
+            "\nAs a JSON-RPC call\n"
+            + HelpExampleRpc("smsgdebug", "")
+                },
+            }.ToString());
+
+    EnsureSMSGIsEnabled();
+
+    std::string mode = "none";
+    if (request.params.size() > 0) {
+        mode = request.params[0].get_str();
+    }
+
+    UniValue result(UniValue::VOBJ);
+
+    if (mode == "clearbanned") {
+        result.pushKV("command", mode);
+        smsgModule.ClearBanned();
+    } else
+    if (mode == "dumpids") {
+        fs::path filepath = "smsg_ids.txt";
+        if (request.params[1].isStr()) {
+            filepath = request.params[1].get_str();
+        }
+        if (fs::exists(filepath)) {
+            throw JSONRPCError(RPC_INVALID_PARAMETER, filepath.string() + " already exists. If you are sure this is what you want, move it out of the way first");
+        }
+
+        fsbridge::ofstream file;
+        file.open(filepath);
+        if (!file.is_open()) {
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Cannot open dump file");
+        }
+
+        int num_messages = 0;
+        LOCK(smsgModule.cs_smsg);
+        std::map<int64_t, smsg::SecMsgBucket>::const_iterator it;
+        std::vector<uint8_t> vch_msg;
+        for (it = smsgModule.buckets.begin(); it != smsgModule.buckets.end(); ++it) {
+            const std::set<smsg::SecMsgToken> &token_set = it->second.setTokens;
+            for (auto token : token_set) {
+                if (smsgModule.Retrieve(token, vch_msg) != smsg::SMSG_NO_ERROR) {
+                    LogPrintf("SecureMsgRetrieve failed %d.\n", token.timestamp);
+                    continue;
+                }
+                const smsg::SecureMessage *psmsg = (smsg::SecureMessage*) vch_msg.data();
+                if (psmsg->version[0] == 0 && psmsg->version[1] == 0) {
+                    continue; // Skip purged
+                }
+                file << strprintf("%d,%s\n", it->first, HexStr(smsgModule.GetMsgID(psmsg, vch_msg.data() + smsg::SMSG_HDR_LEN)));
+                num_messages++;
+            }
+        }
+
+        file.close();
+        result.pushKV("messages", num_messages);
+    } else{
+        result.pushKV("error", "Unknown command");
+    }
+
+    return result;
 }
 
 static const CRPCCommand commands[] =
@@ -1967,12 +2366,13 @@ static const CRPCCommand commands[] =
     { "smsg",               "smsgoptions",            &smsgoptions,            {} },
     { "smsg",               "smsglocalkeys",          &smsglocalkeys,          {} },
     { "smsg",               "smsgscanchain",          &smsgscanchain,          {} },
-    { "smsg",               "smsgscanbuckets",        &smsgscanbuckets,        {} },
+    { "smsg",               "smsgscanbuckets",        &smsgscanbuckets,        {"options"} },
     { "smsg",               "smsgaddaddress",         &smsgaddaddress,         {"address","pubkey"} },
     { "smsg",               "smsgaddlocaladdress",    &smsgaddlocaladdress,    {"address"} },
     { "smsg",               "smsgimportprivkey",      &smsgimportprivkey,      {"privkey","label"} },
+    { "smsg",               "smsgdumpprivkey",        &smsgdumpprivkey,        {"address"} },
     { "smsg",               "smsggetpubkey",          &smsggetpubkey,          {"address"} },
-    { "smsg",               "smsgsend",               &smsgsend,               {"address_from","address_to","message","paid_msg","days_retention","testfee","fromfile","decodehex","submitmsg","savemsg"} },
+    { "smsg",               "smsgsend",               &smsgsend,               {"address_from","address_to","message","paid_msg","days_retention","testfee","options","coincontrol"} },
     { "smsg",               "smsgsendanon",           &smsgsendanon,           {"address_to","message"} },
     { "smsg",               "smsginbox",              &smsginbox,              {"mode","filter","options"} },
     { "smsg",               "smsgoutbox",             &smsgoutbox,             {"mode","filter","options"} },
@@ -1983,7 +2383,11 @@ static const CRPCCommand commands[] =
     { "smsg",               "smsgpurge",              &smsgpurge,              {"msgid"}},
     { "smsg",               "smsggetfeerate",         &smsggetfeerate,         {"height"}},
     { "smsg",               "smsggetdifficulty",      &smsggetdifficulty,      {"time"}},
-    { "smsg",               "smsggetinfo",            &smsggetinfo,            {""}},
+    { "smsg",               "smsggetinfo",            &smsggetinfo,            {}},
+    { "smsg",               "smsgpeers",              &smsgpeers,              {"index"}},
+    { "smsg",               "smsgzmqpush",            &smsgzmqpush,            {"options"}},
+    { "smsg",               "smsgdebug",              &smsgdebug,              {"command","arg1"}},
+
 };
 
 void RegisterSmsgRPCCommands(CRPCTable &tableRPC)

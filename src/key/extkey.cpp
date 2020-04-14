@@ -217,7 +217,7 @@ int ExtractExtKeyPath(const std::string &sPath, std::vector<uint32_t> &vPath)
 
     vPath.reserve(nSlashes + 1);
 
-    char *p = strtok(data, "/");
+    char *token, *p = strtok_r(data, "/", &token);
 
     while (p) {
         uint32_t nChild;
@@ -247,7 +247,7 @@ int ExtractExtKeyPath(const std::string &sPath, std::vector<uint32_t> &vPath)
 
         if (fHarden) {
             if ((nChild >> 31) == 0) {
-                nChild |= 1 << 31;
+                nChild |= 1U << 31;
             } else {
                 return 8;
             }
@@ -255,7 +255,7 @@ int ExtractExtKeyPath(const std::string &sPath, std::vector<uint32_t> &vPath)
 
         vPath.push_back(nChild);
 
-        p = strtok(nullptr, "/");
+        p = strtok_r(nullptr, "/", &token);
     }
 
     if (vPath.size() < 1) {
@@ -1074,13 +1074,27 @@ inline void AppendPathLink(std::string &s, uint32_t n, char cH)
     s += "/";
     bool fHardened = false;
     if ((n >> 31) == 1) {
-        n &= ~(1 << 31);
+        n &= ~(1U << 31);
         fHardened = true;
     }
     s += strprintf("%u", n);
     if (fHardened) {
         s += cH;
     }
+};
+
+int ConvertPath(const std::vector<uint8_t> &path_in, std::vector<uint32_t> &path_out)
+{
+    path_out.clear();
+    if (path_in.size() % 4 != 0) {
+        return 1;
+    }
+    for (size_t o = 0; o < path_in.size(); o+=4) {
+        uint32_t n;
+        memcpy(&n, &path_in[o], 4);
+        path_out.push_back(n);
+    }
+    return 0;
 };
 
 int PathToString(const std::vector<uint8_t> &vPath, std::string &sPath, char cH, size_t nStart)

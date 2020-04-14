@@ -42,6 +42,7 @@
 #include <validationinterface.h>
 #include <warnings.h>
 #include <smsg/smessage.h>
+#include <net.h>
 #include <pos/kernel.h>
 #include <anon.h>
 #include <rctindex.h>
@@ -170,7 +171,7 @@ public:
      * If a block header hasn't already been seen, call CheckBlockHeader on it, ensure
      * that it doesn't descend from an invalid block, and then add it to mapBlockIndex.
      */
-    bool AcceptBlockHeader(const CBlockHeader& block, CValidationState& state, const CChainParams& chainparams, CBlockIndex** ppindex) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
+    bool AcceptBlockHeader(const CBlockHeader& block, CValidationState& state, const CChainParams& chainparams, CBlockIndex** ppindex, bool fRequested=false) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
     bool AcceptBlock(const std::shared_ptr<const CBlock>& pblock, CValidationState& state, const CChainParams& chainparams, CBlockIndex** ppindex, bool fRequested, const CDiskBlockPos* dbp, bool* fNewBlock) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
     // Block (dis)connection on a given view:
@@ -619,9 +620,7 @@ static bool AcceptToMemoryPoolWorker(const CChainParams& chainparams, CTxMemPool
     }
 
     const Consensus::Params &consensus = Params().GetConsensus();
-    state.fEnforceSmsgFees = nAcceptTime >= consensus.nPaidSmsgTime;
-    state.fBulletproofsActive = nAcceptTime >= consensus.bulletproof_time;
-    state.rct_active = nAcceptTime >= consensus.rct_time;
+    state.SetStateInfo(nAcceptTime, chainActive.Height(), consensus);
 
     if (!CheckTransaction(tx, state))
         return false; // state filled in by CheckTransaction
@@ -642,7 +641,7 @@ static bool AcceptToMemoryPoolWorker(const CChainParams& chainparams, CTxMemPool
     // Do not work on transactions that are too small.
     // A transaction with 1 segwit input and 1 P2WPHK output has non-witness size of 82 bytes.
     // Transactions smaller than this are not relayed to reduce unnecessary malloc overhead.
-    if (::GetSerializeSize(tx, PROTOCOL_VERSION | SERIALIZE_TRANSACTION_NO_WITNESS) < MIN_STANDARD_TX_NONWITNESS_SIZE)
+    if (::GetSerializeSize(tx, PROTOCOL_VERSION | SERIALIZE_TRANSACTION_NO_WITNESS) < (fDarkpayMode ? MIN_STANDARD_TX_NONWITNESS_SIZE_PART : MIN_STANDARD_TX_NONWITNESS_SIZE))
         return state.DoS(0, false, REJECT_NONSTANDARD, "tx-size-small");
 
     // Only accept nLockTime-using transactions that can be mined in the next
@@ -785,8 +784,9 @@ static bool AcceptToMemoryPoolWorker(const CChainParams& chainparams, CTxMemPool
         bool fSpendsCoinbase = false;
         for (const CTxIn &txin : tx.vin)
         {
-            if (txin.IsAnonInput())
+            if (txin.IsAnonInput()) {
                 continue;
+            }
             const Coin &coin = view.AccessCoin(txin.prevout);
             if (coin.IsCoinBase()) {
                 fSpendsCoinbase = true;
@@ -928,8 +928,9 @@ static bool AcceptToMemoryPoolWorker(const CChainParams& chainparams, CTxMemPool
 
             for (unsigned int j = 0; j < tx.vin.size(); j++)
             {
-                if (tx.vin[j].IsAnonInput())
+                if (tx.vin[j].IsAnonInput()) {
                     continue;
+                }
                 // We don't want to accept replacements that require low
                 // feerate junk to be mined first. Ideally we'd keep track of
                 // the ancestor feerates and make the decision based on that,
@@ -1212,7 +1213,7 @@ bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos, const Consensus:
 
     // Check the header
     if (fDarkpayMode) {
-        // only CheckProofOfWork for genesis blocks
+        // ROME only CheckProofOfWork for genesis blocks
       /*
         if (block.hashPrevBlock.IsNull()
             && !CheckProofOfWork(block.GetHash(), block.nBits, consensusParams, 0, Params().GetLastImportHeight())) {
@@ -1336,21 +1337,103 @@ CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams)
     return nSubsidy;
 }
 
+//! Returns last CBlockIndex* that is a checkpoint
+static CBlockIndex* GetLastCheckpoint(const CCheckpointData& data) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
+{
+    const MapCheckpoints& checkpoints = data.mapCheckpoints;
+
+    for (const MapCheckpoints::value_type& i : reverse_iterate(checkpoints))
+    {
+        const uint256& hash = i.second;
+        CBlockIndex* pindex = LookupBlockIndex(hash);
+        if (pindex) {
+            return pindex;
+        }
+    }
+    return nullptr;
+}
+
+
+class HeightEntry {
+public:
+    HeightEntry(int height, NodeId id, int64_t time) : m_height(height), m_id(id), m_time(time)  {};
+    int m_height;
+    NodeId m_id;
+    int64_t m_time;
+};
+static std::atomic_int nPeerBlocks(std::numeric_limits<int>::max());
+static std::atomic_int nPeers(0);
+static std::list<HeightEntry> peer_blocks;
+const size_t max_peer_blocks = 9;
+
+void UpdateNumPeers(int num_peers)
+{
+    nPeers = num_peers;
+}
+
 int GetNumPeers()
 {
-    //return g_connman->GetNodeCount(CConnman::CONNECTIONS_IN); // doesn't seem accurate
-    return g_connman ? g_connman->GetNodeCount(CConnman::CONNECTIONS_ALL) : 0;
+    return nPeers;
+}
+
+void UpdateNumBlocksOfPeers(NodeId id, int height) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
+{
+    // Select median value. Only one sample per peer. Remove oldest sample.
+    int new_value = 0;
+
+    bool inserted = false;
+    size_t num_elements = 0;
+    std::list<HeightEntry>::iterator oldest = peer_blocks.end();
+    for (auto it = peer_blocks.begin(); it != peer_blocks.end(); ) {
+        if (id == it->m_id) {
+            if (height == it->m_height) {
+                inserted = true;
+            } else {
+                it = peer_blocks.erase(it);
+                continue;
+            }
+        }
+        if (!inserted && it->m_height > height) {
+            peer_blocks.emplace(it, height, id, GetTime());
+            inserted = true;
+        }
+        if (oldest == peer_blocks.end() || oldest->m_time > it->m_time) {
+            oldest = it;
+        }
+        it++;
+        num_elements++;
+    }
+
+    if (!inserted) {
+        peer_blocks.emplace_back(height, id, GetTime());
+        num_elements++;
+    }
+    if (num_elements > max_peer_blocks && oldest != peer_blocks.end()) {
+        peer_blocks.erase(oldest);
+        num_elements--;
+    }
+
+    size_t stop = num_elements / 2;
+    num_elements = 0;
+    for (auto it = peer_blocks.begin(); it != peer_blocks.end(); ++it) {
+        if (num_elements >= stop) {
+            new_value = it->m_height;
+            break;
+        }
+        num_elements++;
+    }
+
+    static const CBlockIndex *pcheckpoint = Checkpoints::GetLastCheckpoint(Params().Checkpoints());
+    if (pcheckpoint) {
+        if (new_value < pcheckpoint->nHeight) {
+            new_value = std::numeric_limits<int>::max();
+        }
+    }
+    nPeerBlocks = new_value;
 }
 
 int GetNumBlocksOfPeers()
 {
-    int nPeerBlocks = g_connman ? g_connman->cPeerBlockCounts.median() : 0;
-    CBlockIndex *pcheckpoint = Checkpoints::GetLastCheckpoint(Params().Checkpoints());
-    if (pcheckpoint) {
-        if (nPeerBlocks < pcheckpoint->nHeight) {
-            return std::numeric_limits<int>::max();
-        }
-    }
     return nPeerBlocks;
 }
 
@@ -2235,9 +2318,7 @@ bool CChainState::ConnectBlock(const CBlock& block, CValidationState& state, CBl
     int64_t nTimeStart = GetTimeMicros();
 
     const Consensus::Params &consensus = Params().GetConsensus();
-    state.fEnforceSmsgFees = block.nTime >= consensus.nPaidSmsgTime;
-    state.fBulletproofsActive = block.nTime >= consensus.bulletproof_time;
-    state.rct_active = block.nTime >= consensus.rct_time;
+    state.SetStateInfo(block.nTime, pindex->nHeight, consensus);
 
     // Check it again in case a previous version let a bad block in
     // NOTE: We don't currently (re-)invoke ContextualCheckBlock() or
@@ -2506,8 +2587,9 @@ bool CChainState::ConnectBlock(const CBlock& block, CValidationState& state, CBl
                     int scriptType = 0;
 
                     if (!ExtractIndexInfo(pScript, scriptType, hashBytes)
-                        || scriptType == 0)
+                        || scriptType == 0) {
                         continue;
+                    }
 
                     uint256 hashAddress;
                     if (scriptType > 0)
@@ -4078,9 +4160,7 @@ bool CheckBlock(const CBlock& block, CValidationState& state, const Consensus::P
     if (!CheckBlockHeader(block, state, consensusParams, fCheckPOW))
         return false;
 
-    state.fEnforceSmsgFees = block.nTime >= consensusParams.nPaidSmsgTime;
-    state.fBulletproofsActive = block.nTime >= consensusParams.bulletproof_time;
-    state.rct_active = block.nTime >= consensusParams.rct_time;
+    state.SetStateInfo(block.nTime, -1, consensusParams);
 
     // Check the merkle root.
     if (fCheckMerkleRoot) {
@@ -4256,6 +4336,7 @@ unsigned int GetNextTargetRequired(const CBlockIndex *pindexLast)
     unsigned int nProofOfWorkLimit;
     int nHeight = pindexLast ? pindexLast->nHeight+1 : 0;
 
+     // ROME
     // if (nHeight < (int)Params().GetLastImportHeight()) {
     //     if (nHeight == 0) {
     //         return arith_uint256("00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff").GetCompact();
@@ -4452,12 +4533,15 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
             }
         } else
         {
-          //assert(false);
-            // Only the genesis block should get here
+          //// ROME
+            // bool fCheckPOW = true; // TODO: pass properly
+            // if (fCheckPOW && !CheckProofOfWork(block.GetHash(), block.nBits, consensusParams, nHeight, Params().GetLastImportHeight()))
+            //     return state.DoS(50, false, REJECT_INVALID, "high-hash", false, "proof of work failed");
+            ////assert(false);
+            //// Only the genesis block should get here
             if (block.GetHash() != consensusParams.hashGenesisBlock) {
                 return state.DoS(50, false, REJECT_INVALID, "bad-hash", false, "Unexpected PoW block found.");
             }
-
             // Enforce rule that the coinbase/ ends with serialized block height
             // genesis block scriptSig size will be different
             CScript expect = CScript() << OP_RETURN << nHeight;
@@ -4748,7 +4832,7 @@ bool RemoveUnreceivedHeader(const uint256 &hash) EXCLUSIVE_LOCKS_REQUIRED(cs_mai
     LogPrintf("Removing %d loose headers from %s.\n", remove_headers.size(), hash.ToString());
 
     for (auto &entry : remove_headers) {
-        LogPrintf("Removing loose header %s.\n", entry->second->GetBlockHash().ToString());
+        LogPrint(BCLog::NET, "Removing loose header %s.\n", entry->second->GetBlockHash().ToString());
         setDirtyBlockIndex.erase(entry->second);
 
         if (pindexBestHeader == entry->second) {
@@ -4829,7 +4913,7 @@ uint32_t GetSmsgDifficulty(uint64_t time, bool verify) EXCLUSIVE_LOCKS_REQUIRED(
     return consensusParams.smsg_min_difficulty - consensusParams.smsg_difficulty_max_delta;
 };
 
-bool CChainState::AcceptBlockHeader(const CBlockHeader& block, CValidationState& state, const CChainParams& chainparams, CBlockIndex** ppindex)
+bool CChainState::AcceptBlockHeader(const CBlockHeader& block, CValidationState& state, const CChainParams& chainparams, CBlockIndex** ppindex, bool fRequested)
 {
     AssertLockHeld(cs_main);
     // Check for duplicate
@@ -4839,9 +4923,9 @@ bool CChainState::AcceptBlockHeader(const CBlockHeader& block, CValidationState&
     if (hash != chainparams.GetConsensus().hashGenesisBlock) {
         if (miSelf != mapBlockIndex.end()) {
             // Block header is already known.
-            if (fDarkpayMode && !IsInitialBlockDownload() && state.nodeId >= 0
+            if (fDarkpayMode && !fRequested && !IsInitialBlockDownload() && state.nodeId >= 0
                 && !IncDuplicateHeaders(state.nodeId)) {
-                return state.DoS(5, error("%s: DoS limits, too many duplicates", __func__), REJECT_INVALID, "dos-limits");
+                Misbehaving(state.nodeId, 5, "Too many duplicates");
             }
 
             pindex = miSelf->second;
@@ -4990,7 +5074,7 @@ bool CChainState::AcceptBlock(const std::shared_ptr<const CBlock>& pblock, CVali
     CBlockIndex *pindexDummy = nullptr;
     CBlockIndex *&pindex = ppindex ? *ppindex : pindexDummy;
 
-    if (!AcceptBlockHeader(block, state, chainparams, &pindex))
+    if (!AcceptBlockHeader(block, state, chainparams, &pindex, fRequested))
         return false;
 
     // Try to process all requested blocks that we don't have, but only

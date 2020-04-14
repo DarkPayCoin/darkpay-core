@@ -6,7 +6,7 @@
 from decimal import Decimal
 
 from test_framework.test_darkpay import DarkpayTestFramework
-from test_framework.util import connect_nodes_bi
+from test_framework.util import connect_nodes_bi, assert_equal
 from test_framework.address import keyhash_to_p2pkh, hex_str_to_bytes
 from test_framework.authproxy import JSONRPCException
 
@@ -56,7 +56,7 @@ class ColdStakingTest(DarkpayTestFramework):
             break
         assert(coldstakingaddr == 'pparszNYZ1cpWxnNiYLgR193XoZMaJBXDkwyeQeQvThTJKjz3sgbR4NjJT3bqAiHBk7Bd5PBRzEqMiHvma9BG6i9qH2iEf4BgYvfr5v3DaXEayNE')
 
-        changeaddress = {'coldstakingaddress':coldstakingaddr}
+        changeaddress = {'coldstakingaddress': coldstakingaddr}
         ro = nodes[0].walletsettings('changeaddress', changeaddress)
         assert(ro['changeaddress']['coldstakingaddress'] == coldstakingaddr)
 
@@ -83,17 +83,18 @@ class ColdStakingTest(DarkpayTestFramework):
             break
         assert(externalChain0 == 'pparszMzzW1247AwkKCH1MqneucXJfDoR3M5KoLsJZJpHkcjayf1xUMwPoTcTfUoQ32ahnkHhjvD2vNiHN5dHL6zmx8vR799JxgCw95APdkwuGm1')
 
-        changeaddress = {'coldstakingaddress':externalChain0}
+        changeaddress = {'coldstakingaddress': externalChain0}
         try:
             ro = nodes[0].walletsettings('changeaddress', changeaddress)
             assert(False), 'Added known address as cold-staking-change-address.'
         except JSONRPCException as e:
             assert('is spendable from this wallet' in e.error['message'])
 
-
+        assert_equal(nodes[0].getcoldstakinginfo()['coin_in_coldstakeable_script'], Decimal(0))
         txid1 = nodes[0].sendtoaddress(addr2_1, 100)
-
         tx = nodes[0].getrawtransaction(txid1, True)
+
+        assert_equal(nodes[0].getcoldstakinginfo()['coin_in_coldstakeable_script'], Decimal('9899.999572'))
 
         hashCoinstake = ''
         hashOther = ''

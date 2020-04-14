@@ -45,7 +45,6 @@ class COutput;
 class CCoinControlEntry;
 class CPubKey;
 class uint256;
-class CHDWallet;
 class UniValue;
 
 namespace interfaces {
@@ -240,6 +239,7 @@ public:
 
     AddressTableModel* getAddressTableModel() const { return addressTableModel; }
 
+    bool isHardwareLinkedWallet() const;
     bool tryCallRpc(const QString &sCommand, UniValue &rv, bool returnError=false) const;
     void warningBox(QString heading, QString msg) const;
 
