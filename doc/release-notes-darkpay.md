@@ -1,4 +1,12 @@
 
+0.18.1.8
+==============
+- Backport Particl fix 
+- Disables anon and blind transactions
+- Staking info improvements
+- Checkpoints and chainwork updated
+
+
 0.18.1.7
 ==============
 - wallet: Fix missing low amount error string.

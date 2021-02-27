@@ -348,6 +348,8 @@ consensus.nSubsidyHalvingInterval = 210000;
         consensus.bulletproof_time = 0x5E02FAE0;        // 1577253600 Date and time (GMT): Wednesday 25 December 2019 06:00:00
         consensus.rct_time = 0x5E02FAE0;                // 1577253600 Date and time (GMT): Wednesday 25 December 2019 06:00:00
         consensus.smsg_difficulty_time = 0x5E02FAE0;    // 1577253600 Date and time (GMT): Wednesday 25 December 2019 06:00:00
+        consensus.exploit_fix_1_time = 0x603CAD10;      // 1614589200 Date and time (GMT): Monday 1 March 2021 09:00:00
+
 
         consensus.smsg_fee_period = 5040;
         consensus.smsg_fee_funding_tx_per_k = 200000;
@@ -562,6 +564,7 @@ public:
         consensus.bulletproof_time = 0x5DE3B402;    // 1575203842000 Date and time (GMT): Sunday 1 December 2019 12:37:22
         consensus.rct_time = 0x5DE3B402; // 1575203842000 Date and time (GMT): Sunday 1 December 2019 12:37:22
         consensus.smsg_difficulty_time = 0x5DE3B402; // 1575203842000 Date and time (GMT): Sunday 1 December 2019 12:37:22
+        consensus.exploit_fix_1_time = 0x603CAD10;  // 1614589200000 Date and time (GMT): Monday 1 March 2021 09:00:00
 
         consensus.smsg_fee_period = 5040;
         consensus.smsg_fee_funding_tx_per_k = 200000;
@@ -704,6 +707,8 @@ public:
         consensus.bulletproof_time = 0;
         consensus.rct_time = 0;
         consensus.smsg_difficulty_time = 0;
+        consensus.exploit_fix_1_time = 0;  // 1614589200000 Date and time (GMT): Monday 1 March 2021 09:00:00
+
 
         consensus.smsg_fee_period = 50;
         consensus.smsg_fee_funding_tx_per_k = 200000;

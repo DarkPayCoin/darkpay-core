@@ -584,7 +584,23 @@ bool Consensus::CheckTxInputs(const CTransaction& tx, CValidationState& state, c
         }
     }
 
-    if ((nCt > 0 || nRingCTOutputs) && nRingCTInputs == 0) {
+    if ((nCt > 0 || nRingCTOutputs > 0) && nRingCTInputs == 0) {
+        if (state.m_exploit_fix_1 &&
+            nRingCTOutputs > 0 &&
+            !gArgs.GetBoolArg("-acceptanontxn", DEFAULT_ACCEPT_ANON_TX)) {
+            return state.DoS(100, false, REJECT_INVALID, "bad-txns-anon-disabled");
+
+        }
+        if (state.m_exploit_fix_1 &&
+            nCt > 0 &&
+            !gArgs.GetBoolArg("-acceptblindtxn", DEFAULT_ACCEPT_BLIND_TX)) {
+            return state.DoS(100, false, REJECT_INVALID, "bad-txns-blind-disabled");
+
+        }
+        if (!state.m_exploit_fix_1 && nCt == 0) {
+            return true;
+        }
+
         nPlainValueOut += nTxFee;
 
         if (!MoneyRange(nPlainValueOut)) {
