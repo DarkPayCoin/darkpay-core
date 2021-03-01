@@ -46,8 +46,8 @@ static const int MAX_URI_LENGTH = 255;
 /* Number of frames in spinner animation */
 #define SPINNER_FRAMES 36
 
-#define QAPP_ORG_NAME "Darkpay"
-#define QAPP_ORG_DOMAIN "darkpay.io"
+#define QAPP_ORG_NAME "Dark"
+#define QAPP_ORG_DOMAIN "darkdot.network"
 #define QAPP_APP_NAME_DEFAULT "Darkpay-Qt"
 #define QAPP_APP_NAME_TESTNET "Darkpay-Qt-testnet"
 #define QAPP_APP_NAME_REGTEST "Darkpay-Qt-regtest"

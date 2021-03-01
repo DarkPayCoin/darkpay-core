@@ -1980,7 +1980,13 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
             return false;
         }
 
-        if (nVersion < MIN_PEER_PROTO_VERSION) {
+
+        //! hf-mandatory
+        const bool hfemergency = GetAdjustedTime() > 1614801600;
+        const int nMinPeerVersion = hfemergency ? PROTOCOL_VERSION : MIN_PEER_PROTO_VERSION;
+
+
+        if (nVersion < nMinPeerVersion) {
             // disconnect from peers older than this proto version
             LogPrint(BCLog::NET, "peer=%d using obsolete version %i; disconnecting\n", pfrom->GetId(), nVersion);
             if (enable_bip61) {
@@ -1990,6 +1996,9 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
             pfrom->fDisconnect = true;
             return false;
         }
+
+
+
 
         if (!vRecv.empty())
             vRecv >> addrFrom >> nNonce;
