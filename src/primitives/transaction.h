@@ -782,7 +782,7 @@ public:
     // bumping the default CURRENT_VERSION at which point both CURRENT_VERSION and
     // MAX_STANDARD_VERSION will be equal.
     static const int32_t MAX_STANDARD_VERSION=2;
-    static const int32_t MAX_STANDARD_DARKPAY_VERSION=0xA0;
+    static const int32_t MAX_STANDARD_DARKPAY_VERSION=0xA1;
 
     // The local variables are made const to prevent unintended modification
     // without updating the cached hash value. However, CTransaction is not
@@ -828,6 +828,10 @@ public:
 
     bool IsDarkpayVersion() const {
         return IsDarkpayTxVersion(nVersion);
+    }
+
+    int GetDarkpayVersion() const {
+        return nVersion & 0xFF;
     }
 
     int GetType() const {
@@ -980,6 +984,10 @@ struct CMutableTransaction
 
     bool IsDarkpayVersion() const {
         return IsDarkpayTxVersion(nVersion);
+    }
+
+    int GetDarkpayVersion() const {
+        return nVersion & 0xFF;
     }
 
     int GetType() const {

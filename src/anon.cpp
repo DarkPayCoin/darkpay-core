@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Darkpay Core developers
+// Copyright (c) 2017-2021 The Darkpay Core developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file license.txt or http://www.opensource.org/licenses/mit-license.php.
 
@@ -26,8 +26,7 @@ bool VerifyMLSAG(const CTransaction &tx, CValidationState &state)
 
     if (state.m_exploit_fix_1 &&
         !gArgs.GetBoolArg("-acceptanontxn", DEFAULT_ACCEPT_ANON_TX)) {
-        return state.DoS(100, error("%s: bad-txns-anon-disabled", __func__), REJECT_INVALID, "bad-txns-anon-disabled");
-
+        return state.DoS(100, error("%s: bad-fee-output", __func__), REJECT_INVALID, "bad-txns-anon-disabled");
     }
 
     int rv;
@@ -59,7 +58,6 @@ bool VerifyMLSAG(const CTransaction &tx, CValidationState &state)
     if (fSplitCommitments) {
         vpInputSplitCommits.reserve(tx.vin.size());
     }
-
     uint256 txhash = tx.GetHash();
 
     for (const auto &txin : tx.vin) {

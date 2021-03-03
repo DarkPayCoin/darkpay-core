@@ -695,6 +695,7 @@ class WalletDarkpayTest(DarkpayTestFramework):
 
         self.log.info('Test darkpay-wallet')
         out = textwrap.dedent('''\
+            Warning: Wallet w_created has no active account, please view the readme.
             Wallet info
             ===========
             Encrypted: no

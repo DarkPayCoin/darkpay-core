@@ -39,4 +39,3 @@ public:
 
 
 #endif // DARKPAY_RCTINDEX_H
-

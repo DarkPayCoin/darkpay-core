@@ -60,6 +60,17 @@ int64_t CChainParams::GetCoinYearReward(int64_t nTime) const
     return nCoinYearReward;
 };
 
+bool CChainParams::PushDevFundSettings(int64_t time_from, DevFundSettings &settings)
+{
+    if (settings.nMinDevStakePercent < 0 or settings.nMinDevStakePercent > 100) {
+        throw std::runtime_error("minstakepercent must be in range [0, 100].");
+    }
+
+    vDevFundSettings.emplace_back(time_from, settings);
+
+    return true;
+};
+
 int64_t CChainParams::GetProofOfStakeReward(const CBlockIndex *pindexPrev, int64_t nFees) const
 {
     int64_t nSubsidy;
@@ -179,7 +190,6 @@ static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits
     const CScript genesisOutputScript = CScript() << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f") << OP_CHECKSIG;
     return CreateGenesisBlock(pszTimestamp, genesisOutputScript, nTime, nNonce, nBits, nVersion, genesisReward);
 }
-
 const std::pair<const char*, CAmount> regTestOutputs[] = {
     std::make_pair("585c2b3914d9ee51f8e710304e386531c3abcc82", 10000 * COIN),
 
@@ -219,10 +229,8 @@ const std::pair<const char*, CAmount> genesisOutputsTestnet[] = {
      std::make_pair("366f9145136da38d9a72a58bf6721ab9ea001e95",10000 * COIN),// seed7 
 
 
-
 };
 const size_t nGenesisOutputsTestnet = sizeof(genesisOutputsTestnet) / sizeof(genesisOutputsTestnet[0]);
-
 
 
 static CBlock CreateGenesisBlockRegTest(uint32_t nTime, uint32_t nNonce, uint32_t nBits)
@@ -278,6 +286,7 @@ static CBlock CreateGenesisBlockTestNet(uint32_t nTime, uint32_t nNonce, uint32_
     }
 
    
+
     CBlock genesis;
     genesis.nTime    = nTime;
     genesis.nBits    = nBits;
@@ -294,7 +303,7 @@ static CBlock CreateGenesisBlockTestNet(uint32_t nTime, uint32_t nNonce, uint32_
 
 static CBlock CreateGenesisBlockMainNet(uint32_t nTime, uint32_t nNonce, uint32_t nBits)
 {
-    const char *pszTimestamp = "Stars, hide your fires; Let not light see my black and deep desires."; // ― William Shakespeare, Macbeth
+     const char *pszTimestamp = "Stars, hide your fires; Let not light see my black and deep desires."; // ― William Shakespeare, Macbeth
 
     CMutableTransaction txNew;
     txNew.nVersion = DARKPAY_TXN_VERSION;
@@ -328,6 +337,8 @@ static CBlock CreateGenesisBlockMainNet(uint32_t nTime, uint32_t nNonce, uint32_
 }
 
 
+
+
 /**
  * Main network
  */
@@ -336,7 +347,7 @@ public:
     CMainParams() {
         strNetworkID = "main";
 
-consensus.nSubsidyHalvingInterval = 210000;
+        consensus.nSubsidyHalvingInterval = 210000;
         consensus.BIP34Height = 0;
         consensus.BIP65Height = 0;
         consensus.BIP66Height = 0;
@@ -344,12 +355,11 @@ consensus.nSubsidyHalvingInterval = 210000;
         consensus.fAllowOpIsCoinstakeWithP2PKH = false;
         consensus.nPaidSmsgTime = 0x5C791EC0;           // 2019-03-01 12:00:00
         consensus.csp2shTime = 0x5C791EC0;              // 2019-03-01 12:00:00
-        consensus.smsg_fee_time = 0x5E02FAE0;           // 1577253600 Date and time (GMT): Wednesday 25 December 2019 06:00:00
-        consensus.bulletproof_time = 0x5E02FAE0;        // 1577253600 Date and time (GMT): Wednesday 25 December 2019 06:00:00
-        consensus.rct_time = 0x5E02FAE0;                // 1577253600 Date and time (GMT): Wednesday 25 December 2019 06:00:00
-        consensus.smsg_difficulty_time = 0x5E02FAE0;    // 1577253600 Date and time (GMT): Wednesday 25 December 2019 06:00:00
-        consensus.exploit_fix_1_time = 0x603FEAC0;      // 1614801600 Date and time (GMT):  Wednesday 3 March 2021 20:00:00
-
+        consensus.smsg_fee_time = 0x5E02FAE0;           // 2019-07-16 12:00:00
+        consensus.bulletproof_time = 0x5E02FAE0;        // 2019-07-16 12:00:00
+        consensus.rct_time = 0x5E02FAE0;                // 2019-07-16 12:00:00
+        consensus.smsg_difficulty_time = 0x5E02FAE0;    // 2019-07-16 12:00:00
+        consensus.exploit_fix_1_time = 1615021200;      // 2021-03-06 09:00:00
 
         consensus.smsg_fee_period = 5040;
         consensus.smsg_fee_funding_tx_per_k = 200000;
@@ -359,8 +369,6 @@ consensus.nSubsidyHalvingInterval = 210000;
         consensus.smsg_difficulty_max_delta = 0xffff;
 
         consensus.powLimit = uint256S("000000000005ffffffffffffffffffffffffffffffffffffffffffffffffffff"); //uint256S("00000ffff0000000000000000000000000000000000000000000000000000000");
-
-
         consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // two weeks
         consensus.nPowTargetSpacing = 10 * 60;
         consensus.fPowAllowMinDifficultyBlocks = false;
@@ -388,7 +396,6 @@ consensus.nSubsidyHalvingInterval = 210000;
         consensus.defaultAssumeValid = uint256S("0xaf9fb968d5f0d51ca79f3328e0f58f1adcb0d59151c9ad9acbae9587a345f03d"); // 435056
 
         consensus.nMinRCTOutputDepth = 12;
-
         /**
          * The message start string is designed to be unlikely to occur in normal data.
          * The characters are rarely used upper ASCII, not valid as UTF-8, and produce
@@ -398,7 +405,7 @@ consensus.nSubsidyHalvingInterval = 210000;
         pchMessageStart[1] = 0x54;
         pchMessageStart[2] = 0x32;
         pchMessageStart[3] = 0x4b;
-        nDefaultPort = 16667;
+        nDefaultPort = 56667;
         nBIP44ID = 0x8000002C;
 
         nModifierInterval = 10 * 60;    // 10 minutes
@@ -419,7 +426,6 @@ consensus.nSubsidyHalvingInterval = 210000;
         assert(consensus.hashGenesisBlock == uint256S("0x0000907a178385c9eef184e3208d4d0cd470440aed2ae5571c9b1ff11dbfb475"));
         assert(genesis.hashMerkleRoot == uint256S("0x5e3576af3d8792f596e99decf47650ff427ab5bfeab2da9d315dddff5a7a5db7"));
         assert(genesis.hashWitnessMerkleRoot == uint256S("0xee4d2cba0ad2feda59cd86bbf0b9eb105b71a729f85526909005559581efb391"));
-
 
         // Note that of those which support the service bits prefix, most only support a subset of
         // possible options.
@@ -557,14 +563,14 @@ public:
         consensus.BIP65Height = 0;
         consensus.BIP66Height = 0;
         consensus.OpIsCoinstakeTime = 0;
-        consensus.fAllowOpIsCoinstakeWithP2PKH = false; // TODO: clear for next testnet
+        consensus.fAllowOpIsCoinstakeWithP2PKH = false;
         consensus.nPaidSmsgTime = 0x5C791EC0;       // 2019-03-01 12:00:00
         consensus.csp2shTime = 0x5C791EC0;          // 2019-03-01 12:00:00
         consensus.smsg_fee_time = 0x5DE3B402;       // 1575203842000 Date and time (GMT): Sunday 1 December 2019 12:37:22
         consensus.bulletproof_time = 0x5DE3B402;    // 1575203842000 Date and time (GMT): Sunday 1 December 2019 12:37:22
         consensus.rct_time = 0x5DE3B402; // 1575203842000 Date and time (GMT): Sunday 1 December 2019 12:37:22
         consensus.smsg_difficulty_time = 0x5DE3B402; // 1575203842000 Date and time (GMT): Sunday 1 December 2019 12:37:22
-        consensus.exploit_fix_1_time = 0x603FEAC0;  // 1614801600000 Date and time (GMT):  Wednesday 3 March 2021 20:00:00
+        consensus.exploit_fix_1_time = 1615021200;      // 2021-02-25 16:00:00
 
         consensus.smsg_fee_period = 5040;
         consensus.smsg_fee_funding_tx_per_k = 200000;
@@ -635,8 +641,8 @@ public:
         vSeeds.emplace_back("192.168.0.3");
         vSeeds.emplace_back("192.168.0.174");
 
-
         vDevFundSettings.push_back(std::make_pair(0, DevFundSettings("dpPEidKSFRXj6jRj3cM2K2Ntw2TzusSDbi", 10, 60)));
+
 
         base58Prefixes[PUBKEY_ADDRESS]     = {0x5b}; // d
         base58Prefixes[SCRIPT_ADDRESS]     = {0x7a};
@@ -707,8 +713,8 @@ public:
         consensus.bulletproof_time = 0;
         consensus.rct_time = 0;
         consensus.smsg_difficulty_time = 0;
-        consensus.exploit_fix_1_time = 0;  // 1614801600000 Date and time (GMT):  Wednesday 3 March 2021 20:00:00
 
+        consensus.clamp_tx_version_time = 0;
 
         consensus.smsg_fee_period = 50;
         consensus.smsg_fee_funding_tx_per_k = 200000;
@@ -781,11 +787,11 @@ public:
 
         checkpointData = {
             {
-              //  {0, uint256S("0f9188f13cb7b2c71f2a335e3a4fc328bf5beb436012afca590b1a11466e2206")},
+                //{0, uint256S("0f9188f13cb7b2c71f2a335e3a4fc328bf5beb436012afca590b1a11466e2206")},
             }
         };
 
-        base58Prefixes[PUBKEY_ADDRESS]     = {0x76}; // d
+                base58Prefixes[PUBKEY_ADDRESS]     = {0x76}; // d
         base58Prefixes[SCRIPT_ADDRESS]     = {0x7a};
         base58Prefixes[PUBKEY_ADDRESS_256] = {0x77};
         base58Prefixes[SCRIPT_ADDRESS_256] = {0x7b};

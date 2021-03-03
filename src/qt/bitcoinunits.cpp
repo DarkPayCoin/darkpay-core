@@ -44,7 +44,7 @@ QString BitcoinUnits::longName(int unit)
     {
     case BTC: return QString("D4RK");
     case mBTC: return QString("mD4RK");
-    case uBTC: return QString::fromUtf8("μPART (d4rks)");
+    case uBTC: return QString::fromUtf8("μD4RK (D4RKs)");
     case SAT: return QString("Satoshi (sat)");
     default: return QString("???");
     }
@@ -54,7 +54,7 @@ QString BitcoinUnits::shortName(int unit)
 {
     switch(unit)
     {
-    case uBTC: return QString::fromUtf8("d4rks");
+    case uBTC: return QString::fromUtf8("D4RKs");
     case SAT: return QString("sat");
     default:   return longName(unit);
     }
@@ -66,7 +66,7 @@ QString BitcoinUnits::description(int unit)
     {
     case BTC: return QString("Darkpays");
     case mBTC: return QString("Milli-Darkpays (1 / 1" THIN_SP_UTF8 "000)");
-    case uBTC: return QString("Micro-Darkpays (parts) (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
+    case uBTC: return QString("Micro-Darkpays (D4RKs) (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
     case SAT: return QString("Satoshi (sat) (1 / 100" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
     default: return QString("???");
     }
@@ -160,18 +160,18 @@ bool BitcoinUnits::parse(int unit, const QString &value, CAmount *val_out)
     int num_decimals = decimals(unit);
 
     // Ignore spaces and thin spaces when parsing
-    QStringList parts = removeSpaces(value).split(".");
+    QStringList D4RKs = removeSpaces(value).split(".");
 
-    if(parts.size() > 2)
+    if(D4RKs.size() > 2)
     {
         return false; // More than one dot
     }
-    QString whole = parts[0];
+    QString whole = D4RKs[0];
     QString decimals;
 
-    if(parts.size() > 1)
+    if(D4RKs.size() > 1)
     {
-        decimals = parts[1];
+        decimals = D4RKs[1];
     }
     if(decimals.size() > num_decimals)
     {

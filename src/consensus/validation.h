@@ -14,8 +14,6 @@
 
 #include <consensus/params.h>
 
-extern int64_t EXPLOIT_FIX_HF1_TIME; // TODO: Remove
-
 /** "reject" message codes */
 static const unsigned char REJECT_MALFORMED = 0x01;
 static const unsigned char REJECT_INVALID = 0x10;
@@ -102,8 +100,10 @@ public:
     bool fHasAnonOutput = false; // per tx
     bool fHasAnonInput = false; // per tx
     bool fIncDataOutputs = false; // per block
-    bool m_exploit_fix_1 = false;
     int m_spend_height = 0;
+
+    bool m_clamp_tx_version = false;
+    bool m_exploit_fix_1 = false;
 
     void SetStateInfo(int64_t time, int spend_height, const Consensus::Params& consensusParams)
     {
@@ -111,10 +111,11 @@ public:
         fBulletproofsActive = time >= consensusParams.bulletproof_time;
         rct_active = time >= consensusParams.rct_time;
         fIncDataOutputs = time >= consensusParams.extra_dataoutput_time;
-        m_exploit_fix_1 = time >= EXPLOIT_FIX_HF1_TIME; // TODO: consensusParams.exploit_fix_1_time;
         if (spend_height > -1) {
             m_spend_height = spend_height; // Pass through connectblock->checkblock
         }
+        m_clamp_tx_version = time >= consensusParams.clamp_tx_version_time;
+        m_exploit_fix_1 = time >= consensusParams.exploit_fix_1_time;
     }
 };
 

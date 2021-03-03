@@ -11,6 +11,7 @@
 #include <script/standard.h>
 #include <uint256.h>
 
+extern bool fDarkpayMode;
 typedef std::vector<unsigned char> valtype;
 
 MutableTransactionSignatureCreator::MutableTransactionSignatureCreator(const CMutableTransaction* txToIn, unsigned int nInIn, const std::vector<uint8_t>& amountIn, int nHashTypeIn) : txTo(txToIn), nIn(nInIn), nHashType(nHashTypeIn), amount(amountIn), checker(txTo, nIn, amountIn) {}
@@ -264,8 +265,10 @@ bool ProduceSignature(const SigningProvider& provider, const BaseSignatureCreato
         result.push_back(std::vector<unsigned char>(subscript.begin(), subscript.end()));
     }
 
-    if (creator.IsDarkpayVersion() && !sigdata.witness) {
-        sigdata.scriptWitness.stack = result;
+    if (creator.IsDarkpayVersion()) {
+        if (!sigdata.witness) {
+            sigdata.scriptWitness.stack = result;
+        }
     } else  {
         sigdata.scriptSig = PushAll(result);
     }
@@ -540,9 +543,9 @@ bool IsSolvable(const SigningProvider& provider, const CScript& script)
     // Make sure that STANDARD_SCRIPT_VERIFY_FLAGS includes SCRIPT_VERIFY_WITNESS_PUBKEYTYPE, the most
     // important property this function is designed to test for.
     static_assert(STANDARD_SCRIPT_VERIFY_FLAGS & SCRIPT_VERIFY_WITNESS_PUBKEYTYPE, "IsSolvable requires standard script flags to include WITNESS_PUBKEYTYPE");
-    if (ProduceSignature(provider, DUMMY_SIGNATURE_CREATOR, script, sigs)) {
+    if (ProduceSignature(provider, fDarkpayMode ? DUMMY_SIGNATURE_CREATOR_DARKPAY : DUMMY_SIGNATURE_CREATOR, script, sigs)) {
         // VerifyScript check is just defensive, and should never fail.
-        bool verified = VerifyScript(sigs.scriptSig, script, &sigs.scriptWitness, STANDARD_SCRIPT_VERIFY_FLAGS, DUMMY_CHECKER);
+        bool verified = VerifyScript(sigs.scriptSig, script, &sigs.scriptWitness, STANDARD_SCRIPT_VERIFY_FLAGS, fDarkpayMode ? DUMMY_CHECKER_DARKPAY : DUMMY_CHECKER);
         assert(verified);
         return true;
     }

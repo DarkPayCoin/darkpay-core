@@ -3,8 +3,8 @@
 
 
 void AddImportHashesMain(std::vector<CImportedCoinbaseTxn> &vImportedCoinbaseTxns)
-{    return;
-    
+{   
+    return;
 };
 
 void AddImportHashesTest(std::vector<CImportedCoinbaseTxn> &vImportedCoinbaseTxns)

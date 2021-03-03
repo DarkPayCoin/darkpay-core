@@ -330,6 +330,10 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fChe
 
     if (tx.IsDarkpayVersion()) {
         const Consensus::Params& consensusParams = Params().GetConsensus();
+        if (state.m_clamp_tx_version && tx.GetDarkpayVersion() != DARKPAY_TXN_VERSION) {
+            return state.DoS(100, false, REJECT_INVALID, "bad-txn-version");
+        }
+
         if (tx.vpout.empty()) {
             return state.DoS(10, false, REJECT_INVALID, "bad-txns-vpout-empty");
         }
@@ -520,7 +524,7 @@ bool Consensus::CheckTxInputs(const CTransaction& tx, CValidationState& state, c
     if (is_darkpay_tx) {
         if (!tx.IsCoinStake()) {
             // Tally transaction fees
-            if (nCt > 0 || (nRingCTInputs + nRingCTOutputs)  > 0) {
+            if (nCt > 0 || nRingCTOutputs > 0 || nRingCTInputs > 0) {
                 if (!tx.GetCTFee(nTxFee)) {
                     return state.DoS(100, error("%s: bad-fee-output", __func__),
                         REJECT_INVALID, "bad-fee-output");
@@ -562,7 +566,7 @@ bool Consensus::CheckTxInputs(const CTransaction& tx, CValidationState& state, c
         } else {
             // Return stake reward in nTxFee
             nTxFee = nPlainValueOut - nValueIn;
-            if (nCt > 0 || (nRingCTInputs + nRingCTOutputs) > 0) { 
+            if (nCt > 0 || nRingCTOutputs > 0 || nRingCTInputs > 0) {
                 return state.DoS(100, error("ConnectBlock(): non-standard elements in coinstake"),
                      REJECT_INVALID, "bad-coinstake-outputs");
             }
@@ -589,13 +593,11 @@ bool Consensus::CheckTxInputs(const CTransaction& tx, CValidationState& state, c
             nRingCTOutputs > 0 &&
             !gArgs.GetBoolArg("-acceptanontxn", DEFAULT_ACCEPT_ANON_TX)) {
             return state.DoS(100, false, REJECT_INVALID, "bad-txns-anon-disabled");
-
         }
         if (state.m_exploit_fix_1 &&
             nCt > 0 &&
             !gArgs.GetBoolArg("-acceptblindtxn", DEFAULT_ACCEPT_BLIND_TX)) {
             return state.DoS(100, false, REJECT_INVALID, "bad-txns-blind-disabled");
-
         }
         if (!state.m_exploit_fix_1 && nCt == 0) {
             return true;

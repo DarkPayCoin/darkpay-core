@@ -76,6 +76,8 @@ struct Params {
     uint32_t smsg_difficulty_time;
     /** Time of fork to activate more data outputs for blind and anon txns */
     uint32_t extra_dataoutput_time = 0xffffffff;
+    /** Time of fork to raise tx version, change sighash, moneysupply and dev fund dest */
+    uint32_t clamp_tx_version_time = 0xffffffff;
     /** Exploit fix 1 */
     uint32_t exploit_fix_1_time = 0;
 

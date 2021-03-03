@@ -3959,10 +3959,7 @@ static UniValue getcoldstakinginfo(const JSONRPCRequest &request)
             "  \"coin_in_stakeable_script\"         (numeric) Current amount of coin in scripts stakeable by this wallet.\n"
             "  \"coin_in_coldstakeable_script\"     (numeric) Current amount of coin in scripts stakeable by the wallet with the coldstakingaddress.\n"
             "  \"percent_in_coldstakeable_script\"  (numeric) Percentage of coin in coldstakeable scripts.\n"
-            "  \"currently_staking\"                (numeric) Amount of coin estimated to be currently hot staking by this wallet.\n"
-            "  \"currently_coldstaking\"            (numeric) Amount of coin estimated to be currently cold staking by this wallet.\n"
-            "  \"hotstake_expectedtime\": xxxxxxx   (numeric) estimated time for next hot stake\n"
-            "  \"coldstake_expectedtime\": xxxxxxx  (numeric) estimated time for next cold stake\n"
+            "  \"currently_staking\"                (numeric) Amount of coin estimated to be currently staking by this wallet.\n"
             "}\n"
                 },
                 RPCExamples{
@@ -4002,8 +3999,7 @@ static UniValue getcoldstakinginfo(const JSONRPCRequest &request)
 
     CAmount nStakeable = 0;
     CAmount nColdStakeable = 0;
-    CAmount nWalletHotStaking = 0;
-    CAmount nWalletColdStaking = 0;
+    CAmount nWalletStaking = 0;
 
     CKeyID keyID;
     CScript coinstakePath;
@@ -4025,9 +4021,6 @@ static UniValue getcoldstakinginfo(const JSONRPCRequest &request)
                     continue;
                 }
             }
-             if (out.nDepth >= nRequiredDepth) {
-                nWalletColdStaking += nValue;
-            }
             nColdStakeable += nValue;
         } else {
             continue;
@@ -4041,7 +4034,7 @@ static UniValue getcoldstakinginfo(const JSONRPCRequest &request)
             continue;
         }
         if (pwallet->HaveKey(keyID)) {
-            nWalletHotStaking += nValue;
+            nWalletStaking += nValue;
         }
     }
 
@@ -4061,10 +4054,6 @@ static UniValue getcoldstakinginfo(const JSONRPCRequest &request)
             fEnabled = true;
         }
     }
-    bool fColdStaking = nColdStakeable > 0;
-    bool fHotStaking = nWalletHotStaking > 0;
-    uint64_t nExpectedTime = fColdStaking ? (Params().GetTargetSpacing() * GetPoSKernelPS() / nColdStakeable) : 0;
-    uint64_t nHotExpectedTime = fHotStaking ? (Params().GetTargetSpacing() * GetPoSKernelPS() / fHotStaking) : 0;
 
     obj.pushKV("enabled", fEnabled);
     if (addrColdStaking.IsValid(CChainParams::EXT_PUBLIC_KEY)) {
@@ -4080,10 +4069,7 @@ static UniValue getcoldstakinginfo(const JSONRPCRequest &request)
     CAmount nTotal = nColdStakeable + nStakeable;
     obj.pushKV("percent_in_coldstakeable_script",
         UniValue(UniValue::VNUM, strprintf("%.2f", nTotal == 0 ? 0.0 : (nColdStakeable * 10000 / nTotal) / 100.0)));
-    obj.pushKV("currently_staking", ValueFromAmount(nWalletHotStaking));
-    obj.pushKV("currently_coldstaking", ValueFromAmount(nWalletColdStaking));
-    obj.pushKV("hotstake_expectedtime", nHotExpectedTime);
-    obj.pushKV("coldstake_expectedtime", nExpectedTime);
+    obj.pushKV("currently_staking", ValueFromAmount(nWalletStaking));
 
     return obj;
 };
@@ -4625,6 +4611,16 @@ void ReadCoinControlOptions(const UniValue &obj, CHDWallet *pwallet, CCoinContro
 
 static UniValue SendToInner(const JSONRPCRequest &request, OutputTypes typeIn, OutputTypes typeOut)
 {
+    if (!gArgs.GetBoolArg("-acceptanontxn", DEFAULT_ACCEPT_ANON_TX) &&
+        (typeIn == OUTPUT_RINGCT || typeOut == OUTPUT_RINGCT)) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Disabled output type.");
+    }
+
+    if (!gArgs.GetBoolArg("-acceptblindtxn", DEFAULT_ACCEPT_BLIND_TX) &&
+        (typeIn == OUTPUT_CT || typeOut == OUTPUT_CT)) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Disabled output type.");
+    }
+
     std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
     CHDWallet *const pwallet = GetDarkpayWallet(wallet.get());
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
@@ -5079,7 +5075,6 @@ static UniValue sendparttoanon(const JSONRPCRequest &request)
     return SendToInner(request, OUTPUT_STANDARD, OUTPUT_RINGCT);
 };
 
-
 static UniValue sendblindtopart(const JSONRPCRequest &request)
 {
     std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
@@ -5233,18 +5228,6 @@ UniValue sendtypeto(const JSONRPCRequest &request)
     if (typeOut == OUTPUT_NULL) {
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Unknown output type.");
     }
-
-    if (!gArgs.GetBoolArg("-acceptanontxn", DEFAULT_ACCEPT_ANON_TX) &&
-        (typeIn == OUTPUT_RINGCT || typeOut == OUTPUT_RINGCT)) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "Disabled output type.");
-    }
-
-    if (!gArgs.GetBoolArg("-acceptblindtxn", DEFAULT_ACCEPT_BLIND_TX) &&
-        (typeIn == OUTPUT_CT || typeOut == OUTPUT_CT)) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "Disabled output type.");
-    }
-
-
 
     JSONRPCRequest req = request;
     req.params.erase(0, 2);

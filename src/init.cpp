@@ -684,9 +684,9 @@ void SetupServerArgs()
 
     gArgs.AddArg("-displaylocaltime", "Display human readable time strings in local timezone (default: false)", false, OptionsCategory::RPC);
     gArgs.AddArg("-displayutctime", "Display human readable time strings in UTC (default: false)", false, OptionsCategory::RPC);
-     gArgs.AddArg("-acceptanontxn", strprintf("Relay and mine \"anon\" transactions (default: %u)", DEFAULT_ACCEPT_ANON_TX), false, OptionsCategory::RPC);
+
+    gArgs.AddArg("-acceptanontxn", strprintf("Relay and mine \"anon\" transactions (default: %u)", DEFAULT_ACCEPT_ANON_TX), false, OptionsCategory::RPC);
     gArgs.AddArg("-acceptblindtxn", strprintf("Relay and mine \"anon\" transactions (default: %u)", DEFAULT_ACCEPT_BLIND_TX), false, OptionsCategory::RPC);
-    gArgs.AddArg("-hf1time", strprintf("Mandatory hardfork (default: %u)", 1614801600), false, OptionsCategory::RPC); // TODO: Remove
 
 #if HAVE_DECL_DAEMON
     gArgs.AddArg("-daemon", "Run in the background as a daemon and accept commands", false, OptionsCategory::OPTIONS);
@@ -703,7 +703,7 @@ void SetupServerArgs()
 std::string LicenseInfo()
 {
     const std::string URL_SOURCE_CODE = "<https://github.com/DarkPayCoin/darkpay-core>";
-    const std::string URL_WEBSITE = "<https://darkdot.network/>";
+    const std::string URL_WEBSITE = "<https://darkpay.io/>";
 
     return CopyrightHolders(_("Copyright (C)")) + "\n" +
            "\n" +
@@ -1335,9 +1335,6 @@ bool AppInitParameterInteraction()
         return InitError("unknown rpcserialversion requested.");
 
     nMaxTipAge = gArgs.GetArg("-maxtipage", DEFAULT_MAX_TIP_AGE);
-
-     // Remove
-    EXPLOIT_FIX_HF1_TIME = gArgs.GetArg("-hf1time", gArgs.GetChainName() == CBaseChainParams::REGTEST ? 0 : 1614801600);
 
     fEnableReplacement = gArgs.GetBoolArg("-mempoolreplacement", DEFAULT_ENABLE_REPLACEMENT);
     if ((!fEnableReplacement) && gArgs.IsArgSet("-mempoolreplacement")) {

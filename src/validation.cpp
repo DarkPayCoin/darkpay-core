@@ -337,8 +337,6 @@ std::unique_ptr<CCoinsViewDB> pcoinsdbview;
 std::unique_ptr<CCoinsViewCache> pcoinsTip;
 std::unique_ptr<CBlockTreeDB> pblocktree;
 
-int64_t EXPLOIT_FIX_HF1_TIME = 0; // TODO: Remove
-
 // See definition for documentation
 //static bool FlushStateToDisk(const CChainParams& chainParams, CValidationState &state, FlushStateMode mode, int nManualPruneHeight=0);
 static void FindFilesToPruneManual(std::set<int>& setFilesToPrune, int nManualPruneHeight);
@@ -578,8 +576,9 @@ static bool CheckInputsFromMempoolAndCache(const CTransaction& tx, CValidationSt
 
     assert(!tx.IsCoinBase());
     for (const CTxIn& txin : tx.vin) {
-        if (txin.IsAnonInput())
+        if (txin.IsAnonInput()) {
             continue;
+        }
         const Coin& coin = view.AccessCoin(txin.prevout);
 
         // At this point we haven't actually checked if the coins are all
@@ -1215,7 +1214,7 @@ bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos, const Consensus:
 
     // Check the header
     if (fDarkpayMode) {
-        // ROME only CheckProofOfWork for genesis blocks
+       // ROME only CheckProofOfWork for genesis blocks
       /*
         if (block.hashPrevBlock.IsNull()
             && !CheckProofOfWork(block.GetHash(), block.nBits, consensusParams, 0, Params().GetLastImportHeight())) {
@@ -2540,7 +2539,7 @@ bool CChainState::ConnectBlock(const CBlock& block, CValidationState& state, CBl
             }
             if (tx.IsCoinStake())
             {
-                // Stake reward is passed back in txfee (nPlainValueOut - nPlainValueIn)
+                // Block reward is passed back in txfee (nPlainValueOut - nPlainValueIn)
                 nStakeReward += txfee;
                 nMoneyCreated += nStakeReward;
             } else
@@ -2743,6 +2742,9 @@ bool CChainState::ConnectBlock(const CBlock& block, CValidationState& state, CBl
         return state.DoS(100, error("%s: CheckQueue failed", __func__), REJECT_INVALID, "block-validation-failed");
 
     if (fDarkpayMode) {
+        if (block.nTime >= consensus.clamp_tx_version_time) {
+            nMoneyCreated -= nFees;
+        }
         if (block.IsProofOfStake()) { // Only the genesis block isn't proof of stake
             CTransactionRef txCoinstake = block.vtx[0];
             CTransactionRef txPrevCoinstake = nullptr;
@@ -4352,7 +4354,7 @@ unsigned int GetNextTargetRequired(const CBlockIndex *pindexLast)
     //     nProofOfWorkLimit = bnProofOfWorkLimit.GetCompact();
     // } else {
         bnProofOfWorkLimit = UintToArith256(consensus.powLimit);
-         nProofOfWorkLimit = bnProofOfWorkLimit.GetCompact();
+        nProofOfWorkLimit = bnProofOfWorkLimit.GetCompact();
     // }
 
     if (pindexLast == nullptr)
@@ -4554,6 +4556,7 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
                 return state.DoS(100, false, REJECT_INVALID, "bad-cb-height", false, "block height mismatch in coinbase");
             }
         };
+
 
         if (nHeight > 0 && !block.vtx[0]->IsCoinStake()) // only genesis block can start with coinbase
             return state.DoS(100, false, REJECT_INVALID, "bad-cs-missing", false, "first tx is not coinstake");

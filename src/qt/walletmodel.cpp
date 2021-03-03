@@ -106,7 +106,7 @@ void WalletModel::updateReservedBalanceChanged(CAmount nValue)
 
 void WalletModel::startRescan()
 {
-    std::thread t(CallRPCVoid, "rescanblockchain 0", m_wallet->getWalletName());
+    std::thread t(CallRPCVoid, "rescanblockchain 0", m_wallet->getWalletName(), true);
     t.detach();
 };
 
@@ -501,7 +501,7 @@ void WalletModel::subscribeToCoreSignals()
     m_handler_transaction_changed = m_wallet->handleTransactionChanged(std::bind(NotifyTransactionChanged, this, std::placeholders::_1, std::placeholders::_2));
     m_handler_show_progress = m_wallet->handleShowProgress(std::bind(ShowProgress, this, std::placeholders::_1, std::placeholders::_2));
     m_handler_watch_only_changed = m_wallet->handleWatchOnlyChanged(std::bind(NotifyWatchonlyChanged, this, std::placeholders::_1));
-    m_handler_can_get_addrs_changed = m_wallet->handleCanGetAddressesChanged(boost::bind(NotifyCanGetAddressesChanged, this));
+    m_handler_can_get_addrs_changed = m_wallet->handleCanGetAddressesChanged(std::bind(NotifyCanGetAddressesChanged, this));
 
     if (m_wallet->IsDarkpayWallet()) {
         m_handler_reserved_balance_changed = m_wallet->handleReservedBalanceChanged(std::bind(NotifyReservedBalanceChanged, this, std::placeholders::_1));
@@ -575,7 +575,7 @@ bool WalletModel::isHardwareLinkedWallet() const {
 bool WalletModel::tryCallRpc(const QString &sCommand, UniValue &rv, bool returnError) const
 {
     try {
-        rv = CallRPC(sCommand.toStdString(), m_wallet->getWalletName());
+        rv = CallRPC(sCommand.toStdString(), m_wallet->getWalletName(), true);
     } catch (UniValue& objError) {
         if (returnError) {
             rv = objError;

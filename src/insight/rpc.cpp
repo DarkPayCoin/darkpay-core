@@ -134,9 +134,9 @@ UniValue getaddressmempool(const JSONRPCRequest& request)
             "]\n"
                 },
                 RPCExamples{
-            HelpExampleCli("getaddressmempool", "'{\"addresses\": [\"Pb7FLL3DyaAVP2eGfRiEkj4U8ZJ3RHLY9g\"]}'") +
+            HelpExampleCli("getaddressmempool", "'{\"addresses\": [\"Db7FLL3DyaAVP2eGfRiEkj4U8ZJ3RHLY9g\"]}'") +
             "\nAs a JSON-RPC call\n"
-            + HelpExampleRpc("getaddressmempool", "{\"addresses\": [\"Pb7FLL3DyaAVP2eGfRiEkj4U8ZJ3RHLY9g\"]}")
+            + HelpExampleRpc("getaddressmempool", "{\"addresses\": [\"Db7FLL3DyaAVP2eGfRiEkj4U8ZJ3RHLY9g\"]}")
                 },
         }.ToString());
 
@@ -209,9 +209,9 @@ UniValue getaddressutxos(const JSONRPCRequest& request)
             "]\n"
                 },
                 RPCExamples{
-            HelpExampleCli("getaddressutxos", "'{\"addresses\": [\"Pb7FLL3DyaAVP2eGfRiEkj4U8ZJ3RHLY9g\"]}'") +
+            HelpExampleCli("getaddressutxos", "'{\"addresses\": [\"Db7FLL3DyaAVP2eGfRiEkj4U8ZJ3RHLY9g\"]}'") +
             "\nAs a JSON-RPC call\n"
-            + HelpExampleRpc("getaddressutxos", "{\"addresses\": [\"Pb7FLL3DyaAVP2eGfRiEkj4U8ZJ3RHLY9g\"]}")
+            + HelpExampleRpc("getaddressutxos", "{\"addresses\": [\"Db7FLL3DyaAVP2eGfRiEkj4U8ZJ3RHLY9g\"]}")
                 },
         }.ToString());
 
@@ -300,9 +300,9 @@ UniValue getaddressdeltas(const JSONRPCRequest& request)
             "]\n"
                 },
                 RPCExamples{
-            HelpExampleCli("getaddressdeltas", "'{\"addresses\": [\"Pb7FLL3DyaAVP2eGfRiEkj4U8ZJ3RHLY9g\"]}'") +
+            HelpExampleCli("getaddressdeltas", "'{\"addresses\": [\"Db7FLL3DyaAVP2eGfRiEkj4U8ZJ3RHLY9g\"]}'") +
             "\nAs a JSON-RPC call\n"
-            + HelpExampleRpc("getaddressdeltas", "{\"addresses\": [\"Pb7FLL3DyaAVP2eGfRiEkj4U8ZJ3RHLY9g\"]}")
+            + HelpExampleRpc("getaddressdeltas", "{\"addresses\": [\"Db7FLL3DyaAVP2eGfRiEkj4U8ZJ3RHLY9g\"]}")
                 },
         }.ToString());
 
@@ -422,9 +422,9 @@ UniValue getaddressbalance(const JSONRPCRequest& request)
             "}\n"
                 },
                 RPCExamples{
-            HelpExampleCli("getaddressbalance", "'{\"addresses\": [\"Pb7FLL3DyaAVP2eGfRiEkj4U8ZJ3RHLY9g\"]}'") +
+            HelpExampleCli("getaddressbalance", "'{\"addresses\": [\"Db7FLL3DyaAVP2eGfRiEkj4U8ZJ3RHLY9g\"]}'") +
             "\nAs a JSON-RPC call\n"
-            + HelpExampleRpc("getaddressbalance", "{\"addresses\": [\"Pb7FLL3DyaAVP2eGfRiEkj4U8ZJ3RHLY9g\"]}")
+            + HelpExampleRpc("getaddressbalance", "{\"addresses\": [\"Db7FLL3DyaAVP2eGfRiEkj4U8ZJ3RHLY9g\"]}")
                 },
         }.ToString());
 
@@ -485,9 +485,9 @@ UniValue getaddresstxids(const JSONRPCRequest& request)
             "]\n"
                 },
                 RPCExamples{
-            HelpExampleCli("getaddresstxids", "'{\"addresses\": [\"Pb7FLL3DyaAVP2eGfRiEkj4U8ZJ3RHLY9g\"]}'") +
+            HelpExampleCli("getaddresstxids", "'{\"addresses\": [\"Db7FLL3DyaAVP2eGfRiEkj4U8ZJ3RHLY9g\"]}'") +
             "\nAs a JSON-RPC call\n"
-            + HelpExampleRpc("getaddresstxids", "{\"addresses\": [\"Pb7FLL3DyaAVP2eGfRiEkj4U8ZJ3RHLY9g\"]}")
+            + HelpExampleRpc("getaddresstxids", "{\"addresses\": [\"Db7FLL3DyaAVP2eGfRiEkj4U8ZJ3RHLY9g\"]}")
                 },
         }.ToString());
 
@@ -1162,9 +1162,9 @@ UniValue listcoldstakeunspent(const JSONRPCRequest& request)
             "]\n"
                 },
                 RPCExamples{
-            HelpExampleCli("listcoldstakeunspent", "\"Pb7FLL3DyaAVP2eGfRiEkj4U8ZJ3RHLY9g\" 1000") +
+            HelpExampleCli("listcoldstakeunspent", "\"Db7FLL3DyaAVP2eGfRiEkj4U8ZJ3RHLY9g\" 1000") +
             "\nAs a JSON-RPC call\n"
-            + HelpExampleRpc("listcoldstakeunspent", "\"Pb7FLL3DyaAVP2eGfRiEkj4U8ZJ3RHLY9g\", 1000")
+            + HelpExampleRpc("listcoldstakeunspent", "\"Db7FLL3DyaAVP2eGfRiEkj4U8ZJ3RHLY9g\", 1000")
                 },
             }.ToString());
 

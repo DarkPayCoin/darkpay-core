@@ -32,7 +32,7 @@ const std::function<std::string(const char*)> G_TRANSLATION_FUN = nullptr;
  *
  * \section intro_sec Introduction
  *
- * This is the developer documentation of the reference client for an experimental new digital currency called Dark (https://www.darkdot.network/),
+ * This is the developer documentation of the reference client for an experimental new digital currency called Darkpay (https://www.darkpay.io/),
  * which enables instant payments to anyone, anywhere in the world. Darkpay uses peer-to-peer technology to operate
  * with no central authority: managing transactions and issuing money are carried out collectively by the network.
  *

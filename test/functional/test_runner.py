@@ -231,10 +231,12 @@ DARKPAY_SCRIPTS = [
     'rpc_part_atomicswap.py',
     'rpc_part_signmessage.py',
     'wallet_part_segwit_scripts.py',
+    'p2p_part_disable_types.py',
 ]
 
 DARKPAY_SCRIPTS_EXT = [
     'feature_part_smsg_multiwallet.py',
+    'feature_part_dev_fund.py',
 ]
 
 INSIGHT_SCRIPTS = [

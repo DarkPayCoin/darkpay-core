@@ -167,115 +167,9 @@ void CHDWallet::AddOptions()
     return;
 };
 
-bool CHDWallet::Initialise()
+bool CHDWallet::ShouldRescan()
 {
-    // Continue from CHDWallet::LoadWallet
-
-    PostProcessUnloadSpent();
-
-    LockAnnotation lock(::cs_main); // Temporary, for FindForkInGlobalIndex below. Removed in upcoming commit.
-    auto locked_chain = chain().lock();
-    LOCK(cs_wallet);
-
-    {
-        CHDWalletDB wdb(GetDBHandle());
-
-        LoadAddressBook(&wdb);
-        LoadTxRecords(&wdb);
-        LoadVoteTokens(&wdb);
-    }
-
-    int rescan_height = 0;
-    if (!gArgs.GetBoolArg("-rescan", false))
-    {
-        WalletBatch batch(*database);
-        CBlockLocator locator;
-        if (batch.ReadBestBlock(locator)) {
-            if (const Optional<int> fork_height = locked_chain->findLocatorFork(locator)) {
-                rescan_height = *fork_height;
-            }
-        }
-    }
-
-    const Optional<int> tip_height = locked_chain->getHeight();
-    if (tip_height) {
-        m_last_block_processed = locked_chain->getBlockHash(*tip_height);
-    } else {
-        m_last_block_processed.SetNull();
-    }
-
-    if ((mapExtAccounts.size() > 0 || CountKeys() > 0) // Don't scan an empty wallet
-        && tip_height && *tip_height != rescan_height)
-    {
-        //We can't rescan beyond non-pruned blocks, stop and throw an error
-        //this might happen if a user uses an old wallet within a pruned node
-        // or if he ran -disablewallet for a longer time, then decided to re-enable
-        if (fPruneMode)
-        {
-            int block_height = *tip_height;
-            while (block_height > 0 && locked_chain->haveBlockOnDisk(block_height - 1) && rescan_height != block_height) {
-                --block_height;
-            }
-
-            if (rescan_height != block_height) {
-                InitError(_("Prune: last wallet synchronisation goes beyond pruned data. You need to -reindex (download the whole blockchain again in case of pruned node)"));
-                return false;
-            }
-        }
-
-        uiInterface.InitMessage(_("Rescanning..."));
-        WalletLogPrintf("Rescanning last %i blocks (from block %i)...\n", *tip_height - rescan_height, rescan_height);
-
-        // No need to read and scan block if block was created before
-        // our wallet birthday (as adjusted for block time variability)
-        if (nTimeFirstKey) {
-            if (Optional<int> first_block = locked_chain->findFirstBlockWithTimeAndHeight(nTimeFirstKey - TIMESTAMP_WINDOW, rescan_height)) {
-                rescan_height = *first_block;
-            }
-        }
-
-        int64_t nStart = GetTimeMillis();
-        {
-            WalletRescanReserver reserver(this);
-            if (!reserver.reserve() || (ScanResult::SUCCESS != ScanForWalletTransactions(locked_chain->getBlockHash(rescan_height), {} /* stop block */, reserver, true /* update */).status)) {
-                InitError(_("Failed to rescan the wallet during initialization"));
-                return false;
-            }
-        }
-        WalletLogPrintf("Rescan completed in %15dms\n", GetTimeMillis() - nStart);
-        ChainStateFlushed(locked_chain->getTipLocator());
-        database->IncrementUpdateCounter();
-    }
-
-    if (!pEKMaster) {
-        if (gArgs.GetBoolArg("-createdefaultmasterkey", false)) {
-            std::string sMsg = "Generating random HD keys for wallet " + GetName();
-            #ifndef ENABLE_QT
-            tfm::format(std::cout, "%s\n", sMsg.c_str());
-            #endif
-            LogPrintf("%s\n", sMsg);
-            if (MakeDefaultAccount() != 0) {
-                tfm::format(std::cout, "Error: MakeDefaultAccount failed!\n");
-            }
-        } else {
-            /*
-            std::string sWarning = "Warning: Wallet " + pwallet->GetName() + " has no master HD key set, please view the readme.";
-            #ifndef ENABLE_QT
-            tfm::format(std::cout, "%s\n", sWarning.c_str());
-            #endif
-            LogPrintf("%s\n", sWarning);
-            */
-        }
-    }
-    if (idDefaultAccount.IsNull()) {
-        std::string sWarning = "Warning: Wallet " + GetName() + " has no active account, please view the readme.";
-        #ifndef ENABLE_QT
-        tfm::format(std::cout, "%s\n", sWarning.c_str());
-        #endif
-        LogPrintf("%s\n", sWarning);
-    }
-
-    return true;
+    return mapExtAccounts.size() > 0 || CountKeys() > 0;
 };
 
 static void AppendError(std::string &sError, std::string s)
@@ -1165,7 +1059,6 @@ isminetype CHDWallet::HaveAddress(const CTxDestination &dest)
 isminetype CHDWallet::HaveKey(const CKeyID &address, const CEKAKey *&pak, const CEKASCKey *&pasc, CExtKeyAccount *&pa) const
 {
     AssertLockHeld(cs_wallet);
-    //LOCK(cs_wallet);
 
     pak = nullptr;
     pasc = nullptr;
@@ -1184,6 +1077,13 @@ isminetype CHDWallet::HaveKey(const CKeyID &address, const CEKAKey *&pak, const 
             if (0 != ExtKeySaveKey(pa, address, ak)) {
                 WalletLogPrintf("%s: ExtKeySaveKey failed.\n", __func__);
                 return ISMINE_NO;
+            }
+            // pak moved from mapLookAhead to mapKeys
+            AccKeyMap::const_iterator mi = pa->mapKeys.find(address);
+            if (mi != pa->mapKeys.end()) {
+                pak = &mi->second;
+            } else {
+                WalletLogPrintf("%s: Key not moved.\n", __func__);
             }
         }
         return ismine;
@@ -1497,7 +1397,52 @@ DBErrors CHDWallet::LoadWallet(bool& fFirstRunRet)
     if (pEKMaster || !idDefaultAccount.IsNull()) {
         fFirstRunRet = false; // if fFirstRun is true, CreateWalletFromFile -> upgrade -> ChainStateFlushed -> WriteBestBlock before catch-up rescan tries to run
     }
-    return rv;
+
+    if (rv != DBErrors::LOAD_OK) {
+        return rv;
+    }
+
+    PostProcessUnloadSpent();
+
+    auto locked_chain = chain().lock();
+    LOCK(cs_wallet);
+
+    {
+        CHDWalletDB wdb(GetDBHandle());
+
+        LoadAddressBook(&wdb);
+        LoadTxRecords(&wdb);
+        LoadVoteTokens(&wdb);
+    }
+
+    if (!pEKMaster) {
+        if (gArgs.GetBoolArg("-createdefaultmasterkey", false)) {
+            std::string sMsg = "Generating random HD keys for wallet " + GetName();
+#ifndef ENABLE_QT
+            tfm::format(std::cout, "%s\n", sMsg.c_str());
+#endif
+            LogPrintf("%s\n", sMsg);
+            if (MakeDefaultAccount() != 0) {
+                tfm::format(std::cout, "Error: MakeDefaultAccount failed!\n");
+            }
+        } else {
+            /*
+            std::string sWarning = "Warning: Wallet " + pwallet->GetName() + " has no master HD key set, please view the readme.";
+            #ifndef ENABLE_QT
+            tfm::format(std::cout, "%s\n", sWarning.c_str());
+            #endif
+            LogPrintf("%s\n", sWarning);
+            */
+        }
+    }
+    if (idDefaultAccount.IsNull()) {
+        std::string sWarning = "Warning: Wallet " + GetName() + " has no active account, please view the readme.";
+#ifndef ENABLE_QT
+        tfm::format(std::cout, "%s\n", sWarning.c_str());
+#endif
+        LogPrintf("%s\n", sWarning);
+    }
+    return DBErrors::LOAD_OK;
 }
 
 bool CHDWallet::SetAddressBook(CHDWalletDB *pwdb, const CTxDestination &address, const std::string &strName,
@@ -2822,6 +2767,8 @@ bool CHDWallet::IsChange(const CTxOutBase *txout) const
     if (ps) {
         const CScript &scriptPubKey = *ps;
 
+        LOCK(cs_wallet);
+
         CKeyID idk;
         const CEKAKey *pak = nullptr;
         const CEKASCKey *pasc = nullptr;
@@ -2906,8 +2853,8 @@ void CHDWallet::ParseAddressForMetaData(const CTxDestination &addr, COutputRecor
     } else
     if (addr.type() == typeid(CExtKeyPair))
     {
-        CExtKeyPair ek = boost::get<CExtKeyPair>(addr);
         /*
+        CExtKeyPair ek = boost::get<CExtKeyPair>(addr);
         rec.vPath.resize(21);
         rec.vPath[0] = ORA_EXTKEY;
         CKeyID eid = ek.GetID()();
@@ -3640,10 +3587,19 @@ bool CHDWallet::SetChangeDest(const CCoinControl *coinControl, CTempRecipient &r
                 scriptStaking = GetScriptForDestination(idk);
             }
 
-            // Switch to sha256 hash
-            CKeyID256 idChange = r.pkTo.GetID256();
-            r.address = idChange;
-            r.scriptPubKey = GetScriptForDestination(idChange);
+            if (r.address.type() == typeid(CScriptID) ||
+                r.address.type() == typeid(WitnessV0ScriptHash) ||
+                r.address.type() == typeid(CScriptID256)) {
+                // Pass through p2sh
+            } else {
+                // Switch to sha256 hash
+                if (!r.pkTo.IsValid()) {
+                    return wserrorN(false, sError, __func__, "Change pubkey is unset.");
+                }
+                CKeyID256 idChange = r.pkTo.GetID256();
+                r.address = idChange;
+                r.scriptPubKey = GetScriptForDestination(idChange);
+            }
 
             if (scriptStaking.IsPayToPublicKeyHash()) {
                 CScript script = CScript() << OP_ISCOINSTAKE << OP_IF;
