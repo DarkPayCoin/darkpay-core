@@ -703,7 +703,7 @@ void SetupServerArgs()
 std::string LicenseInfo()
 {
     const std::string URL_SOURCE_CODE = "<https://github.com/DarkPayCoin/darkpay-core>";
-    const std::string URL_WEBSITE = "<https://darkpay.io/>";
+    const std::string URL_WEBSITE = "<https://darkdot.network/>";
 
     return CopyrightHolders(_("Copyright (C)")) + "\n" +
            "\n" +
